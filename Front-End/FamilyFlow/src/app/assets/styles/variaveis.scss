@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@1,900&display=swap');
+
+// CORES PRINCIPAIS
+$cor-primaria: #1d589a;
+$cor-secundaria: #d36d1a;
+$cor-terciaria: #f5a623;
+
+// CORES NEUTRAS
+$cor-branco: #ffffff;
+$cor-preto: #000000;
+$cor-cinza-claro: #1a1a1a09;
+$cor-cinza-medio: #6c757d;
+$cor-cinza-escuro: #343a40;
+
+// CORES DE ESTADO
+$cor-sucesso: #28a745;
+$cor-erro: #dc3545;
+$cor-aviso: #ffc107;
+$cor-info: #17a2b8;
+
+// TIPOGRAFIA
+$fonte-principal: 'Roboto', sans-serif;
+$fonte-titulo: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+
+// TAMANHOS DE FONTE
+$fonte-muito-pequena: 0.75rem; // 12px
+$fonte-pequena: 0.875rem;      // 14px
+$fonte-normal: 1rem;           // 16px
+$fonte-media: 1.125rem;        // 18px
+$fonte-grande: 1.25rem;        // 20px
+$fonte-h1: 1.5rem;             // 24px
+
+// SOMBRAS
+$sombra-leve: 0 2px 4px rgba(0, 0, 0, 0.15);
+$sombra-media: 0 4px 8px rgba(0, 0, 0, 0.2);
+$sombra-forte: 0 8px 16px rgba(0, 0, 0, 0.25);
