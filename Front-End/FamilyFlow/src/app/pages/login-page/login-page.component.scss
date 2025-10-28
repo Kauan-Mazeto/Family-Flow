@@ -1,0 +1,139 @@
+@use 'variaveis' as *;
+
+:host{
+    display: flex;
+    height: 100vh;
+    align-items: center;
+    background-color: rgb(29, 86, 255);
+
+    .div-login {
+        flex: 0 0 700px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 50%;
+        height: 100vh;
+        border: 2px solid $cor-cinza-claro;
+        background-color: white;
+
+        h1 {
+            font-family: $fonte-titulo;
+            font-size: 2rem;
+            margin-bottom: 5rem;
+            margin-top: 10rem;
+        }
+        
+
+        form{
+            display: flex;
+            flex-direction: column; 
+            gap: 1rem;
+            width: 50%;
+            border-radius: 15px;
+
+
+            label{
+                font-family: $fonte-titulo;
+                font-size: $fonte-normal;
+                color: $cor-cinza-escuro;
+            }
+
+            input{
+                padding: 1rem;
+                font-size: $fonte-pequena;
+                border: 2px solid $cor-cinza-medio;
+                border-radius: 4px;
+                background-color: transparent;
+                cursor: pointer;
+                
+                &:focus {
+                    outline: none;
+                    border-color: $cor-primaria;
+                    box-shadow: $sombra-leve;
+                }
+            }
+
+            button{
+                padding: 1rem;
+                font-size: $fonte-normal;
+                background-color: rgb(29, 86, 255);
+                color: $cor-branco;
+                border: none;
+                border-radius: 30px;
+                cursor: pointer;
+                font-family: $fonte-principal;
+                transition: all 0.3s ease;
+                margin-top: 50px;
+
+                &:hover{
+                    transform: scale(1.01);
+                    box-shadow: $sombra-media;
+                }
+            }
+
+            p{
+                text-align: left;
+                font-family: $fonte-titulo;
+                font-weight: 200;
+                font-size: $fonte-pequena;
+                color: $cor-cinza-medio;
+                margin-top: 5px;
+
+                a {
+                    color: $cor-secundaria;
+                    text-decoration: none;
+                    font-weight: 600;
+                    cursor: pointer;
+
+                    &:hover {
+                        text-decoration: underline;
+                    }
+                }
+            }
+
+            
+
+
+
+
+
+
+
+            
+            .field-error {
+                display: flex;
+                align-items: center;
+                color: $cor-erro;
+                font-family: $fonte-principal;
+            }
+            
+            
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
+            
+            input.error {
+                border-color: #dc3545;
+                background-color: rgba(220, 53, 69, 0.05);
+                
+                &:focus {
+                    border-color: #dc3545;
+                    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+                }
+            }
+        }
+        
+        .general-error {
+            color: $cor-erro;
+            font-family: $fonte-principal;
+        }
+    }
+}
