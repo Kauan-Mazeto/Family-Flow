@@ -19,7 +19,7 @@ export async function cadastrar_usuario(req, res) {
     }
 
     try {
-        // Verifica se email já existe
+        
         const usuarioExistente = await prisma.user.findUnique({
             where: { email: email_usuario }
         });

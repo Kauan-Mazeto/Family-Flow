@@ -19,7 +19,7 @@ export async function create_family(req, res) {
             let exists = true;
             
             while (exists) {
-                // código de 8 caracteres (A-Z => 0,9)
+                // código de 8 caracteres (A-Z => 0,9), completamente aleatorio
                 codigo = Math.random().toString(36).substring(2, 10).toUpperCase();
                 
                 const familia_existente = await prisma.family.findUnique({
@@ -45,7 +45,7 @@ export async function create_family(req, res) {
                 }
             });
 
-            // criador como admin
+            // criador como admin (esse TX é alguma funcao do proprio prisma especifico para isso)
             await tx.familyMember.create({
                 data: {
                     family_id: familia.id,
@@ -79,7 +79,7 @@ export async function enter_family(req, res) {
         return res.status(400).json({mensagem: "Insira o codigo familiar."})
     };
 
-    const codigo_familia = await prisma.Family.findUnique({
+    const codigo_familia = await prisma.family.findUnique({
         where: {
            family_code: codigo_familia_input 
         }
