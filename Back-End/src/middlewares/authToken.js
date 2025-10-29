@@ -11,7 +11,7 @@ export function authToken(req, res, next) {
 
     try {
         const decodedToken = jwt.verify(token, JWT_SECRET_KEY);
-        req.usuario = decodedToken; // Anexando dados do usuário à requisição
+        req.usuario = decodedToken; // anexo de dados do usuário à requisição
         
         next();
 
