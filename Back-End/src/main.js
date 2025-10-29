@@ -1,6 +1,7 @@
 import express from 'express';
 import 'dotenv/config';
 import rotas_usuario from '../src/routes/login-routes.js';
+import rotas_family from './routes/family-routes.js';
 import cookieParser from 'cookie-parser';
 // import { dbMiddleware } from '../middlewares/pool-gb-middleware.js';
 
@@ -14,9 +15,10 @@ api_gestao_familiar.use(cookieParser()); // enviar por COOKIES
 // }));
 
 api_gestao_familiar.use('/', rotas_usuario)
+api_gestao_familiar.use('/', rotas_family)
 
 api_gestao_familiar.listen(porta_api_gestao_familiar, () => {
-    console.log(`Servidor rodando na porta ${porta_api_gestao_familiar}`);
+    console.log(`=> Servidor rodando na porta ${porta_api_gestao_familiar}`);
 });
 
 export default api_gestao_familiar;

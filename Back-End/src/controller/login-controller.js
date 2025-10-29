@@ -55,7 +55,7 @@ export async function cadastrar_usuario(req, res) {
     };
 };
 
-export async function retornar_usuario(req, res) {
+export async function login_usuario(req, res) {
     const { email, password } = req.body;
 
     if (!email || !password) {
