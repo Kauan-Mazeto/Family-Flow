@@ -1,3 +1,4 @@
+
 <div class="div-login">
   <h1>Faça Login para Continuar</h1>
 
@@ -7,13 +8,6 @@
   </div>
 
   <form (ngSubmit)="on_login()" #loginForm="ngForm" method="post">
-
-    <div *ngIf="email_error" class="field-error">
-      {{ email_error }}
-    </div>
-    <div *ngIf="password_error" class="field-error">
-      {{ password_error }}
-    </div>
     
     <label for="email">Email:</label>
     <input 
@@ -23,9 +17,11 @@
       [(ngModel)]="email"
       (input)="on_input_change()"
       placeholder="Digite seu email" 
-      required
-      [class.error]="!is_valid_email(email) && email.length > 0">
-
+      [class.error-input]="email_error"
+      required>
+    <div *ngIf="email_error" class="field-error">
+      {{ email_error }}
+    </div>
 
     <label for="password">Password:</label>
     <input 
@@ -35,12 +31,16 @@
       [(ngModel)]="password"
       (input)="on_input_change()"
       placeholder="Digite sua senha" 
-      required
-      [class.error]="!is_valid_password(password) && password.length > 0">
+      [class.error-input]="password_error"
+      required>
+    <div *ngIf="password_error" class="field-error">
+      {{ password_error }}
+    </div>
 
     <button 
       type="submit" 
-      [disabled]="is_loading || !email || !password">
+      [disabled]="is_loading || !email || !password"
+      [class.loading]="is_loading">
       <span *ngIf="is_loading">Entrando...</span>
       <span *ngIf="!is_loading">Login</span>
     </button>
@@ -48,3 +48,5 @@
     <p>Você não tem uma conta? <a (click)="navigate_to_register()">Registrar-se</a></p>
   </form>
 </div>
+
+<img src="img/loja-moderna-preparada-para-leilao-ao-vivo.jpg" alt="">
