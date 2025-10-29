@@ -22,11 +22,11 @@ export async function create_family(req, res) {
                 // código de 8 caracteres (A-Z => 0,9)
                 codigo = Math.random().toString(36).substring(2, 10).toUpperCase();
                 
-                // verificacao caso exista
                 const familia_existente = await prisma.family.findUnique({
                     where: { family_code: codigo }
                 });
                 
+                // inverte o valor
                 exists = !!familia_existente;
             };
 
@@ -73,5 +73,21 @@ export async function create_family(req, res) {
 };
 
 export async function enter_family(req, res) {
-    
+    const { codigo_familia_input } = req.body;
+
+    if (!codigo_familia_input) {
+        return res.status(400).json({mensagem: "Insira o codigo familiar."})
+    };
+
+    const codigo_familia = await prisma.Family.findUnique({
+        where: {
+           family_code: codigo_familia_input 
+        }
+    });
+
+    if (!codigo_familia) {
+        return res.status(400).json({mensagem: "Codigo familiar inválido ou inexistente."})
+    };
+
+    return res.json({codigo_familia});
 };
