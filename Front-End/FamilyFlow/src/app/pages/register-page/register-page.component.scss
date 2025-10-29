@@ -1,0 +1,105 @@
+@use 'variaveis' as *;
+
+:host {
+    display: flex;
+    height: 100vh;
+    align-items: center;
+    background-color: rgb(29, 86, 255);
+
+    img {
+        width: 836px;
+        height: 100vh;
+        object-fit: cover;
+    }
+
+    h1 {
+        font-family: $fonte-titulo;
+        font-size: 2rem;
+        margin-bottom: 2rem;
+        margin-top: 10rem;
+        cursor: default;
+    }
+
+    .div-register {
+        flex: 0 0 700px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+        border: 2px solid $cor-cinza-claro;
+        background-color: white;
+        align-items: center;
+        margin-left: auto;
+
+
+        form{
+            display: flex;
+            flex-direction: column; 
+            gap: 1rem;
+            width: 500px;
+            border-radius: 15px;
+
+
+            label{
+                font-family: $fonte-titulo;
+                font-size: $fonte-normal;
+                color: $cor-cinza-escuro;
+            }
+
+            input{
+                padding: 1rem;
+                font-size: $fonte-pequena;
+                border: 2px solid $cor-cinza-medio;
+                border-radius: 4px;
+                background-color: transparent;
+                cursor: pointer;
+                
+                &:focus {
+                    outline: none;
+                    border-color: $cor-primaria;
+                    box-shadow: $sombra-leve;
+                }
+            }
+
+            button{
+                padding: 1rem;
+                font-size: $fonte-normal;
+                background-color: rgb(29, 86, 255);
+                color: $cor-branco;
+                border: none;
+                border-radius: 30px;
+                cursor: pointer;
+                font-family: $fonte-principal;
+                transition: all 0.3s ease;
+                margin-top: 50px;
+
+                &:hover{
+                    transform: scale(1.01);
+                    box-shadow: $sombra-media;
+                }
+            }
+
+            
+            .field-error {
+                display: flex;
+                align-items: center;
+                color: $cor-erro;
+                font-family: $fonte-principal;
+                font-size: $fonte-pequena;
+                margin-bottom: 0.5rem;
+            }
+
+            .general-error {
+                color: $cor-erro;
+                font-family: $fonte-principal;
+                font-size: $fonte-pequena;
+                background-color: rgba($cor-erro, 0.1);
+                border: 1px solid rgba($cor-erro, 0.3);
+                border-radius: 4px;
+                padding: 0.75rem;
+                margin-bottom: 1rem;
+                text-align: center;
+            }
+        }
+    }
+}

@@ -4,7 +4,6 @@
     display: flex;
     height: 100vh;
     align-items: center;
-    background-color: rgb(29, 86, 255);
 
     .div-login {
         flex: 0 0 700px;
@@ -21,6 +20,7 @@
             font-size: 2rem;
             margin-bottom: 5rem;
             margin-top: 10rem;
+            cursor: default;
         }
         
 
@@ -78,6 +78,7 @@
                 font-size: $fonte-pequena;
                 color: $cor-cinza-medio;
                 margin-top: 5px;
+                cursor: default;
 
                 a {
                     color: $cor-secundaria;
@@ -90,14 +91,6 @@
                     }
                 }
             }
-
-            
-
-
-
-
-
-
 
             
             .field-error {
@@ -118,22 +111,17 @@
                     transform: translateY(0);
                 }
             }
-            
-            
-            input.error {
-                border-color: #dc3545;
-                background-color: rgba(220, 53, 69, 0.05);
-                
-                &:focus {
-                    border-color: #dc3545;
-                    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
-                }
-            }
         }
         
         .general-error {
             color: $cor-erro;
             font-family: $fonte-principal;
         }
+    }
+
+    img {
+        width: 836px;
+        height: 100vh;
+        object-fit: cover;
     }
 }

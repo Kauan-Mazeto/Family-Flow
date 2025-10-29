@@ -1,3 +1,4 @@
+
 <div class="div-login">
   <h1>Faça Login para Continuar</h1>
 
@@ -23,8 +24,7 @@
       [(ngModel)]="email"
       (input)="on_input_change()"
       placeholder="Digite seu email" 
-      required
-      [class.error]="!is_valid_email(email) && email.length > 0">
+      required>
 
 
     <label for="password">Password:</label>
@@ -35,12 +35,12 @@
       [(ngModel)]="password"
       (input)="on_input_change()"
       placeholder="Digite sua senha" 
-      required
-      [class.error]="!is_valid_password(password) && password.length > 0">
+      required>
 
     <button 
-      type="submit" 
-      [disabled]="is_loading || !email || !password">
+      type="button" 
+      [disabled]="is_loading || !email || !password"
+      (click)="on_geral_error_change()">
       <span *ngIf="is_loading">Entrando...</span>
       <span *ngIf="!is_loading">Login</span>
     </button>
@@ -48,3 +48,5 @@
     <p>Você não tem uma conta? <a (click)="navigate_to_register()">Registrar-se</a></p>
   </form>
 </div>
+
+<img src="img/loja-moderna-preparada-para-leilao-ao-vivo.jpg" alt="">

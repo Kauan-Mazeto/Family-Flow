@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
   templateUrl: './login-page.component.html',
   styleUrls: ['./login-page.component.scss']
 })
-export class LoginPageComponent implements OnInit {
+export class LoginPageComponent{
 
   formBuilder = inject(FormBuilder);
 
@@ -37,19 +37,10 @@ export class LoginPageComponent implements OnInit {
 
   constructor() { }
 
-  ngOnInit() {
-    
-  }
-
   // Validação de email
   is_valid_email(email: string): boolean {
     const email_regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return email_regex.test(email);
-  }
-
-  // Validação da senha
-  is_valid_password(password: string): boolean {
-    return password.length >= 6;
   }
 
   // Validar credenciais
@@ -79,11 +70,6 @@ export class LoginPageComponent implements OnInit {
       return;
     }
 
-    if (!this.is_valid_password(this.password)) {
-      this.password_error = 'Senha deve ter pelo menos 6 caracteres';
-      return;
-    }
-
     // Simular loading
     this.is_loading = true;
 
@@ -108,31 +94,59 @@ export class LoginPageComponent implements OnInit {
     this.password_error = '';
   }
 
-  // Limpar mensagem de erro quando usuário digitar
+  // Limpar mensagens de erro quando usuário digitar
   on_input_change() {
+    // Limpa todas as mensagens de erro quando o usuário digita
+    this.error_message = '';
+    this.email_error = '';
+    this.password_error = '';
+  }
+  
+  // Fazer login - validar e verificar credenciais
+  on_geral_error_change() {
+    console.log('Verificando credenciais...');
+    console.log('Email:', this.email);
+    console.log('Password:', this.password);
+    
+    // Limpar erros anteriores
     this.clear_errors();
-  }
-
-  // Validação em tempo real do email
-  on_email_change() {
-    if (this.email && !this.is_valid_email(this.email)) {
-      this.email_error = 'Email inválido';
-    } else {
-      this.email_error = '';
+    
+    // Validações básicas
+    if (!this.email) {
+      this.email_error = 'Email é obrigatório';
+      return;
     }
-  }
 
-  // Validação em tempo real da senha
-  on_password_change() {
-    if (this.password && !this.is_valid_password(this.password)) {
-      this.password_error = 'Senha deve ter pelo menos 6 caracteres';
+    if (!this.is_valid_email(this.email)) {
+      this.email_error = 'Email inválido';
+      return;
+    }
+
+    if (!this.password) {
+      this.password_error = 'Senha é obrigatória';
+      return;
+    }
+
+    if (!this.password || !this.valid_users.map(u => u.password).includes(this.password)) {
+      this.password_error = 'Senha incorreta';
+      return;
+    }
+
+    // Verificar credenciais
+    if (this.validate_credentials(this.email, this.password)) {
+      console.log('Credenciais corretas!');
+      this.error_message = '';
+      // Aqui você pode fazer o login ou navegar para outra página
+      alert('Login realizado com sucesso!');
+      // this.navegador.navigate(['/dashboard']); // exemplo
     } else {
-      this.password_error = '';
+      console.log('Credenciais incorretas!');
+      this.error_message = 'Email ou senha incorretos';
     }
   }
 
   navigate_to_register() {
-    this.navegador.navigate(['/register']);
+    this.navegador.navigate(['/users/register']);
   }
 
 }
