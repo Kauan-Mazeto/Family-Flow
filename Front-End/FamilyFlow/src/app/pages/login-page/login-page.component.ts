@@ -1,7 +1,10 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+import { AuthService } from '../../shared/services/auth.service';
+import { LoginRequest } from '../../shared/interfaces/auth.interface';
 
 @Component({
   selector: 'app-login-page',
@@ -10,14 +13,10 @@ import { Router } from '@angular/router';
   templateUrl: './login-page.component.html',
   styleUrls: ['./login-page.component.scss']
 })
-export class LoginPageComponent{
+export class LoginPageComponent implements OnInit, OnDestroy {
 
-  formBuilder = inject(FormBuilder);
-
-  loginForm = this.formBuilder.group({
-    email: [''],
-    password: ['']
-  });
+  authService = inject(AuthService);
+  navegador = inject(Router);
 
   email: string = '';
   password: string = '';
@@ -26,28 +25,34 @@ export class LoginPageComponent{
   password_error: string = '';
   is_loading: boolean = false;
 
-  navegador = inject(Router);
-
-  // Usuários mockados para teste
-  private valid_users = [
-    { email: 'admin@familyflow.com', password: '123456' },
-    { email: 'user@test.com', password: 'senha123' },
-    { email: 'familia@email.com', password: 'family2024' }
-  ];
+  // Subject para gerenciar unsubscribe
+  private destroy$ = new Subject<void>();
 
   constructor() { }
+
+  ngOnInit() {
+    // Observar o estado de loading do AuthService
+    this.authService.loading$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(loading => {
+        this.is_loading = loading;
+      });
+
+    // Se o usuário já estiver logado, redirecionar
+    if (this.authService.isLoggedIn()) {
+      this.navegador.navigate(['/dashboard/initial']);
+    }
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   // Validação de email
   is_valid_email(email: string): boolean {
     const email_regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return email_regex.test(email);
-  }
-
-  // Validar credenciais
-  validate_credentials(email: string, password: string): boolean {
-    return this.valid_users.some(user => 
-      user.email === email && user.password === password
-    );
   }
 
   // Método para fazer login
@@ -70,21 +75,39 @@ export class LoginPageComponent{
       return;
     }
 
-    // Simular loading
+    // Iniciar loading
     this.is_loading = true;
 
-    // Simular delay de rede
-    setTimeout(() => {
-      if (this.validate_credentials(this.email, this.password)) {
-        alert('Login realizado com sucesso!');
-        console.log('Usuário logado:', this.email);
+    // Preparar dados para o backend
+    const loginData: LoginRequest = {
+      email: this.email,
+      password: this.password
+    };
 
-      } else {
-        this.error_message = 'Email ou senha incorretos';
+    // Fazer login no backend
+    console.log('Enviando dados para o backend:', loginData);
+    console.log('URL da requisição:', `http://localhost:8080/users/login`);
+    
+    this.authService.login(loginData).subscribe({
+      next: (response) => {
+        console.log('Login realizado com sucesso!', response);
+        this.is_loading = false;
+        alert('Login realizado com sucesso!');
+        this.navegador.navigate(['/dashboard/initial']);
+      },
+      error: (error) => {
+        console.log('Erro no login:', error);
+        console.error('Erro completo:', error);
+        this.is_loading = false;
+        
+        // O AuthService já trata os erros e retorna a mensagem
+        if (error && error.mensagem) {
+          this.error_message = error.mensagem;
+        } else {
+          this.error_message = 'Erro ao conectar com o servidor';
+        }
       }
-      
-      this.is_loading = false;
-    }, 1000);
+    });
   }
 
   // Limpar todas as mensagens de erro
@@ -96,53 +119,7 @@ export class LoginPageComponent{
 
   // Limpar mensagens de erro quando usuário digitar
   on_input_change() {
-    // Limpa todas as mensagens de erro quando o usuário digita
-    this.error_message = '';
-    this.email_error = '';
-    this.password_error = '';
-  }
-  
-  // Fazer login - validar e verificar credenciais
-  on_geral_error_change() {
-    console.log('Verificando credenciais...');
-    console.log('Email:', this.email);
-    console.log('Password:', this.password);
-    
-    // Limpar erros anteriores
     this.clear_errors();
-    
-    // Validações básicas
-    if (!this.email) {
-      this.email_error = 'Email é obrigatório';
-      return;
-    }
-
-    if (!this.is_valid_email(this.email)) {
-      this.email_error = 'Email inválido';
-      return;
-    }
-
-    if (!this.password) {
-      this.password_error = 'Senha é obrigatória';
-      return;
-    }
-
-    if (!this.password || !this.valid_users.map(u => u.password).includes(this.password)) {
-      this.password_error = 'Senha incorreta';
-      return;
-    }
-
-    // Verificar credenciais
-    if (this.validate_credentials(this.email, this.password)) {
-      console.log('Credenciais corretas!');
-      this.error_message = '';
-      // Aqui você pode fazer o login ou navegar para outra página
-      alert('Login realizado com sucesso!');
-      // this.navegador.navigate(['/dashboard']); // exemplo
-    } else {
-      console.log('Credenciais incorretas!');
-      this.error_message = 'Email ou senha incorretos';
-    }
   }
 
   navigate_to_register() {

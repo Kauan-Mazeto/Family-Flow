@@ -8,13 +8,6 @@
   </div>
 
   <form (ngSubmit)="on_login()" #loginForm="ngForm" method="post">
-
-    <div *ngIf="email_error" class="field-error">
-      {{ email_error }}
-    </div>
-    <div *ngIf="password_error" class="field-error">
-      {{ password_error }}
-    </div>
     
     <label for="email">Email:</label>
     <input 
@@ -24,8 +17,11 @@
       [(ngModel)]="email"
       (input)="on_input_change()"
       placeholder="Digite seu email" 
+      [class.error-input]="email_error"
       required>
-
+    <div *ngIf="email_error" class="field-error">
+      {{ email_error }}
+    </div>
 
     <label for="password">Password:</label>
     <input 
@@ -35,12 +31,16 @@
       [(ngModel)]="password"
       (input)="on_input_change()"
       placeholder="Digite sua senha" 
+      [class.error-input]="password_error"
       required>
+    <div *ngIf="password_error" class="field-error">
+      {{ password_error }}
+    </div>
 
     <button 
-      type="button" 
+      type="submit" 
       [disabled]="is_loading || !email || !password"
-      (click)="on_geral_error_change()">
+      [class.loading]="is_loading">
       <span *ngIf="is_loading">Entrando...</span>
       <span *ngIf="!is_loading">Login</span>
     </button>

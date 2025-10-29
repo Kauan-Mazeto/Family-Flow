@@ -13,5 +13,9 @@ export const routes: Routes = [
     {
         path: 'users/register',
         loadChildren: () => import('./pages/register-page/register-page.routes').then(m => m.REGISTER_PAGE_ROUTES)
+    },
+    {
+        path: 'dashboard/initial',
+        loadComponent: () => import('./pages/dashboard-initial/dashboard-initial.component').then(m => m.DashboardInitialComponent)
     }
 ];
