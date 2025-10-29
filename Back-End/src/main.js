@@ -3,7 +3,6 @@ import 'dotenv/config';
 import rotas_usuario from '../src/routes/login-routes.js';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-// import { dbMiddleware } from '../middlewares/pool-gb-middleware.js';
 
 const api_gestao_familiar = express();
 const porta_api_gestao_familiar = 8080;
