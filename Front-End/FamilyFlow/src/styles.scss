@@ -1,8 +1,9 @@
 /* You can add global styles to this file, and also import other style files */
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@1,900&display=swap');
-
+// @use deve vir ANTES de qualquer @import ou outra regra
 @use 'variaveis' as *;
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@1,900&display=swap');
 
 * {
     margin: 0;
