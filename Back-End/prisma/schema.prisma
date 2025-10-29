@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,14 +11,110 @@ datasource db {
 }
 
 model User {
-  id            Int   @id @default(autoincrement())      
-  name          String                                
-  email         String   @unique                        
-  password_hash String                                
-  avatar_url    String?                                
-  is_active     Boolean  @default(true)               
+  id            Int      @id @default(autoincrement())
+  name          String
+  email         String   @unique
+  password_hash String
+  avatar_url    String?
+  is_active     Boolean  @default(true)
   is_admin      Boolean  @default(false)
-  created_at    DateTime @default(now())                                    
+  created_at    DateTime @default(now())
+
+  // Relações
+  createdFamilies   Family[]       @relation("UserCreatedFamilies")
+  familyMemberships FamilyMember[]
+  assignedTasks     TaskAssign[]   @relation("TaskAssignedTo")
+  tasksAssignedBy   TaskAssign[]   @relation("TaskAssignedBy")
+
+  @@map("user")
 }
 
+model Family {
+  id          Int      @id @default(autoincrement())
+  name        String
+  family_code String   @unique
+  created_by  Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
+  // Relações
+  createdBy User           @relation("UserCreatedFamilies", fields: [created_by], references: [id], onDelete: Cascade)
+  members   FamilyMember[]
+  tasks     Task[]
+
+  @@map("family")
+}
+
+model FamilyMember {
+  id         Int      @id @default(autoincrement())
+  family_id  Int
+  user_id    Int
+  role       Role     @default(MEMBER)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relações
+  family        Family       @relation(fields: [family_id], references: [id], onDelete: Cascade)
+  user          User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  assignedTasks Task[]
+
+  @@unique([family_id, user_id])
+  @@map("familia_member")
+}
+
+model Task {
+  id              Int          @id @default(autoincrement())
+  family_id       Int
+  title           String
+  description     String?
+  due_date        DateTime?
+  status          TaskStatus   @default(PENDING)
+  priority        TaskPriority @default(MEDIUM)
+  assigned_to     Int?
+  is_active       Boolean      @default(true)
+  completion_date DateTime?
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+
+  // Relações
+  family         Family        @relation(fields: [family_id], references: [id], onDelete: Cascade)
+  assignedMember FamilyMember? @relation(fields: [assigned_to], references: [id], onDelete: SetNull)
+  assignments    TaskAssign[]
+
+  @@map("task")
+}
+
+model TaskAssign {
+  id          Int      @id @default(autoincrement())
+  task_id     Int
+  user_id     Int
+  assigned_by Int
+  created_at  DateTime @default(now())
+
+  // Relações
+  task       Task @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  user       User @relation("TaskAssignedTo", fields: [user_id], references: [id], onDelete: Cascade)
+  assignedBy User @relation("TaskAssignedBy", fields: [assigned_by], references: [id], onDelete: Cascade)
+
+  @@unique([task_id, user_id])
+  @@map("task_assign")
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  DELAYED
+  COMPLETED
+  DISABLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
