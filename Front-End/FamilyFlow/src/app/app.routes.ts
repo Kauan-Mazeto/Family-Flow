@@ -3,8 +3,12 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
     {
         path: '',
-        redirectTo: '/users/login',
+        redirectTo: '/initial',
         pathMatch: 'full'
+    },
+    {
+        path: 'initial',
+        loadComponent: () => import('./pages/initial-page/initial-page.component').then(m => m.InitialPageComponent)
     },
     {
         path: 'users/login',
@@ -13,9 +17,5 @@ export const routes: Routes = [
     {
         path: 'users/register',
         loadChildren: () => import('./pages/register-page/register-page.routes').then(m => m.REGISTER_PAGE_ROUTES)
-    },
-    {
-        path: 'dashboard/initial',
-        loadComponent: () => import('./pages/dashboard-initial/dashboard-initial.component').then(m => m.DashboardInitialComponent)
     }
 ];
