@@ -61,8 +61,8 @@ export async function create_family(req, res) {
             mensagem: "Família criada com sucesso!",
             familia: {
                 id: result.id,
-                nome: result.name,
-                codigo: result.family_code
+                name_family: result.name,
+                code_family: result.family_code
             }
         });
 
@@ -72,22 +72,53 @@ export async function create_family(req, res) {
     };
 };
 
+export async function verify_family(req, res) {
+
+    try {
+        const { codigo_familia_input } = req.body;
+
+        if (!codigo_familia_input) {
+            return res.status(400).json({mensagem: "Insira o codigo familiar."})
+        };
+
+        const codigo_familia = await prisma.family.findUnique({
+            where: {
+            family_code: codigo_familia_input 
+            }
+        });
+
+        if (!codigo_familia) {
+            return res.status(400).json({mensagem: "Codigo familiar inválido ou inexistente."})
+        };
+
+        return res.status(200).json({
+            mensagem: "Familia encontrada",
+            familia: {
+                id: codigo_familia.id,
+                name: codigo_familia.name,
+                code_find: codigo_familia.family_code,
+                created_user: codigo_familia.created_by
+            }
+        });
+    } catch(err) {
+        res.status(500).json({ mensagem: "Erro interno no servidor." });
+        console.error(err);
+    };
+    
+};
+
 export async function enter_family(req, res) {
-    const { codigo_familia_input } = req.body;
+    
+    try {
 
-    if (!codigo_familia_input) {
-        return res.status(400).json({mensagem: "Insira o codigo familiar."})
+        const { id_user } = req.usuario.id;
+
+        if (!id_user) {
+            return res.status(400).json({mensage: "ID do usuario inválido ou inexistente."})
+        };
+
+    } catch (err) {
+        res.status(500).json({ mensagem: "Erro interno no servidor." });
+        console.error(err);
     };
-
-    const codigo_familia = await prisma.family.findUnique({
-        where: {
-           family_code: codigo_familia_input 
-        }
-    });
-
-    if (!codigo_familia) {
-        return res.status(400).json({mensagem: "Codigo familiar inválido ou inexistente."})
-    };
-
-    return res.json({codigo_familia});
 };
