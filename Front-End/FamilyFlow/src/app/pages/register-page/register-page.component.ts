@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../shared/services/auth.service';
+import { RegistrationFlowService } from '../../shared/services/registration-flow.service';
 import { RegisterRequest } from '../../shared/interfaces/auth.interface';
 
 @Component({
@@ -16,6 +17,7 @@ import { RegisterRequest } from '../../shared/interfaces/auth.interface';
 export class RegisterPageComponent implements OnInit, OnDestroy {
 
   authService = inject(AuthService);
+  registrationFlow = inject(RegistrationFlowService);
   navegador = inject(Router);
 
   email: string = '';
@@ -102,39 +104,15 @@ export class RegisterPageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Iniciar loading
-    this.is_loading = true;
-
-    // Preparar dados para o backend
-    const registerData: RegisterRequest = {
-      nome_usuario: this.nome,
-      email_usuario: this.email,
-      senha_usuario: this.password
-    };
-
-    console.log('Enviando dados para o backend:', registerData);
-
-    // Fazer registro no backend
-    this.authService.register(registerData).subscribe({
-      next: (response) => {
-        console.log('Registro realizado com sucesso!', response);
-        this.is_loading = false;
-        alert('Conta criada com sucesso! Você pode fazer login agora.');
-        this.navegador.navigate(['/users/login']);
-      },
-      error: (error) => {
-        console.log('Erro no registro:', error);
-        console.error('Erro completo:', error);
-        this.is_loading = false;
-        
-        // O AuthService já trata os erros e retorna a mensagem
-        if (error && error.mensagem) {
-          this.error_message = error.mensagem;
-        } else {
-          this.error_message = 'Erro ao criar conta. Tente novamente.';
-        }
-      }
-    });
+    // Salvar dados temporariamente (não registra no banco ainda)
+    console.log('Salvando dados temporários...');
+    
+    this.registrationFlow.setUserData(this.nome, this.email, this.password);
+    
+    console.log('Dados salvos, navegando para escolha de família...');
+    
+    // Navegar para a próxima etapa: escolher opção de família
+    this.navegador.navigate(['/family/option']);
   }
 
   // Limpar todas as mensagens de erro

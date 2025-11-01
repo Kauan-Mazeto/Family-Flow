@@ -17,5 +17,17 @@ export const routes: Routes = [
     {
         path: 'users/register',
         loadChildren: () => import('./pages/register-page/register-page.routes').then(m => m.REGISTER_PAGE_ROUTES)
+    },
+    {
+        path: 'family/option',
+        loadChildren: () => import('./pages/register-family-option/register-family-option.routes').then(m => m.REGISTER_FAMILY_OPTION_ROUTES)
+    },
+    {
+        path: 'family/create',
+        loadChildren: () => import('./pages/create-family/create-family.routes').then(m => m.CREATE_FAMILY_ROUTES)
+    },
+    {
+        path: 'family/enter',
+        loadChildren: () => import('./pages/enter-family/enter-family.routes').then(m => m.ENTER_FAMILY_ROUTES)
     }
 ];

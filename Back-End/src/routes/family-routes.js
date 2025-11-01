@@ -12,4 +12,13 @@ rotas_family.post('/family/enter', authToken, (req, res) => {
     enter_family(req, res);
 });
 
+// Endpoint de teste para verificar autenticação
+rotas_family.get('/family/test-auth', authToken, (req, res) => {
+    console.log('🧪 TESTE DE AUTH - Usuário:', req.usuario);
+    res.json({ 
+        mensagem: 'Autenticação funcionando!', 
+        usuario: req.usuario 
+    });
+});
+
 export default rotas_family;
