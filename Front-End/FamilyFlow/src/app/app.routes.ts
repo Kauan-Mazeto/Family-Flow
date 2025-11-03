@@ -29,5 +29,9 @@ export const routes: Routes = [
     {
         path: 'family/enter',
         loadChildren: () => import('./pages/enter-family/enter-family.routes').then(m => m.ENTER_FAMILY_ROUTES)
+    },
+    {
+        path: 'family/dashboard',
+        loadChildren: () => import('./pages/family-dashboard/family-dashboard.routes').then(m => m.FAMILY_DASHBOARD_ROUTES)
     }
 ];

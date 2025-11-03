@@ -93,9 +93,9 @@ export class CreateFamilyComponent implements OnInit {
         // Limpar dados temporários
         this.registrationFlow.clearTempData();
         
-        // Redireciona para página inicial após registro completo
-        this.navegador.navigate(['/'], { 
-          queryParams: { message: `Registro completo! Família "${this.family_name}" criada com sucesso!` }
+        // Redireciona para tela de login após registro completo
+        this.navegador.navigate(['/users/login'], { 
+          queryParams: { message: `Registro completo! Família "${this.family_name}" criada com sucesso! Faça login para continuar.` }
         });
       },
       error: (error) => {

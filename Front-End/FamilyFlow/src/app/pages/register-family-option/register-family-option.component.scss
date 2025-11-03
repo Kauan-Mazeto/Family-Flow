@@ -21,76 +21,6 @@
         justify-content: center;
     }
 
-    .progress-indicator {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 40px;
-        width: 100%;
-
-        .step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-
-            .step-number {
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: 600;
-                font-size: 1rem;
-                transition: all 0.3s ease;
-            }
-
-            span {
-                font-size: 0.8rem;
-                font-family: 'Poppins', sans-serif;
-                font-weight: 500;
-                color: #666;
-            }
-
-            &.completed {
-                .step-number {
-                    background: linear-gradient(135deg, #4CAF50, #45a049);
-                    color: white;
-                    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
-                }
-
-                span {
-                    color: #4CAF50;
-                }
-            }
-
-            &.active {
-                .step-number {
-                    background: linear-gradient(135deg, rgb(193, 152, 86), rgb(186, 130, 40));
-                    color: white;
-                    box-shadow: 0 4px 15px rgba(186, 130, 40, 0.4);
-                    animation: pulse 2s infinite;
-                }
-
-                span {
-                    color: rgb(186, 130, 40);
-                    font-weight: 600;
-                }
-            }
-        }
-
-        .step-line {
-            width: 80px;
-            height: 3px;
-            background: linear-gradient(90deg, #4CAF50, rgb(186, 130, 40));
-            margin: 0 20px;
-            border-radius: 2px;
-            position: relative;
-            top: -15px;
-        }
-    }
-
     .text {
         text-align: center;
         margin-bottom: 30px;
@@ -461,20 +391,5 @@
     @keyframes float {
         0%, 100% { transform: translateY(0px); }
         50% { transform: translateY(-10px); }
-    }
-
-    @keyframes pulse {
-        0% {
-            transform: scale(1);
-            box-shadow: 0 4px 15px rgba(186, 130, 40, 0.4);
-        }
-        50% {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(186, 130, 40, 0.6);
-        }
-        100% {
-            transform: scale(1);
-            box-shadow: 0 4px 15px rgba(186, 130, 40, 0.4);
-        }
     }
 }

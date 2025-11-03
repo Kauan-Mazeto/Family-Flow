@@ -34,7 +34,7 @@ export class AuthService {
 
   constructor(private http: HttpClient) {
     // Verificar se usuário está autenticado ao inicializar
-    // this.checkCurrentUser(); // Temporariamente desabilitado para debug
+    this.loadUserInfo();
   }
 
   /**
@@ -70,6 +70,28 @@ export class AuthService {
             created_at: new Date().toISOString()
           };
           this.currentUserSubject.next(user);
+          
+          // Buscar dados completos do usuário após login bem-sucedido
+          this.getCurrentUserFromServer().subscribe({
+            next: (fullUserData) => {
+              console.log('AuthService: Dados completos do usuário carregados após login:', fullUserData);
+              if (fullUserData.usuarioAtual) {
+                const completeUser: User = {
+                  id: fullUserData.usuarioAtual.id,
+                  name: fullUserData.usuarioAtual.name,
+                  email: fullUserData.usuarioAtual.email,
+                  is_active: fullUserData.usuarioAtual.is_active,
+                  is_admin: fullUserData.usuarioAtual.is_admin,
+                  avatar_url: fullUserData.usuarioAtual.avatar_url,
+                  created_at: fullUserData.usuarioAtual.created_at
+                };
+                this.currentUserSubject.next(completeUser);
+              }
+            },
+            error: (error) => {
+              console.warn('AuthService: Erro ao carregar dados completos após login:', error);
+            }
+          });
         }
         this.loadingSubject.next(false);
         return response;
@@ -147,6 +169,35 @@ export class AuthService {
    */
   getCurrentUser(): User | null {
     return this.currentUserSubject.value;
+  }
+
+  /**
+   * Carregar informações do usuário atual
+   */
+  loadUserInfo(): void {
+    console.log('AuthService: 👤 Carregando informações do usuário...');
+    this.getCurrentUserFromServer().subscribe({
+      next: (response) => {
+        console.log('AuthService: ✅ Informações do usuário carregadas:', response);
+        if (response.usuarioAtual) {
+          const user: User = {
+            id: response.usuarioAtual.id,
+            name: response.usuarioAtual.name,
+            email: response.usuarioAtual.email,
+            is_active: response.usuarioAtual.is_active,
+            is_admin: response.usuarioAtual.is_admin,
+            avatar_url: response.usuarioAtual.avatar_url,
+            created_at: response.usuarioAtual.created_at
+          };
+          this.currentUserSubject.next(user);
+          console.log('AuthService: 👤 Usuário atualizado no subject:', user);
+        }
+      },
+      error: (error) => {
+        console.error('AuthService: ❌ Erro ao carregar informações do usuário:', error);
+        this.currentUserSubject.next(null);
+      }
+    });
   }
 
   /**
@@ -554,6 +605,26 @@ export class AuthService {
         console.log('AuthService: 🏁 PROCESSO FINALIZADO');
         this.loadingSubject.next(false);
       }),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Obter informações da família do usuário atual
+   */
+  getUserFamily(): Observable<{familia: {id: number, nome: string, codigo: string, role: string}}> {
+    console.log('AuthService: 📱 Buscando informações da família do usuário...');
+    
+    return this.http.get<{familia: {id: number, nome: string, codigo: string, role: string}}>(
+      `${this.API_URL}/family/info`,
+      { 
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      }
+    ).pipe(
       catchError(this.handleError.bind(this))
     );
   }
