@@ -1,0 +1,41 @@
+<img src="img/loja-moderna-preparada-para-leilao-ao-vivo.jpg" alt="">
+
+<div class="div-enter-family">
+    <h1>Entrar em uma Família</h1>
+
+    <div *ngIf="error_message" class="general-error">
+        {{ error_message }}
+    </div>
+
+    <form (ngSubmit)="on_enter_family()" #enterFamilyForm="ngForm" method="post">
+
+        <label for="family_code">Código da Família</label>
+        <input 
+            type="text" 
+            id="family_code" 
+            name="family_code"
+            [(ngModel)]="family_code"
+            (input)="on_input_change()"
+            placeholder="Digite o código da família (ex: FAM123456)"
+            [class.error-input]="code_error"
+            maxlength="20"
+            required>
+        <div *ngIf="code_error" class="field-error">
+            {{ code_error }}
+        </div>
+
+        <div class="info-section">
+            <p><i class="fas fa-info-circle"></i> O código da família foi fornecido pelo administrador da família</p>
+        </div>
+
+        <button 
+            type="submit" 
+            class="enter-btn"
+            [disabled]="is_loading || !family_code"
+            [class.loading]="is_loading">
+            <span *ngIf="is_loading"><i class="fas fa-spinner fa-spin"></i> Entrando...</span>
+            <span *ngIf="!is_loading"><i class="fas fa-sign-in-alt"></i> Entrar na Família</span>
+        </button>
+    </form>
+
+</div>

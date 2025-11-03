@@ -1,0 +1,35 @@
+<img src="img/loja-moderna-preparada-para-leilao-ao-vivo.jpg" alt="">
+
+<div class="div-register">
+    <h1>Digite um nome para a sua família</h1>
+
+    <div *ngIf="error_message" class="general-error">
+        {{ error_message }}
+    </div>
+
+    <form (ngSubmit)="on_create_family()" #createFamilyForm="ngForm" method="post">
+        <label for="nome">Nome da Família</label>
+        <input 
+            type="text" 
+            id="nome" 
+            name="nome"
+            [(ngModel)]="family_name"
+            (input)="on_input_change()"
+            placeholder="Ex: Família Silva, Os Andrade, etc."
+            [class.error-input]="name_error"
+            maxlength="50"
+            required>
+        <div *ngIf="name_error" class="field-error">
+            {{ name_error }}
+        </div>
+
+        <button 
+            type="submit" 
+            [disabled]="is_loading || !family_name"
+            [class.loading]="is_loading">
+            <span *ngIf="is_loading">Criando família...</span>
+            <span *ngIf="!is_loading">Criar Família</span>
+        </button>
+    </form>
+
+</div>

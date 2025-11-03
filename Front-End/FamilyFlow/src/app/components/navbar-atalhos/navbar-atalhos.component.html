@@ -1,0 +1,15 @@
+<!-- Navbar de Atalhos -->
+<nav class="navbar-atalhos">
+  <div class="atalhos-container">
+    <div 
+      *ngFor="let atalho of atalhos" 
+      class="atalho-item"
+      [class.ativo]="atalho.ativo"
+      (click)="onAtalhoClick(atalho)"
+      [routerLink]="atalho.rota"
+    >
+      <i [class]="atalho.icone" class="atalho-icone"></i>
+      <span class="atalho-nome">{{ atalho.nome }}</span>
+    </div>
+  </div>
+</nav>
