@@ -1,0 +1,91 @@
+:host {
+  display: block;
+  width: 100%;
+  
+  .navbar-atalhos {
+    background: transparent;
+    padding: 1rem 2rem;
+    
+    .atalhos-container {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      
+      @media (max-width: 768px) {
+        gap: 1rem;
+        justify-content: space-around;
+      }
+      
+      .atalho-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: #6B7280;
+        min-width: 120px;
+        justify-content: center;
+        border-radius: 8px;
+        
+        @media (max-width: 768px) {
+          flex-direction: column;
+          gap: 0.5rem;
+          padding: 0.75rem;
+          min-width: 80px;
+        }
+        
+        .atalho-icone {
+          font-size: 1.2rem;
+          transition: all 0.3s ease;
+          color: inherit;
+          
+          @media (max-width: 768px) {
+            font-size: 1.4rem;
+          }
+        }
+        
+        .atalho-nome {
+          font-weight: 500;
+          font-size: 0.95rem;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          white-space: nowrap;
+          color: inherit;
+          
+          @media (max-width: 768px) {
+            font-size: 0.9rem;
+            text-align: center;
+          }
+        }
+        
+        &:hover {
+          color: rgb(179, 131, 53);
+          background: rgba(179, 131, 53, 0.05);
+          
+          .atalho-icone {
+            transform: scale(1.05);
+          }
+        }
+        
+        &.ativo {
+          color: rgb(179, 131, 53);
+          background: rgba(179, 131, 53, 0.1);
+          
+          .atalho-icone {
+            color: rgb(179, 131, 53);
+          }
+          
+          .atalho-nome {
+            font-weight: 600;
+            color: rgb(179, 131, 53);
+          }
+        }
+        
+
+      }
+    }
+  }
+}

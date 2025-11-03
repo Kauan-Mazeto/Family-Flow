@@ -6,6 +6,8 @@ export const environment = {
     register: '/users/register', 
     userMe: '/users/me',
     logout: '/users/logout',
-    changePassword: '/users/changePassword'
+    changePassword: '/users/changePassword',
+    createFamily: '/family/create',
+    enterFamily: '/family/enter'
   }
 };

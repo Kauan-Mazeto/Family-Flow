@@ -1,0 +1,38 @@
+<nav class="family-navbar">
+
+  <div *ngIf="data.isLoading" class="navbar-loading">
+    <div class="loading-spinner"></div>
+    <span>Carregando...</span>
+  </div>
+
+  <div *ngIf="data.errorMessage && !data.isLoading" class="navbar-error">
+    <span>{{ data.errorMessage }}</span>
+  </div>
+
+  <div *ngIf="!data.isLoading" class="navbar-content">
+
+    <div class="family-section">
+      <div class="family-avatar">
+        <div class="family-image">
+          <span class="family-icon"></span>
+        </div>
+      </div>
+      <div class="family-info">
+        <h1 class="family-name">{{ data.familyName }}</h1>
+        <p class="family-description">Organize e acompanhe as atividades da sua família!</p>
+      </div>
+    </div>
+    
+    <div class="user-section">
+      <div class="user-info">
+        <span class="user-name">{{ data.userName }}</span>
+        <span class="user-email">{{ data.userEmail }}</span>
+      </div>
+      <div class="user-avatar">
+        <div class="user-image">
+          <span class="user-icon">👤</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>

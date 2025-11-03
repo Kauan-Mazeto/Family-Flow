@@ -1,6 +1,11 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+import { AuthService } from '../../shared/services/auth.service';
+import { RegistrationFlowService } from '../../shared/services/registration-flow.service';
+import { RegisterRequest } from '../../shared/interfaces/auth.interface';
 
 @Component({
   selector: 'app-register',
@@ -9,15 +14,11 @@ import { FormBuilder, FormsModule } from '@angular/forms';
   templateUrl: './register-page.component.html',
   styleUrls: ['./register-page.component.scss']
 })
-export class RegisterPageComponent {
+export class RegisterPageComponent implements OnInit, OnDestroy {
 
-  formBuilder = inject(FormBuilder);
-
-  registerForm = this.formBuilder.group({
-    email: [''],
-    password: [''],
-    nome: ['']
-  });
+  authService = inject(AuthService);
+  registrationFlow = inject(RegistrationFlowService);
+  navegador = inject(Router);
 
   email: string = '';
   password: string = '';
@@ -28,7 +29,24 @@ export class RegisterPageComponent {
   nome_error: string = '';
   is_loading: boolean = false;
 
+  // Subject para gerenciar unsubscribe
+  private destroy$ = new Subject<void>();
+
   constructor() { }
+
+  ngOnInit() {
+    // Observar o estado de loading do AuthService
+    this.authService.loading$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(loading => {
+        this.is_loading = loading;
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   // Validação de email
   is_valid_email(email: string): boolean {
@@ -86,23 +104,15 @@ export class RegisterPageComponent {
       return;
     }
 
-    // Simular loading
-    this.is_loading = true;
-
-    // Simular delay de rede
-    setTimeout(() => {
-      // Verificar se email já existe (simulação)
-      if (this.email === 'admin@familyflow.com') {
-        this.error_message = 'Este email já está em uso';
-      } else {
-        console.log('Registro realizado com sucesso!');
-        alert('Conta criada com sucesso! Você pode fazer login agora.');
-        // Aqui você pode navegar para a página de login
-        // this.router.navigate(['/users/login']);
-      }
-      
-      this.is_loading = false;
-    }, 1000);
+    // Salvar dados temporariamente (não registra no banco ainda)
+    console.log('Salvando dados temporários...');
+    
+    this.registrationFlow.setUserData(this.nome, this.email, this.password);
+    
+    console.log('Dados salvos, navegando para escolha de família...');
+    
+    // Navegar para a próxima etapa: escolher opção de família
+    this.navegador.navigate(['/family/option']);
   }
 
   // Limpar todas as mensagens de erro
@@ -115,10 +125,10 @@ export class RegisterPageComponent {
 
   // Limpar mensagens de erro quando usuário digitar
   on_input_change() {
-    // Limpa todas as mensagens de erro quando o usuário digita
-    this.error_message = '';
-    this.email_error = '';
-    this.password_error = '';
-    this.nome_error = '';
+    this.clear_errors();
+  }
+
+  navigate_to_login() {
+    this.navegador.navigate(['/users/login']);
   }
 }
