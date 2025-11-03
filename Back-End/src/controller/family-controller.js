@@ -92,7 +92,7 @@ export async function verify_family(req, res) {
         };
 
         return res.status(200).json({
-            mensagem: "Familia encontrada",
+            mensagem: "Familia encontrada: ",
             familia: {
                 id: codigo_familia.id,
                 name: codigo_familia.name,
