@@ -92,7 +92,7 @@ export async function verify_family(req, res) {
 
 export async function enter_family(req, res) {
     
-    try {
+    
 
     if (!req.usuario || !req.usuario.id) {
         return res.status(401).json({mensagem: "Usuário não autenticado."})
@@ -148,7 +148,7 @@ export async function enter_family(req, res) {
     } catch (err) {
         console.error('Erro ao entrar na família:', err.message);
         res.status(500).json({ mensagem: "Erro interno no servidor." });
-    };
+    }
 };
 
 export async function get_user_family(req, res) {
