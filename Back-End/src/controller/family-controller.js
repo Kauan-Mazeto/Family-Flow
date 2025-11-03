@@ -91,8 +91,10 @@ export async function verify_family(req, res) {
 };
 
 export async function enter_family(req, res) {
-    
-    
+    console.log('ENTER_FAMILY - Dados recebidos:', req.body);
+    console.log('ENTER_FAMILY - Usuário:', req.usuario);
+
+    const { codigo_familia_input } = req.body;
 
     if (!req.usuario || !req.usuario.id) {
         return res.status(401).json({mensagem: "Usuário não autenticado."})
