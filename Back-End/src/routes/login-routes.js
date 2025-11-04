@@ -25,11 +25,11 @@ rotas_usuario.post('/users/logout', authToken, (req, res) => {
     logout_usuario(req, res);
 });
 
-// rotas_usuario.post('/teste', authToken, (req, res) => {
-//     res.json({
-//         mensagem: "Você está autenticado!",
-//         usuario: req.usuario
-//     });
-// });
+rotas_usuario.post('/users/verify', authToken, (req, res) => {
+    res.json({
+        mensagem: "Você está autenticado!",
+        usuario: req.usuario
+    });
+});
 
 export default rotas_usuario;
