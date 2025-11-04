@@ -6,6 +6,10 @@
   <div *ngIf="error_message" class="general-error">
     {{ error_message }}
   </div>
+  
+  <div *ngIf="email_error" class="field-error">
+    {{ email_error }}
+  </div>
 
   <form (ngSubmit)="on_login()" #loginForm="ngForm" method="post">
     
@@ -19,9 +23,6 @@
       placeholder="Digite seu email" 
       [class.error-input]="email_error"
       required>
-    <div *ngIf="email_error" class="field-error">
-      {{ email_error }}
-    </div>
 
     <label for="password">Password:</label>
     <input 

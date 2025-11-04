@@ -1,0 +1,17 @@
+<!-- Navbar de Atalhos -->
+<nav class="navbar-atalhos">
+  <div class="atalhos-container">
+    <div 
+      *ngFor="let atalho of atalhos" 
+      class="atalho-item"
+      [class.ativo]="atalho.ativo"
+      (click)="onAtalhoClick(atalho)"
+      [routerLink]="atalho.nome !== 'Tarefas' ? atalho.rota : null"
+    >
+      <i [class]="atalho.icone" class="atalho-icone"></i>
+      <span class="atalho-nome">{{ atalho.nome }}</span>
+    </div>
+  </div>
+</nav>
+
+<app-family-navbar *ngIf="showFamilyNavbar"></app-family-navbar>

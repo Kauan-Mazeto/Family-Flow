@@ -6,36 +6,18 @@ export async function create_family(req, res) {
     const { nome_familia } = req.body;
 
     if (!req.usuario || !req.usuario.id) {
-        return res.status(401).json({mensagem: "Usuário não autenticado."})
-    }
+        return res.status(401).json({mensagem: "Usuário não autenticado."});
+    };
 
     if (!nome_familia) {
-        return res.status(400).json({mensagem: "A familia precisa ter um nome."})
+        return res.status(400).json({mensagem: "A familia precisa ter um nome."});
     };
 
     try {
-       const generateUniqueCode = async () => {
-            let codigo;
-            let exists = true;
-            
-            while (exists) {
-                // código de 8 caracteres (A-Z => 0,9), completamente aleatorio
-                codigo = Math.random().toString(36).substring(2, 10).toUpperCase();
-                
-                const familia_existente = await prisma.family.findUnique({
-                    where: { family_code: codigo }
-                });
-                
-                // inverte o valor
-                exists = !!familia_existente;
-            };
-
-            return codigo;
-        };
-
-        const codigoFamilia = await generateUniqueCode();
-
-        // criando a família e o membro admin em uma transação(estranho)
+        // Gerar código único para a família
+        const codigoFamilia = Math.random().toString(36).substring(2, 10).toUpperCase();
+        
+        // Criar família e adicionar usuário como admin em transação
         const result = await prisma.$transaction(async (tx) => {
             const familia = await tx.family.create({
                 data: {
@@ -45,7 +27,6 @@ export async function create_family(req, res) {
                 }
             });
 
-            // criador como admin (esse TX é alguma funcao do proprio prisma especifico para isso)
             await tx.familyMember.create({
                 data: {
                     family_id: familia.id,
@@ -67,8 +48,10 @@ export async function create_family(req, res) {
         });
 
     } catch (err) {
-        res.status(500).json({ mensagem: "Erro interno no servidor." });
-        console.error(err);
+        console.error('Erro ao criar família:', err.message);
+        res.status(500).json({ 
+            mensagem: "Erro interno no servidor."
+        });
     };
 };
 
@@ -92,7 +75,7 @@ export async function verify_family(req, res) {
         };
 
         return res.status(200).json({
-            mensagem: "Familia encontrada",
+            mensagem: "Familia encontrada: ",
             familia: {
                 id: codigo_familia.id,
                 name: codigo_familia.name,
@@ -109,16 +92,97 @@ export async function verify_family(req, res) {
 
 export async function enter_family(req, res) {
     
+    const { codigo_familia_input } = req.body;
+
+    if (!req.usuario || !req.usuario.id) {
+        return res.status(401).json({mensagem: "Usuário não autenticado."});
+    }
+
+    if (!codigo_familia_input) {
+        return res.status(400).json({mensagem: "Insira o codigo familiar."});
+    };
+
     try {
+        const familia = await prisma.family.findUnique({
+            where: {
+               family_code: codigo_familia_input 
+            }
+        });
 
-        const { id_user } = req.usuario.id;
-
-        if (!id_user) {
-            return res.status(400).json({mensage: "ID do usuario inválido ou inexistente."})
+        if (!familia) {
+            return res.status(400).json({mensagem: "Codigo familiar inválido ou inexistente."})
         };
 
+        // Verificar se o usuário já é membro da família
+        const membroExistente = await prisma.familyMember.findUnique({
+            where: {
+                family_id_user_id: {
+                    family_id: familia.id,
+                    user_id: req.usuario.id
+                }
+            }
+        });
+
+        if (membroExistente) {
+            return res.status(400).json({mensagem: "Você já é membro desta família."})
+        };
+
+        // Adicionar usuário à família como membro
+        await prisma.familyMember.create({
+            data: {
+                family_id: familia.id,
+                user_id: req.usuario.id,
+                role: 'MEMBER'
+            }
+        });
+
+        return res.status(200).json({
+            mensagem: "Você entrou na família com sucesso!",
+            familia: {
+                id: familia.id,
+                nome: familia.name,
+                codigo: familia.family_code
+            }
+        });
+
     } catch (err) {
+        console.error('Erro ao entrar na família:', err.message);
         res.status(500).json({ mensagem: "Erro interno no servidor." });
-        console.error(err);
+    };
+};
+
+export async function get_user_family(req, res) {
+    
+    if (!req.usuario || !req.usuario.id) {
+        return res.status(401).json({mensagem: "Usuário não autenticado."})
+    };
+
+    try {
+        // Buscar a família do usuário através da tabela FamilyMember
+        const membroFamilia = await prisma.familyMember.findFirst({
+            where: {
+                user_id: req.usuario.id
+            },
+            include: {
+                family: true // Incluir dados da família
+            }
+        });
+
+        if (!membroFamilia) {
+            return res.status(404).json({mensagem: "Usuário não está em nenhuma família."});
+        };
+
+        return res.status(200).json({
+            familia: {
+                id: membroFamilia.family.id,
+                nome: membroFamilia.family.name,
+                codigo: membroFamilia.family.family_code,
+                role: membroFamilia.role
+            }
+        });
+
+    } catch (err) {
+        console.error('Erro ao buscar família do usuário:', err.message);
+        res.status(500).json({ mensagem: "Erro interno no servidor." });
     };
 };

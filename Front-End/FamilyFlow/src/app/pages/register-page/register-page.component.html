@@ -9,27 +9,21 @@
         {{ error_message }}
     </div>
 
-    <form #registerForm="ngForm" method="post">
+    <form (ngSubmit)="on_register()" #registerForm="ngForm" method="post">
 
-        <div *ngIf="nome_error" class="field-error">
-            {{ nome_error }}
-        </div>
-        <div *ngIf="email_error" class="field-error">
-            {{ email_error }}
-        </div>
-        <div *ngIf="password_error" class="field-error">
-            {{ password_error }}
-        </div>
-
-        <label for="nome">Username</label>
+        <label for="nome">Nome</label>
         <input 
             type="text" 
             id="nome" 
             name="nome"
             [(ngModel)]="nome"
             (input)="on_input_change()"
-            placeholder="Nome de Usuário"
+            placeholder="Nome completo"
+            [class.error-input]="nome_error"
             required>
+        <div *ngIf="nome_error" class="field-error">
+            {{ nome_error }}
+        </div>
 
         <label for="email">Email</label>
         <input 
@@ -39,24 +33,32 @@
             [(ngModel)]="email"
             (input)="on_input_change()"
             placeholder="Digite seu email"
+            [class.error-input]="email_error"
             required>
+        <div *ngIf="email_error" class="field-error">
+            {{ email_error }}
+        </div>
 
-        <label for="senha">Password</label>
+        <label for="senha">Senha</label>
         <input 
             type="password" 
             id="senha" 
             name="senha"
             [(ngModel)]="password"
             (input)="on_input_change()"
-            placeholder="Digite sua senha"
+            placeholder="Digite sua senha (min. 8 caracteres)"
+            [class.error-input]="password_error"
             required>
+        <div *ngIf="password_error" class="field-error">
+            {{ password_error }}
+        </div>
 
         <button 
-            type="button" 
+            type="submit" 
             [disabled]="is_loading || !nome || !email || !password"
-            (click)="on_register()">
-            <span *ngIf="is_loading">Criando conta...</span>
-            <span *ngIf="!is_loading">Registrar</span>
+            [class.loading]="is_loading">
+            <span *ngIf="is_loading">🔄 Criando conta...</span>
+            <span *ngIf="!is_loading">Criar Conta</span>
         </button>
     </form>
 
