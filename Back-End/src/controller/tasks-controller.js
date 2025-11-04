@@ -89,3 +89,7 @@ export async function remove_task_adm(req, res) {
 
     return res.status(200).json({mensagem: "Task removida com sucesso.", verify_task_db})
 };
+
+export async function patch_task_adm(req, res) {
+    
+};
