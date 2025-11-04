@@ -66,7 +66,7 @@ export async function verify_family(req, res) {
 
         const codigo_familia = await prisma.family.findUnique({
             where: {
-            family_code: codigo_familia_input 
+                family_code: codigo_familia_input 
             }
         });
 
