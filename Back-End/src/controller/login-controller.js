@@ -7,7 +7,6 @@ const prisma = new PrismaClient();
 const JWT_SECRET_KEY = process.env.PASS_HASH;
 // pega o codigo no arquivo .env da "senha" do JWT 
 
-
 if (!JWT_SECRET_KEY) {
     throw new Error("JWT_SECRET_KEY não foi definido, verifique o .env");
 };

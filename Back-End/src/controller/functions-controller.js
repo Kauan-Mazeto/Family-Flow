@@ -29,3 +29,43 @@ export async function usuario_atual(idUsuario) {
         console.error(err); 
     };
 };
+
+export async function usuario_atual_id(nomeMembro) {
+
+    try {
+        const info_member = await prisma.user.findFirst({
+            where: {
+                name: nomeMembro
+            },
+
+            select: {
+                id: true
+            }
+        });
+
+        return info_member?.id || null;
+
+    } catch (err) {
+        console.error(err);
+    };
+};
+
+export async function family_id_task(idUsuario) {
+    
+    try {
+        const info_family = await prisma.FamilyMember.findFirst({
+            where: {
+                user_id: idUsuario
+            },
+
+            select: {
+                family_id: true
+            }
+        });
+
+        return info_family?.family_id || null;
+
+    } catch (err) {
+        console.error(err)
+    };
+};
