@@ -52,11 +52,8 @@ export async function task_adm(req, res) {
     };
 };
 
-
 // export async function task_users(req, res) {
     
-
-
 // };
 
 export async function remove_task_adm(req, res) {
@@ -66,30 +63,54 @@ export async function remove_task_adm(req, res) {
         return res.status(400).json({mensagem: "Informe a tarefa que deseja remover."});
     };
 
-    const verify_task_db = await prisma.task.findFirst({
-        where: {
-            title: task_remove
-        },
+    try {
+        const verify_task_db = await prisma.task.findFirst({
+            where: {
+                title: task_remove
+            },
 
-        select: {
-            id: true,
-            title: true,
-            member_name: true,
-            description: true,
-            status: true,
-            priority: true,
-        }
-    });
+            select: {
+                id: true,
+                title: true,
+                member_name: true,
+                description: true,
+                status: true,
+                priority: true,
+            }
+        });
 
-    await prisma.task.delete({
-        where: {
-            id: Number(verify_task_db.id)
-        },
-    });
+        await prisma.task.delete({
+            where: {
+                id: Number(verify_task_db.id)
+            },
+        });
 
-    return res.status(200).json({mensagem: "Task removida com sucesso.", verify_task_db})
-};
+        return res.status(200).json({mensagem: "Task removida com sucesso.", verify_task_db});
 
-export async function patch_task_adm(req, res) {
+    } catch (err) {
+        res.status(500).json({ mensagem: "Erro interno no servidor." });
+        console.error(err);
+    };
+
     
 };
+
+// export async function patch_task_adm(req, res) {
+//     const { type_task_att, member_name_att, title_att, description_att, status_att, priority_att } = req.body;
+
+//     if (!type_task_att && !member_name_att && !title_att && !description_att && !status_att && !priority_att) {
+//         return res.status(400).json({ mensagem: "Nenhum campo foi informado para atualização." });
+//     };
+
+//     try {
+
+//         const update_task = await prisma.task.patch({
+            
+//         });
+
+
+//     } catch (err) {
+//         res.status(500).json({ mensagem: "Erro interno no servidor." });
+//         console.error(err);
+//     };
+// };
