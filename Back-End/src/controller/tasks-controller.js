@@ -53,8 +53,39 @@ export async function task_adm(req, res) {
 };
 
 
-export async function task_users(req, res) {
+// export async function task_users(req, res) {
     
 
 
+// };
+
+export async function remove_task_adm(req, res) {
+    const { task_remove } = req.body;
+
+    if (!task_remove) {
+        return res.status(400).json({mensagem: "Informe a tarefa que deseja remover."});
+    };
+
+    const verify_task_db = await prisma.task.findFirst({
+        where: {
+            title: task_remove
+        },
+
+        select: {
+            id: true,
+            title: true,
+            member_name: true,
+            description: true,
+            status: true,
+            priority: true,
+        }
+    });
+
+    await prisma.task.delete({
+        where: {
+            id: Number(verify_task_db.id)
+        },
+    });
+
+    return res.status(200).json({mensagem: "Task removida com sucesso.", verify_task_db})
 };
