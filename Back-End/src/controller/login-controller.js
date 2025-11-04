@@ -18,6 +18,17 @@ export async function cadastrar_usuario(req, res) {
         return res.status(400).json({mensagem: "EMAIL, SENHA e NOME são necessários."});
     };
 
+    // |-----------------------|
+    // |Inteligencia Artificial|
+    // |no codigo de capitalize|
+    // |-----------------------|
+    
+    const capitalize_nome_usuario = nome_usuario
+        .trim()
+        .split(/\s+/)
+        .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase())
+        .join(' ');
+
     try {
         
         const usuarioExistente = await prisma.user.findUnique({
@@ -34,7 +45,7 @@ export async function cadastrar_usuario(req, res) {
 
         const usuario_temporario = await prisma.user.create({
             data: {
-                name: nome_usuario,
+                name: capitalize_nome_usuario,
                 password_hash: password_hash,
                 email: email_usuario
             }
