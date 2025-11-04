@@ -15,12 +15,11 @@ export async function task_adm(req, res) {
     const id_member = await usuario_atual_id(member_task);
 
     if (!id_member) {
-        return res.status(404).json({ mensagem: "Membro não encontrado" });
+        return res.status(404).json({ mensagem: "Membro não encontrado." });
     };
 
     const id_family = await family_id_task(id_member);
     
-
     try {
 
         const task_info = await prisma.task.create({
@@ -51,4 +50,11 @@ export async function task_adm(req, res) {
         res.status(500).json({ mensagem: "Erro interno no servidor." });
         console.error(err);
     };
+};
+
+
+export async function task_users(req, res) {
+    
+
+
 };
