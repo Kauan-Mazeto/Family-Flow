@@ -9,8 +9,6 @@ export async function authRole(req, res, next) {
             return res.status(400).json({ mensagem: "Usuário inválido/inexistente." });    
         };
 
-        console.log(res_user_active.role)
-
         if (res_user_active.role === "ADMIN") {
             return next();
         };
