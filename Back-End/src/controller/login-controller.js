@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import jwt from "jsonwebtoken";
 import argon2 from "argon2";
+import { usuario_atual } from './functions-controller.js';
 
 const prisma = new PrismaClient();
 const JWT_SECRET_KEY = process.env.PASS_HASH;
@@ -16,7 +17,7 @@ export async function cadastrar_usuario(req, res) {
 
     if (!email_usuario || !senha_usuario || !nome_usuario) {
         return res.status(400).json({mensagem: "EMAIL, SENHA e NOME são necessários."});
-    }
+    };
 
     try {
         
@@ -128,36 +129,20 @@ export async function login_usuario(req, res) {
         res.status(500).json({ mensagem: "Erro interno no servidor." });
         console.error(err);
     };
-}
+};
 
 export async function retornar_usuario_atual(req, res) {
     try {
-        // req.usuario vem do middleware authToken
-        const usuarioAtual = await prisma.user.findUnique({
-            where: {
-                id: req.usuario.id
-            },
+        const user_active_system = await usuario_atual(req.usuario.id);
 
-            select: {
-                id: true,
-                is_active: true,
-                is_admin: true,
-                avatar_url: true,
-                created_at: true,
-                email: true,
-                name: true
-            }
-        });
-
-        if (!usuarioAtual) {
-            return res.status(404).json({mensagem: "Usuário não encontrado."});
+        if (!user_active_system) {
+            return res.status(404).json({ mensagem: "Usuário não encontrado." });
         };
 
-        return res.status(200).json({usuarioAtual});
+        return res.status(200).json({ user_active_system });
 
     } catch (err) {
-        res.status(500).json({ mensagem: "Erro interno no servidor." });
-        console.error(err);
+        return res.status(500).json({ mensagem: "Erro interno no servidor." });
     };
 };
 
@@ -183,11 +168,11 @@ export async function resetar_senha(req, res) {
         const { senha_atual, nova_senha } = req.body;
 
         if (!senha_atual || !nova_senha) {
-            return res.status(400).json({mensagem: "Senha atual e nova senha são obrigatorias."})
+            return res.status(400).json({mensagem: "Senha atual e nova senha são obrigatorias."});
         };
 
         if (nova_senha.length < 8) {
-            return res.status(400).json({mensagem: "Nova senha deve conter 8 caracteres"})
+            return res.status(400).json({mensagem: "Nova senha deve conter 8 caracteres"});
         };
 
         if (!req.usuario || !req.usuario.id) {
@@ -204,7 +189,7 @@ export async function resetar_senha(req, res) {
         const senha_valida = await argon2.verify(usuario.password_hash, senha_atual);
 
         if (!senha_valida) {
-            return res.status(401).json({mensagem: "Senha inválida."})
+            return res.status(401).json({mensagem: "Senha inválida."});
         };
 
         const password_hash = await argon2.hash(nova_senha);

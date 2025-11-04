@@ -6,12 +6,12 @@ export async function create_family(req, res) {
     const { nome_familia } = req.body;
 
     if (!req.usuario || !req.usuario.id) {
-        return res.status(401).json({mensagem: "Usuário não autenticado."})
-    }
+        return res.status(401).json({mensagem: "Usuário não autenticado."});
+    };
 
     if (!nome_familia) {
-        return res.status(400).json({mensagem: "A familia precisa ter um nome."})
-    }
+        return res.status(400).json({mensagem: "A familia precisa ter um nome."});
+    };
 
     try {
         // Gerar código único para a família
@@ -92,14 +92,14 @@ export async function verify_family(req, res) {
 
 export async function enter_family(req, res) {
     
-    
+    const { codigo_familia_input } = req.body;
 
     if (!req.usuario || !req.usuario.id) {
-        return res.status(401).json({mensagem: "Usuário não autenticado."})
+        return res.status(401).json({mensagem: "Usuário não autenticado."});
     }
 
     if (!codigo_familia_input) {
-        return res.status(400).json({mensagem: "Insira o codigo familiar."})
+        return res.status(400).json({mensagem: "Insira o codigo familiar."});
     };
 
     try {
@@ -125,7 +125,7 @@ export async function enter_family(req, res) {
 
         if (membroExistente) {
             return res.status(400).json({mensagem: "Você já é membro desta família."})
-        }
+        };
 
         // Adicionar usuário à família como membro
         await prisma.familyMember.create({
@@ -148,13 +148,14 @@ export async function enter_family(req, res) {
     } catch (err) {
         console.error('Erro ao entrar na família:', err.message);
         res.status(500).json({ mensagem: "Erro interno no servidor." });
-    }
+    };
 };
 
 export async function get_user_family(req, res) {
+    
     if (!req.usuario || !req.usuario.id) {
         return res.status(401).json({mensagem: "Usuário não autenticado."})
-    }
+    };
 
     try {
         // Buscar a família do usuário através da tabela FamilyMember
@@ -169,7 +170,7 @@ export async function get_user_family(req, res) {
 
         if (!membroFamilia) {
             return res.status(404).json({mensagem: "Usuário não está em nenhuma família."});
-        }
+        };
 
         return res.status(200).json({
             familia: {
