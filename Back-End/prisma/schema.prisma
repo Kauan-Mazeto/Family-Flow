@@ -69,8 +69,8 @@ model Task {
   family_id       Int
   title           String
   description     String?
-  status          TaskStatus   @default(PENDING)
-  priority        TaskPriority @default(MEDIUM)
+  status          TaskStatus   @default(PENDENTE)
+  priority        TaskPriority @default(MEDIA)
   is_active       Boolean      @default(true)
 
   // Relações
@@ -102,15 +102,13 @@ enum Role {
 }
 
 enum TaskStatus {
-  PENDING
-  IN_PROGRESS
-  DELAYED
-  COMPLETED
-  DISABLED
+  PENDENTE
+  PROGRESSO
+  CONCLUIDA
 }
 
 enum TaskPriority {
-  LOW
-  MEDIUM
-  HIGH
+  BAIXA
+  MEDIA
+  ALTA
 }
