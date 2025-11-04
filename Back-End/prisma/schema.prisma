@@ -23,8 +23,6 @@ model User {
   // Relações
   createdFamilies   Family[]       @relation("UserCreatedFamilies")
   familyMemberships FamilyMember[]
-  assignedTasks     TaskAssign[]   @relation("TaskAssignedTo")
-  tasksAssignedBy   TaskAssign[]   @relation("TaskAssignedBy")
 
   @@map("user")
 }
@@ -75,25 +73,7 @@ model Task {
 
   // Relações
   family         Family        @relation(fields: [family_id], references: [id], onDelete: Cascade)
-  assignments    TaskAssign[]
-
   @@map("task")
-}
-
-model TaskAssign {
-  id          Int      @id @default(autoincrement())
-  task_id     Int
-  user_id     Int
-  assigned_by Int
-  created_at  DateTime @default(now())
-
-  // Relações
-  task       Task @relation(fields: [task_id], references: [id], onDelete: Cascade)
-  user       User @relation("TaskAssignedTo", fields: [user_id], references: [id], onDelete: Cascade)
-  assignedBy User @relation("TaskAssignedBy", fields: [assigned_by], references: [id], onDelete: Cascade)
-
-  @@unique([task_id, user_id])
-  @@map("task_assign")
 }
 
 enum Role {
