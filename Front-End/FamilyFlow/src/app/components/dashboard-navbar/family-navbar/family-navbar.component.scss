@@ -1,0 +1,135 @@
+:host {
+
+    .choice {
+        display: flex;
+        justify-content: flex-start;
+        padding: 1rem 0 0 0;
+        gap: 2rem;
+        
+        h3 {
+            margin: 1rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2rem;
+            padding: 0.5rem;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 2px transparent solid;
+            
+            &:hover {
+                color: rgb(193, 152, 86);
+            }
+            
+            &.active {
+                color: rgb(193, 152, 86);
+                border-bottom: 2px solid rgb(193, 152, 86);
+                font-weight: 600;
+            }
+        }
+    }
+
+
+    .daily-task {
+        margin-top: 1rem;
+        display: flex;
+        animation: fadeIn 0.3s ease-in-out;
+        
+
+        .daily-desc {
+            display: flex;
+            font-family: 'Poppins', sans-serif;
+            color: #555;
+            margin: 1rem 0 0 2rem;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+            align-items: center;
+            
+
+            .desc-text {
+                
+
+                h1 {
+                    font-size: 2rem;
+                }
+
+                p {
+                    font-size: 1rem;
+                }
+            }
+
+            button {
+                background-color: blue;
+                color: white;
+                border: none;
+                padding: 0.75rem 1.5rem;
+                border-radius: 8px;
+                font-size: 1rem;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+                margin-right: 2rem;
+
+                &:hover {
+                    background-color: rgb(16, 16, 198);
+                }
+            }
+        }
+    }
+
+    .punctual-task {
+        margin-top: 1rem;
+        display: flex;
+        animation: fadeIn 0.3s ease-in-out;
+        
+
+        .punctual-desc {
+            display: flex;
+            font-family: 'Poppins', sans-serif;
+            color: #555;
+            margin: 1rem 0 0 2rem;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+            align-items: center;
+            
+
+            .desc-text {
+                h1 {
+                    font-size: 2rem;
+                }
+
+                p {
+                    font-size: 1rem;
+                }
+            }
+
+            button {
+                background-color: blue;
+                color: white;
+                border: none;
+                padding: 0.75rem 1.5rem;
+                border-radius: 8px;
+                font-size: 1rem;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+                margin-right: 2rem;
+
+                &:hover {
+                    background-color: rgb(16, 16, 198);
+                }
+            }
+        }
+    }
+
+    // Animação para transição suave
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
