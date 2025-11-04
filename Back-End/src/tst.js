@@ -2,10 +2,11 @@
 
 // const prisma = new PrismaClient();
 
-// await prisma.$executeRawUnsafe(`DELETE FROM User`);
-
-// await prisma.$executeRawUnsafe(`DELETE FROM sqlite_sequence WHERE name='User'`);
-
-// // Apague todos os usuários e recadastre
+// // 1. Apaga todos os registros
 // await prisma.user.deleteMany({});
+
+// // 2. Reseta o autoincrement do id
 // await prisma.$executeRawUnsafe(`DELETE FROM sqlite_sequence WHERE name='User'`);
+
+// await prisma.$executeRawUnsafe(`VACUUM;`);
+
