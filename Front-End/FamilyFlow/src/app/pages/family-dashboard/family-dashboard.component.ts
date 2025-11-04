@@ -163,4 +163,9 @@ export class FamilyDashboardComponent implements OnInit {
     });
   }
 
+  onTarefasClick(showTarefas: boolean) {
+    console.log('📋 Evento tarefas recebido:', showTarefas);
+    // Evento recebido do navbar-atalhos, mas a lógica agora está no próprio navbar-atalhos
+  }
+
 }

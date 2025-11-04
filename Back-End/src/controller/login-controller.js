@@ -109,7 +109,7 @@ export async function login_usuario(req, res) {
         res.cookie('tokenAuth', token_jwt, {
             httpOnly: true, // nao permitir alteracoes a partir de JS externo
             secure: process.env.NODE_ENV === 'development', // mudar qnd for testar para "development"
-            maxAge: 60 * 60 * 1000, // tempo que ficara ativo (1hora)
+            maxAge: 60 * 60 * 3000, // tempo que ficara ativo (1hora)
             sameSite: 'lax' // melhor para compatibilidade com Angular 
             // 'strict' significa: o cookie só será enviado se a requisição vier do mesmo site que criou o cookie.
         });
