@@ -1,4 +1,4 @@
-import { usuario_atual } from "../controller/functions-controller.js";
+import { usuario_atual } from "../controller/functions/functions-controller.js";
 
 export async function authRole(req, res, next) {
     
