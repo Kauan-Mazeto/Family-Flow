@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import jwt from "jsonwebtoken";
 import argon2 from "argon2";
-import { usuario_atual } from './functions-controller.js';
+import { usuario_atual } from './functions/functions-controller.js';
 
 const prisma = new PrismaClient();
 const JWT_SECRET_KEY = process.env.PASS_HASH;
@@ -13,10 +13,22 @@ if (!JWT_SECRET_KEY) {
 
 export async function cadastrar_usuario(req, res) {
     const {email_usuario, senha_usuario, nome_usuario} = req.body;
+    // pegando do body as informacoes: email, senha e nome do usuario
 
     if (!email_usuario || !senha_usuario || !nome_usuario) {
         return res.status(400).json({mensagem: "EMAIL, SENHA e NOME são necessários."});
     };
+
+    // |-----------------------|
+    // |Inteligencia Artificial|
+    // |no codigo de capitalize|
+    // |-----------------------|
+    
+    const capitalize_nome_usuario = nome_usuario
+        .trim()
+        .split(/\s+/)
+        .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase())
+        .join(' ');
 
     try {
         
@@ -34,7 +46,7 @@ export async function cadastrar_usuario(req, res) {
 
         const usuario_temporario = await prisma.user.create({
             data: {
-                name: nome_usuario,
+                name: capitalize_nome_usuario,
                 password_hash: password_hash,
                 email: email_usuario
             }
@@ -57,6 +69,8 @@ export async function cadastrar_usuario(req, res) {
 
 export async function login_usuario(req, res) {
     const { email, password } = req.body;
+    // pegando do body as informacoes: email e senha do usuario
+
 
     if (!email || !password) {
         return res.status(400).json({mensagem: "Email e senha necessários."});
@@ -109,7 +123,7 @@ export async function login_usuario(req, res) {
         res.cookie('tokenAuth', token_jwt, {
             httpOnly: true, // nao permitir alteracoes a partir de JS externo
             secure: process.env.NODE_ENV === 'development', // mudar qnd for testar para "development"
-            maxAge: 60 * 60 * 3000, // tempo que ficara ativo (1hora)
+            maxAge: 60 * 60 * 3000, // tempo que ficara ativo (3hora)
             sameSite: 'lax' // melhor para compatibilidade com Angular 
             // 'strict' significa: o cookie só será enviado se a requisição vier do mesmo site que criou o cookie.
         });
@@ -165,6 +179,8 @@ export async function logout_usuario(req, res) {
 export async function resetar_senha(req, res) {
     try {
         const { senha_atual, nova_senha } = req.body;
+        // pegando do body as informacoes: senha atual do usuario e a nova senha que ele quer colocar.
+
 
         if (!senha_atual || !nova_senha) {
             return res.status(400).json({mensagem: "Senha atual e nova senha são obrigatorias."});

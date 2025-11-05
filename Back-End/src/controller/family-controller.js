@@ -4,6 +4,7 @@ const prisma = new PrismaClient();
 
 export async function create_family(req, res) {
     const { nome_familia } = req.body;
+    // pegando do body o NOME da familia.
 
     if (!req.usuario || !req.usuario.id) {
         return res.status(401).json({mensagem: "Usuário não autenticado."});
@@ -113,7 +114,6 @@ export async function enter_family(req, res) {
             return res.status(400).json({mensagem: "Codigo familiar inválido ou inexistente."})
         };
 
-        // Verificar se o usuário já é membro da família
         const membroExistente = await prisma.familyMember.findUnique({
             where: {
                 family_id_user_id: {
@@ -127,7 +127,6 @@ export async function enter_family(req, res) {
             return res.status(400).json({mensagem: "Você já é membro desta família."})
         };
 
-        // Adicionar usuário à família como membro
         await prisma.familyMember.create({
             data: {
                 family_id: familia.id,
@@ -158,13 +157,12 @@ export async function get_user_family(req, res) {
     };
 
     try {
-        // Buscar a família do usuário através da tabela FamilyMember
         const membroFamilia = await prisma.familyMember.findFirst({
             where: {
                 user_id: req.usuario.id
             },
             include: {
-                family: true // Incluir dados da família
+                family: true
             }
         });
 
