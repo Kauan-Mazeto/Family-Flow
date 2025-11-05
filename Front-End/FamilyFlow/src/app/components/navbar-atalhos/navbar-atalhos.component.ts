@@ -1,7 +1,8 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { FamilyNavbarComponent } from '../dashboard-navbar/family-navbar/family-navbar.component';
+import { TaskNavbarComponent } from '../dashboard-navbar/task-navbar/task-navbar.component';
+import { FamilyNavbarComponent } from "../dashboard-navbar/family-navbar/family-navbar.component";
 
 export interface NavbarAtalho {
   nome: string;
@@ -13,13 +14,14 @@ export interface NavbarAtalho {
 @Component({
   selector: 'app-navbar-atalhos',
   standalone: true,
-  imports: [CommonModule, RouterModule, FamilyNavbarComponent],
+  imports: [CommonModule, RouterModule, TaskNavbarComponent, FamilyNavbarComponent],
   templateUrl: './navbar-atalhos.component.html',
   styleUrls: ['./navbar-atalhos.component.scss']
 })
 export class NavbarAtalhosComponent {
   
   @Output() tarefasClicked = new EventEmitter<boolean>();
+  showTaskNavbar: boolean = false;
   showFamilyNavbar: boolean = false;
   
   atalhos: NavbarAtalho[] = [
@@ -56,15 +58,16 @@ export class NavbarAtalhosComponent {
     this.atalhos.forEach(item => item.ativo = false);
     atalho.ativo = true;
 
-    // Controlar exibição do family-navbar e emitir evento
+    // Controlar exibição do task-navbar e emitir evento
     if (atalho.nome === 'Tarefas') {
-      this.showFamilyNavbar = true; // Mostrar family-navbar
+      this.showTaskNavbar = true; // Mostrar task-navbar
       this.tarefasClicked.emit(true); // Emitir evento para o componente pai
-      console.log('📋 Exibindo family-navbar');
-    } else {
-      this.showFamilyNavbar = false; // Esconder family-navbar
+    } else if (atalho.nome === 'Família') {
+      this.showFamilyNavbar = true; // Mostrar family-navbar
       this.tarefasClicked.emit(false); // Emitir evento para o componente pai
-      console.log(`🔗 Navegando para: ${atalho.rota}`);
+    } else {
+      this.showTaskNavbar = false; // Esconder task-navbar
+      this.tarefasClicked.emit(false); // Emitir evento para o componente pai
     }
   }
 }

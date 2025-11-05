@@ -92,7 +92,6 @@ export class LoginPageComponent implements OnInit, OnDestroy {
       next: (response) => {
         console.log('Login realizado com sucesso!', response);
         this.is_loading = false;
-        alert('Login realizado com sucesso!');
         this.navegador.navigate(['/family/dashboard']);
       },
       error: (error) => {

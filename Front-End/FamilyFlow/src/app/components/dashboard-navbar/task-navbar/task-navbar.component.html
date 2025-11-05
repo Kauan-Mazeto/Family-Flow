@@ -1,0 +1,89 @@
+<div class="choice">
+    <h3 
+        [class.active]="isTabActive.diarias"
+        (click)="onTabClick('diarias')"
+    >
+        Tarefas Diárias
+    </h3>
+    <h3 
+        [class.active]="isTabActive.pontuais"
+        (click)="onTabClick('pontuais')"
+    >
+        Tarefas Pontuais
+    </h3>
+</div>
+
+<!--Conteúdo de Tarefas Diárias-->
+<div class="task" *ngIf="isTabActive.diarias">
+    <div class="task-desc">
+        <div class="desc">
+            <div class="desc-text">
+                <h1>Tarefas Diárias</h1>
+                <p>Tarefas criadas apenas pelo Administrador</p>
+            </div>
+
+            <button class="create-task">
+                <i class="fas fa-plus"></i> 
+                Criar Tarefa Diária
+            </button>
+        </div>
+    </div>
+
+    <div class="tasks">
+        <div class="task-card">
+            <div class="task-info">
+                <div class="responsible">
+                    <input type="checkbox" class="check-response">
+                    <span class="fas fa-trash"></span>
+                </div>
+                <h2>Limpar a cozinha</h2>
+                <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ullam fugiat doloremque rerum architecto. Corporis praesentium veritatis, sapiente ipsam, sint voluptates in incidunt tempore ducimus error, facilis atque tenetur? Similique, quidem!</p>
+                
+            </div>
+
+            <div class="task-atribute">
+                <span class="task-priority">Prioridade alta</span>
+                <span class="task-status">Pendente</span>
+                <span class="task-responsible">João Silva</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!--Conteúdo de Tarefas Pontuais-->
+<div class="task" *ngIf="isTabActive.pontuais">
+    <div class="task-desc">
+        <div class="desc">
+            <div class="desc-text">
+                <h1>Tarefas Pontuais</h1>
+                <p>Tarefas criadas e visualizadas por você</p>
+            </div>
+
+            <button class="create-task">
+                <i class="fas fa-plus"></i> 
+                Criar Tarefa Pontual
+            </button>
+        </div>
+    </div>
+
+    <div class="tasks">
+        <div class="task-card">
+            <div class="task-info">
+                <div class="responsible">
+                    <input type="checkbox" class="check-response">
+                    <span class="fas fa-trash"></span>
+                </div>
+                <h2>Limpar a cozinha</h2>
+                <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ullam fugiat doloremque rerum architecto. Corporis praesentium veritatis, sapiente ipsam, sint voluptates in incidunt tempore ducimus error, facilis atque tenetur? Similique, quidem!</p>
+                
+            </div>
+
+            <div class="task-atribute">
+                <span class="task-priority">Prioridade alta</span>
+                <span class="task-status">Pendente</span>
+            </div>
+        </div>
+    </div>
+</div>
