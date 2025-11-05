@@ -12,11 +12,11 @@ rotas_usuario.post('/users/login', (req, res) => {
     login_usuario(req, res);
 });
 
-rotas_usuario.post('/users/me', authToken, (req, res) => {
+rotas_usuario.post('/users/me' ,authToken, (req, res) => {
     retornar_usuario_atual(req, res);
 });
 
-rotas_usuario.post('/users/changePassword' ,authToken, (req, res) => {
+rotas_usuario.patch('/users/changePassword' ,authToken, (req, res) => {
     resetar_senha(req, res);
 });
 
@@ -24,11 +24,11 @@ rotas_usuario.post('/users/logout', authToken, (req, res) => {
     logout_usuario(req, res);
 });
 
-// rotas_usuario.post('/teste', authToken, (req, res) => {
-//     res.json({
-//         mensagem: "Você está autenticado!",
-//         usuario: req.usuario
-//     });
-// });
+rotas_usuario.post('/users/verify', authToken, (req, res) => {
+    res.json({
+        mensagem: "Você está autenticado!",
+        usuario: req.usuario
+    });
+});
 
 export default rotas_usuario;

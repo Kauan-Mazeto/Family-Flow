@@ -23,8 +23,6 @@ model User {
   // Relações
   createdFamilies   Family[]       @relation("UserCreatedFamilies")
   familyMemberships FamilyMember[]
-  assignedTasks     TaskAssign[]   @relation("TaskAssignedTo")
-  tasksAssignedBy   TaskAssign[]   @relation("TaskAssignedBy")
 
   @@map("user")
 }
@@ -56,7 +54,6 @@ model FamilyMember {
   // Relações
   family        Family       @relation(fields: [family_id], references: [id], onDelete: Cascade)
   user          User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  assignedTasks Task[]
 
   @@unique([family_id, user_id])
   @@map("familia_member")
@@ -64,40 +61,19 @@ model FamilyMember {
 
 model Task {
   id              Int          @id @default(autoincrement())
+  type_task       String
+  member_name     String?
+  member_id       Int
   family_id       Int
   title           String
   description     String?
-  due_date        DateTime?
-  status          TaskStatus   @default(PENDING)
-  priority        TaskPriority @default(MEDIUM)
-  assigned_to     Int?
+  status          TaskStatus   @default(PENDENTE)
+  priority        TaskPriority @default(MEDIA)
   is_active       Boolean      @default(true)
-  completion_date DateTime?
-  created_at      DateTime     @default(now())
-  updated_at      DateTime     @updatedAt
 
   // Relações
   family         Family        @relation(fields: [family_id], references: [id], onDelete: Cascade)
-  assignedMember FamilyMember? @relation(fields: [assigned_to], references: [id], onDelete: SetNull)
-  assignments    TaskAssign[]
-
   @@map("task")
-}
-
-model TaskAssign {
-  id          Int      @id @default(autoincrement())
-  task_id     Int
-  user_id     Int
-  assigned_by Int
-  created_at  DateTime @default(now())
-
-  // Relações
-  task       Task @relation(fields: [task_id], references: [id], onDelete: Cascade)
-  user       User @relation("TaskAssignedTo", fields: [user_id], references: [id], onDelete: Cascade)
-  assignedBy User @relation("TaskAssignedBy", fields: [assigned_by], references: [id], onDelete: Cascade)
-
-  @@unique([task_id, user_id])
-  @@map("task_assign")
 }
 
 enum Role {
@@ -106,15 +82,14 @@ enum Role {
 }
 
 enum TaskStatus {
-  PENDING
-  IN_PROGRESS
-  DELAYED
-  COMPLETED
-  DISABLED
+  PENDENTE
+  PROGRESSO
+  CONCLUIDA
+  ATRASADO
 }
 
 enum TaskPriority {
-  LOW
-  MEDIUM
-  HIGH
+  BAIXA
+  MEDIA
+  ALTA
 }
