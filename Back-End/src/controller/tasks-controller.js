@@ -4,6 +4,10 @@ import { usuario_atual_id, usuario_atual_nome } from './functions/functions-cont
 
 const prisma = new PrismaClient();
 
+// |---------------------------------------------------------------|
+// | as functions abaixo representam das tasks de Admin da familia.|
+// |---------------------------------------------------------------|
+
 export async function task_adm(req, res) {
 
     const { desc_task, name_task, member_task, priority_task, status_task, type_task } = req.body;
@@ -98,25 +102,74 @@ export async function remove_task_adm(req, res) {
     
 };
 
-// export async function patch_task_adm(req, res) {
-//     const { type_task_att, member_name_att, title_att, description_att, status_att, priority_att } = req.body;
+export async function patch_task_adm(req, res) {
+    const { type_task_att, member_name_att, title_att, description_att, status_att, priority_att } = req.body;
+    const id_task = parseInt(req.params.id);
 
-//     if (!type_task_att && !member_name_att && !title_att && !description_att && !status_att && !priority_att) {
-//         return res.status(400).json({ mensagem: "Nenhum campo foi informado para atualização." });
-//     };
+    if (!type_task_att && !member_name_att && !title_att && !description_att && !status_att && !priority_att) {
+        return res.status(400).json({ mensagem: "Nenhum campo foi informado para atualização." });
+    };
 
-//     try {
+    if (!id_task) {
+        return res.status(404).json({ mensagem: "Informação(id) obrigatório." });
+    };
 
-//         const update_task = await prisma.task.patch({
-            
-//         });
+    // if (member_name_att) {
+    //     const member_id_att = await prisma.user.findFirst({
+    //         where: {
+    //             name: member_name_att,
+
+    //         },
+
+    //         select: {
+
+    //         }
+    //     });
+    // };
+
+    try {
+
+        const current_task = await prisma.task.findUnique({
+            where: {
+                id: Number(id_task)
+            }
+        });
+
+        if (!current_task) {
+            return res.status(404).json({mensagem: "Task não encontrada."})
+        };
+        
+        let member_id_final = current_task.id;
+        let member_name_final = current_task.name;
+
+        const update_task = await prisma.task.update({
+            where: {
+                id: Number(id_task)
+            },
+
+            data: {
+                type_task: type_task_att ?? current_task.type_task,
+                member_name: member_name_att ?? current_task.member_name,
+                title: title_att ?? current_task.title,
+                description: description_att ?? current_task.description,
+                status: status_att ?? current_task.status,
+                priority: priority_att ?? current_task.priority
+            }
+        });
 
 
-//     } catch (err) {
-//         res.status(500).json({ mensagem: "Erro interno no servidor." });
-//         console.error(err);
-//     };
-// };
+    } catch (err) {
+        res.status(500).json({ mensagem: "Erro interno no servidor." });
+        console.error(err);
+    };
+};
+
+
+// |----------------------------------------------------------------------------------------|
+// | as functions abaixo representam das tasks exclusivas do usuario que a criou da familia.|
+// |----------------------------------------------------------------------------------------|
+
+
 
 export async function create_task_user(req, res) {
     const { desc_task, name_task, priority_task, status_task, type_task } = req.body;
