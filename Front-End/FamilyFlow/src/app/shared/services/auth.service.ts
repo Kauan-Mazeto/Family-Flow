@@ -42,7 +42,7 @@ export class AuthService {
    */
   login(credentials: LoginRequest): Observable<LoginResponse> {
     this.loadingSubject.next(true);
-    console.log('AuthService: 🔐 Fazendo login para:', credentials.email);
+    console.log('AuthService: Fazendo login para:', credentials.email);
     console.log('AuthService: URL completa:', `${this.API_URL}${this.endpoints.login}`);
     
     return this.http.post<LoginResponse>(
@@ -57,7 +57,7 @@ export class AuthService {
     ).pipe(
       timeout(10000), // 10 segundos de timeout
       map(response => {
-        console.log('AuthService: ✅ Login realizado com sucesso:', response);
+        console.log('AuthService: Login realizado com sucesso:', response);
         if (response.user) {
           // Converter para o formato User completo
           const user: User = {
@@ -178,7 +178,7 @@ export class AuthService {
     console.log('AuthService: 👤 Carregando informações do usuário...');
     this.getCurrentUserFromServer().subscribe({
       next: (response) => {
-        console.log('AuthService: ✅ Informações do usuário carregadas:', response);
+        console.log('AuthService: Informações do usuário carregadas:', response);
         if (response.usuarioAtual) {
           const user: User = {
             id: response.usuarioAtual.id,
@@ -190,11 +190,11 @@ export class AuthService {
             created_at: response.usuarioAtual.created_at
           };
           this.currentUserSubject.next(user);
-          console.log('AuthService: 👤 Usuário atualizado no subject:', user);
+          console.log('AuthService: Usuário atualizado no subject:', user);
         }
       },
       error: (error) => {
-        console.error('AuthService: ❌ Erro ao carregar informações do usuário:', error);
+        console.error('AuthService: Erro ao carregar informações do usuário:', error);
         this.currentUserSubject.next(null);
       }
     });
@@ -222,9 +222,9 @@ export class AuthService {
    */
   createFamily(familyData: CreateFamilyRequest): Observable<CreateFamilyResponse> {
     this.loadingSubject.next(true);
-    console.log('AuthService: 🏠 Iniciando criação de família:', familyData);
-    console.log('AuthService: 🔗 URL:', `${this.API_URL}${this.endpoints.createFamily}`);
-    console.log('AuthService: 🍪 Cookies disponíveis:', document.cookie);
+    console.log('AuthService:  Iniciando criação de família:', familyData);
+    console.log('AuthService:  URL:', `${this.API_URL}${this.endpoints.createFamily}`);
+    console.log('AuthService:  Cookies disponíveis:', document.cookie);
     
     return this.http.post<CreateFamilyResponse>(
       `${this.API_URL}${this.endpoints.createFamily}`,
@@ -238,25 +238,25 @@ export class AuthService {
       }
     ).pipe(
       map(fullResponse => {
-        console.log('AuthService: 📥 Resposta completa da criação de família:', fullResponse);
+        console.log('AuthService:  Resposta completa da criação de família:', fullResponse);
         const response = fullResponse.body as CreateFamilyResponse;
-        console.log('AuthService: ✅ Família criada com sucesso:', response);
+        console.log('AuthService:  Família criada com sucesso:', response);
         this.loadingSubject.next(false);
         return response;
       }),
       catchError((error) => {
-        console.error('AuthService: ❌ ERRO DETALHADO na criação de família:');
-        console.error('AuthService: 🔍 Erro completo:', error);
-        console.error('AuthService: 📊 Status HTTP:', error.status);
-        console.error('AuthService: 📝 Corpo do erro:', error.error);
-        console.error('AuthService: 🌐 URL da requisição:', error.url);
-        console.error('AuthService: � Headers da resposta:', error.headers);
+        console.error('AuthService:  ERRO DETALHADO na criação de família:');
+        console.error('AuthService:  Erro completo:', error);
+        console.error('AuthService:  Status HTTP:', error.status);
+        console.error('AuthService:  Corpo do erro:', error.error);
+        console.error('AuthService:  URL da requisição:', error.url);
+        console.error('AuthService:  Headers da resposta:', error.headers);
         
         if (error.status === 401) {
-          console.error('AuthService: 🚫 ERRO 401 - Não autenticado!');
-          console.error('AuthService: 🍪 Cookies no momento do erro:', document.cookie);
+          console.error('AuthService:  ERRO 401 - Não autenticado!');
+          console.error('AuthService:  Cookies no momento do erro:', document.cookie);
         } else if (error.status === 0) {
-          console.error('AuthService: 🔗 ERRO 0 - Problema de conexão/CORS!');
+          console.error('AuthService:  ERRO 0 - Problema de conexão/CORS!');
         }
         
         return this.handleError(error);
@@ -288,7 +288,7 @@ export class AuthService {
    * Método de teste para verificar se o usuário está autenticado
    */
   testAuthenticationStatus(): Observable<any> {
-    console.log('AuthService: 🔍 Testando status de autenticação...');
+    console.log('AuthService:  Testando status de autenticação...');
     return this.http.post(`${this.API_URL}${this.endpoints.userMe}`, {}, { 
       withCredentials: true,
       headers: {
@@ -296,11 +296,11 @@ export class AuthService {
       }
     }).pipe(
       map(response => {
-        console.log('AuthService: ✅ Usuário autenticado:', response);
+        console.log('AuthService:  Usuário autenticado:', response);
         return response;
       }),
       catchError(error => {
-        console.error('AuthService: ❌ Usuário não autenticado:', error);
+        console.error('AuthService:  Usuário não autenticado:', error);
         return throwError(() => error);
       })
     );
@@ -310,8 +310,8 @@ export class AuthService {
    * Método de teste para verificar se a autenticação está funcionando
    */
   testAuth(): Observable<any> {
-    console.log('AuthService: 🧪 TESTE DE AUTENTICAÇÃO');
-    console.log('AuthService: 🍪 Cookies disponíveis:', document.cookie);
+    console.log('AuthService:  TESTE DE AUTENTICAÇÃO');
+    console.log('AuthService:  Cookies disponíveis:', document.cookie);
     
     return this.http.get(
       `${this.API_URL}/family/test-auth`,
@@ -323,11 +323,11 @@ export class AuthService {
       }
     ).pipe(
       map(response => {
-        console.log('AuthService: ✅ TESTE AUTH - Usuário autenticado:', response);
+        console.log('AuthService:  TESTE AUTH - Usuário autenticado:', response);
         return response;
       }),
       catchError(error => {
-        console.error('AuthService: ❌ TESTE AUTH - Falha na autenticação:', error);
+        console.error('AuthService:  TESTE AUTH - Falha na autenticação:', error);
         return throwError(() => error);
       })
     );
@@ -337,8 +337,8 @@ export class AuthService {
    * Método de teste público para debugar criação de família
    */
   testCreateFamilyDirect(familyName: string): Observable<any> {
-    console.log('AuthService: 🧪 TESTE DIRETO - Criando família:', familyName);
-    console.log('AuthService: 🍪 Cookies disponíveis:', document.cookie);
+    console.log('AuthService:  TESTE DIRETO - Criando família:', familyName);
+    console.log('AuthService:  Cookies disponíveis:', document.cookie);
     
     return this.http.post(
       `${this.API_URL}${this.endpoints.createFamily}`,
@@ -352,11 +352,11 @@ export class AuthService {
       }
     ).pipe(
       map(response => {
-        console.log('AuthService: ✅ TESTE - Família criada:', response);
+        console.log('AuthService:  TESTE - Família criada:', response);
         return response;
       }),
       catchError(error => {
-        console.error('AuthService: ❌ TESTE - Erro:', error);
+        console.error('AuthService:  TESTE - Erro:', error);
         return throwError(() => error);
       })
     );
@@ -406,8 +406,8 @@ export class AuthService {
 
     return this.register(registerData).pipe(
       switchMap(registerResponse => {
-        console.log('AuthService: ✅ Registro concluído com sucesso:', registerResponse);
-        console.log('AuthService: 🔄 Iniciando login automático...');
+        console.log('AuthService:  Registro concluído com sucesso:', registerResponse);
+        console.log('AuthService:  Iniciando login automático...');
         
         // Após registrar, faz login automático para obter autenticação
         const loginData: LoginRequest = {
@@ -417,8 +417,8 @@ export class AuthService {
 
         return this.login(loginData).pipe(
           switchMap(loginResponse => {
-            console.log('AuthService: ✅ Login concluído com sucesso:', loginResponse);
-            console.log('AuthService: � Testando autenticação antes de criar família...');
+            console.log('AuthService:  Login concluído com sucesso:', loginResponse);
+            console.log('AuthService:  Testando autenticação antes de criar família...');
             
             // Aguardar um pouco para garantir que o cookie seja definido
             console.log('AuthService: ⏱️ Aguardando cookie ser definido...');
@@ -429,36 +429,36 @@ export class AuthService {
               }, 1000); // Aguardar 1 segundo
             }).pipe(
               switchMap(() => {
-                console.log('AuthService: 🔍 Testando autenticação após delay...');
+                console.log('AuthService:  Testando autenticação após delay...');
                 return this.testAuthenticationStatus();
               }),
               switchMap(authTest => {
-                console.log('AuthService: ✅ Autenticação confirmada:', authTest);
-                console.log('AuthService: �🔄 Processando família...');
+                console.log('AuthService:  Autenticação confirmada:', authTest);
+                console.log('AuthService:  Processando família...');
                 
                 // Após confirmar autenticação, cria ou entra na família
                 if (userData.family_option === 'create' && userData.family_name) {
-                  console.log('AuthService: 🏠 Criando família:', userData.family_name);
+                  console.log('AuthService:  Criando família:', userData.family_name);
                   return this.createFamily({ nome_familia: userData.family_name }).pipe(
                     map(familyResponse => {
-                      console.log('AuthService: ✅ Família criada com sucesso:', familyResponse);
+                      console.log('AuthService:  Família criada com sucesso:', familyResponse);
                       return registerResponse; // Retorna a resposta original do registro
                     })
                   );
                 } else if (userData.family_option === 'join' && userData.family_code) {
-                  console.log('AuthService: 🔗 Entrando na família com código:', userData.family_code);
+                  console.log('AuthService:  Entrando na família com código:', userData.family_code);
                   return this.enterFamily({ codigo_familia_input: userData.family_code }).pipe(
                     map(familyResponse => {
-                      console.log('AuthService: ✅ Entrada na família realizada:', familyResponse);
+                      console.log('AuthService:  Entrada na família realizada:', familyResponse);
                       return registerResponse; // Retorna a resposta original do registro
                     })
                   );
                 }
-                console.error('AuthService: ❌ Opção de família inválida:', userData.family_option);
+                console.error('AuthService:  Opção de família inválida:', userData.family_option);
                 return throwError(() => ({ mensagem: 'Opção de família inválida' }));
               }),
               catchError(authError => {
-                console.error('AuthService: ❌ Falha na autenticação após login:', authError);
+                console.error('AuthService:  Falha na autenticação após login:', authError);
                 return throwError(() => ({ mensagem: 'Falha na autenticação. Tente fazer login novamente.' }));
               })
             );
@@ -466,11 +466,11 @@ export class AuthService {
         );
       }),
       finalize(() => {
-        console.log('AuthService: 🏁 Finalizando processo de registro completo');
+        console.log('AuthService:  Finalizando processo de registro completo');
         this.loadingSubject.next(false);
       }),
       catchError((error) => {
-        console.error('AuthService: ❌ Erro no registro completo:', error);
+        console.error('AuthService:  Erro no registro completo:', error);
         return this.handleError(error);
       })
     );
@@ -482,7 +482,7 @@ export class AuthService {
   completeRegistrationWithFamilySimple(userData: CompleteRegisterRequest): Observable<RegisterResponse> {
     this.loadingSubject.next(true);
     
-    console.log('AuthService: 🚀 INICIANDO PROCESSO COMPLETO:', userData);
+    console.log('AuthService:  INICIANDO PROCESSO COMPLETO:', userData);
 
     // 1. Registrar usuário
     const registerData: RegisterRequest = {
@@ -493,7 +493,7 @@ export class AuthService {
 
     return this.register(registerData).pipe(
       switchMap(registerResponse => {
-        console.log('AuthService: ✅ USUÁRIO CRIADO NO BANCO:', registerResponse);
+        console.log('AuthService:  USUÁRIO CRIADO NO BANCO:', registerResponse);
         
         // 2. Fazer login para obter autenticação
         const loginData: LoginRequest = {
@@ -503,23 +503,23 @@ export class AuthService {
 
         return this.login(loginData).pipe(
           switchMap(loginResponse => {
-            console.log('AuthService: ✅ LOGIN REALIZADO:', loginResponse);
-            console.log('AuthService: 🍪 Cookies definidos:', document.cookie);
+            console.log('AuthService:  LOGIN REALIZADO:', loginResponse);
+            console.log('AuthService:  Cookies definidos:', document.cookie);
             
             // 3. Se deve criar família, fazer isso agora que está autenticado
             if (userData.family_option === 'create' && userData.family_name) {
-              console.log('AuthService: 🏗️ CRIANDO FAMÍLIA:', userData.family_name);
+              console.log('AuthService:  CRIANDO FAMÍLIA:', userData.family_name);
               
               // Primeiro, testar se a autenticação está funcionando
               return this.testAuth().pipe(
                 switchMap(authTest => {
-                  console.log('AuthService: ✅ TESTE DE AUTH PASSOU:', authTest);
+                  console.log('AuthService:  TESTE DE AUTH PASSOU:', authTest);
                   
                   // Agora criar a família com dados confirmados
-                  console.log('AuthService: 🔧 FAZENDO REQUISIÇÃO PARA CRIAR FAMÍLIA...');
-                  console.log('AuthService: 🔗 URL:', `${this.API_URL}${this.endpoints.createFamily}`);
-                  console.log('AuthService: 📤 Dados enviados:', { nome_familia: userData.family_name });
-                  console.log('AuthService: 🍪 Cookies atuais:', document.cookie);
+                  console.log('AuthService:  FAZENDO REQUISIÇÃO PARA CRIAR FAMÍLIA...');
+                  console.log('AuthService:  URL:', `${this.API_URL}${this.endpoints.createFamily}`);
+                  console.log('AuthService:  Dados enviados:', { nome_familia: userData.family_name });
+                  console.log('AuthService:  Cookies atuais:', document.cookie);
               
                   return this.http.post<CreateFamilyResponse>(
                 `${this.API_URL}${this.endpoints.createFamily}`,
