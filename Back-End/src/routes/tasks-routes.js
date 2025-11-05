@@ -1,7 +1,7 @@
 import express from 'express';
 import { authRole } from '../middlewares/authRole.js';
 import { authToken } from '../middlewares/authToken.js';
-import { task_adm, remove_task_adm, task_user_create } from '../controller/tasks-controller.js';
+import { task_adm, remove_task_adm, create_task_user } from '../controller/tasks-controller.js';
 
 const rotas_tasks = express();
 
@@ -14,7 +14,7 @@ rotas_tasks.delete('/tasks/delete', authToken, authRole, (req, res) => {
 });
 
 rotas_tasks.post('/tasks/create/ponctual', authToken, (req, res) => {
-    task_user_create(req, res);
+    create_task_user(req, res);
 });
 
 export default rotas_tasks;
