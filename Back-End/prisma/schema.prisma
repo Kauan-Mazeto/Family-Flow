@@ -62,7 +62,7 @@ model FamilyMember {
 model Task {
   id              Int          @id @default(autoincrement())
   type_task       String
-  member_name     String
+  member_name     String?
   member_id       Int
   family_id       Int
   title           String
