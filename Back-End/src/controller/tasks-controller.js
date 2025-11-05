@@ -117,7 +117,7 @@ export async function remove_task_adm(req, res) {
 //     };
 // };
 
-export async function task_user_create(req, res) {
+export async function create_task_user(req, res) {
     const { desc_task, name_task, priority_task, status_task, type_task } = req.body;
     // desc_task: descricao da tarefa
     // name_task: nome da tarefa
