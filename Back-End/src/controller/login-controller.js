@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import jwt from "jsonwebtoken";
 import argon2 from "argon2";
-import { usuario_atual } from './functions-controller.js';
+import { usuario_atual } from './functions/functions-controller.js';
 
 const prisma = new PrismaClient();
 const JWT_SECRET_KEY = process.env.PASS_HASH;
@@ -120,7 +120,7 @@ export async function login_usuario(req, res) {
         res.cookie('tokenAuth', token_jwt, {
             httpOnly: true, // nao permitir alteracoes a partir de JS externo
             secure: process.env.NODE_ENV === 'development', // mudar qnd for testar para "development"
-            maxAge: 60 * 60 * 3000, // tempo que ficara ativo (1hora)
+            maxAge: 60 * 60 * 3000, // tempo que ficara ativo (3hora)
             sameSite: 'lax' // melhor para compatibilidade com Angular 
             // 'strict' significa: o cookie só será enviado se a requisição vier do mesmo site que criou o cookie.
         });
