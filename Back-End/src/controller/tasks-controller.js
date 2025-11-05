@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { family_id_task, usuario_atual_id } from './functions-controller.js';
+import { family_id_task, usuario_atual_id } from './functions/functions-controller.js';
 
 
 const prisma = new PrismaClient();
@@ -51,7 +51,7 @@ export async function task_adm(req, res) {
     };
 };
 
-export async function task_users(req, res) {
+export async function task_users_create(req, res) {
     const { desc_task, name_task, priority_task, status_task, type_task } = req.body;
 
     if (!desc_task || !name_task || !priority_task || !status_task || !type_task) {
@@ -59,15 +59,17 @@ export async function task_users(req, res) {
     };
 
     const id_family = await family_id_task(req.usuario.id);
+    const priority_upperCase = priority_task.toUpperCase();
+    const status_upperCase = status_task.toUpperCase();
 
     try {
         const task_info = await prisma.task.create({
             data: {
                 description: desc_task,
                 title: name_task,
-                member_id: Number(id_member),
-                priority: priority_task,
-                status: status_task,
+                member_id: Number(req.usuario.id),
+                priority: priority_upperCase,
+                status: status_upperCase,
                 type_task: type_task,
                 family: {
                     connect: { 
@@ -77,7 +79,10 @@ export async function task_users(req, res) {
             }
         });
 
-        
+        return res.status(200).json({
+            message: "Task exclusiva criada.",
+            task_info
+        });
 
     } catch (err) {
         res.status(500).json({ mensagem: "Erro interno no servidor." });
