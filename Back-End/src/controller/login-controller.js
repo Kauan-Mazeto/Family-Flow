@@ -13,6 +13,7 @@ if (!JWT_SECRET_KEY) {
 
 export async function cadastrar_usuario(req, res) {
     const {email_usuario, senha_usuario, nome_usuario} = req.body;
+    // pegando do body as informacoes: email, senha e nome do usuario
 
     if (!email_usuario || !senha_usuario || !nome_usuario) {
         return res.status(400).json({mensagem: "EMAIL, SENHA e NOME são necessários."});
@@ -68,6 +69,8 @@ export async function cadastrar_usuario(req, res) {
 
 export async function login_usuario(req, res) {
     const { email, password } = req.body;
+    // pegando do body as informacoes: email e senha do usuario
+
 
     if (!email || !password) {
         return res.status(400).json({mensagem: "Email e senha necessários."});
@@ -176,6 +179,8 @@ export async function logout_usuario(req, res) {
 export async function resetar_senha(req, res) {
     try {
         const { senha_atual, nova_senha } = req.body;
+        // pegando do body as informacoes: senha atual do usuario e a nova senha que ele quer colocar.
+
 
         if (!senha_atual || !nova_senha) {
             return res.status(400).json({mensagem: "Senha atual e nova senha são obrigatorias."});

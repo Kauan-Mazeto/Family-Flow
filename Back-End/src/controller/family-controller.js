@@ -4,6 +4,7 @@ const prisma = new PrismaClient();
 
 export async function create_family(req, res) {
     const { nome_familia } = req.body;
+    // pegando do body o NOME da familia.
 
     if (!req.usuario || !req.usuario.id) {
         return res.status(401).json({mensagem: "Usuário não autenticado."});

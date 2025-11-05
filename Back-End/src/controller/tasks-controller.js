@@ -7,6 +7,12 @@ const prisma = new PrismaClient();
 export async function task_adm(req, res) {
 
     const { desc_task, name_task, member_task, priority_task, status_task, type_task } = req.body;
+    // desc_task: descricao da tarefa
+    // name_task: nome da tarefa
+    // member_task: membro que ira realizar aquela tarefa
+    // priority_task: prioridade da tarefa
+    // status_task: status da tarefa
+    // type_task: tipo da tarefa(diaria/pontual)
 
     if (!desc_task || !name_task || !member_task || !priority_task || !status_task || !type_task) {
         return res.status(404).json({ mensagem: "Informações obrigatórias." });
@@ -53,6 +59,12 @@ export async function task_adm(req, res) {
 
 export async function task_users_create(req, res) {
     const { desc_task, name_task, priority_task, status_task, type_task } = req.body;
+    // desc_task: descricao da tarefa
+    // name_task: nome da tarefa
+    // member_task: sempre vai ser o usuario que esta logado
+    // priority_task: prioridade da tarefa
+    // status_task: status da tarefa
+    // type_task: tipo da tarefa(diaria/pontual)
 
     if (!desc_task || !name_task || !priority_task || !status_task || !type_task) {
         return res.status(404).json({ mensagem: "Informações obrigatórias." });
@@ -92,6 +104,7 @@ export async function task_users_create(req, res) {
 
 export async function remove_task_adm(req, res) {
     const { task_remove } = req.body;
+    // isso vem do Front como um checkbox, o que tiver selecionado vem para ca(precisa mandar o titulo da task para o back)
 
     if (!task_remove) {
         return res.status(400).json({mensagem: "Informe a tarefa que deseja remover."});
