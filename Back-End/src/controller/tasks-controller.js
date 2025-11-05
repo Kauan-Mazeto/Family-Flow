@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { family_id_task, usuario_atual_id } from './functions/functions-controller.js';
+import { family_id_task } from './functions/functions-controller-family.js';
+import { usuario_atual_id, usuario_atual_nome } from './functions/functions-controller-user.js';
 
 const prisma = new PrismaClient();
 
@@ -131,6 +132,7 @@ export async function create_task_user(req, res) {
     };
 
     const id_family = await family_id_task(req.usuario.id);
+    const name_active = await usuario_atual_nome(req.usuario.id);
     const priority_upperCase = priority_task.toUpperCase();
     const status_upperCase = status_task.toUpperCase();
 
@@ -140,6 +142,7 @@ export async function create_task_user(req, res) {
                 description: desc_task,
                 title: name_task,
                 member_id: Number(req.usuario.id),
+                member_name: name_active.name,
                 priority: priority_upperCase,
                 status: status_upperCase,
                 type_task: type_task,
@@ -162,6 +165,37 @@ export async function create_task_user(req, res) {
     };
 };
 
-export async function get_task_user(params) {
-    
+export async function get_task_user(req, res) {
+
+    try {
+        const task_info_private = await prisma.task.findMany({
+            where: {
+                member_id: Number(req.usuario.id),
+                is_active: true
+            },
+
+            select: {
+                id: true,
+                type_task: true,
+                member_name: true,
+                member_id: true,
+                family_id: true,
+                title: true,
+                description: true,
+                status: true,
+                priority: true,
+            }
+        });
+
+        // IF de jeito diferente por que o findMany retorna um Array.
+        if (task_info_private.length === 0) {
+            return res.status(404).json({ mensagem: "Nenhuma task encontrada." });
+        };
+
+        return res.status(200).json({ mensagem: "Suas tarefas disponiveis: ", task_info_private });
+
+    } catch (err) {
+        res.status(500).json({ mensagem: "Erro interno no servidor." });
+        console.error(err);
+    };
 };
