@@ -1,3 +1,63 @@
-<p>
-  config-navbar works!
-</p>
+<div class="text">
+  <h1>Configurações</h1>
+  <p>Aqui você pode gerenciar as configurações do sistema</p>
+</div>
+
+<div class="config-user">
+  <div class="info-user">
+    <div class="user">
+      <span class="img-user"><i class="fas fa-user"></i></span>
+      <div class="name-user" *ngIf="!isLoading && userData">
+        <h1>{{ userData.name || userData.nome || 'Nome não disponível' }}</h1>
+        <p>{{ userData.email }}</p>
+      </div>
+      <div class="name-user" *ngIf="isLoading">
+        <h1>Carregando...</h1>
+        <p>Carregando...</p>
+      </div>
+    </div>
+    <div class="exit-adm">
+      <p class="adm" *ngIf="!isLoading && userData">
+        {{ userData.is_admin ? 'Administrador' : 'Membro' }}
+      </p>
+      <p class="adm" *ngIf="isLoading">Carregando...</p>
+      <div class="exit">
+        <button>Exit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="config-family">
+  <div class="info-family">
+    <div class="family">
+      <span class="img-family"><img src="img/familyflow_logo.jpg" alt=""></span>
+      <div class="name-family" *ngIf="!isLoading && familyData">
+        <h1>Família {{ familyData.nome }}</h1>
+      </div>
+      <div class="name-family" *ngIf="isLoading">
+        <h1>Carregando...</h1>
+      </div>
+    </div>
+  </div>
+  <div class="codig">
+    <p>Código da Família</p>
+    <div class="family-code" *ngIf="!isLoading && familyData">
+      <span class="code" *ngFor="let char of familyCodeArray">{{ char }}</span>
+    </div>
+    <div class="family-code loading" *ngIf="isLoading">
+      <span class="code">●</span>
+      <span class="code">●</span>
+      <span class="code">●</span>
+      <span class="code">●</span>
+      <span class="code">●</span>
+      <span class="code">●</span>
+      <span class="code">●</span>
+      <span class="code">●</span>
+    </div>
+  </div>
+
+  <div class="exit">
+    <button>Exit</button>
+  </div>
+</div>

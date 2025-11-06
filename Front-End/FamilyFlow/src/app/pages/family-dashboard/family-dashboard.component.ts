@@ -25,6 +25,7 @@ export class FamilyDashboardComponent implements OnInit {
   // Dados do usuário
   userName: string = '';
   userEmail: string = '';
+  isAdmin: boolean = false;
 
   // Dados para a navbar
   get navbarData(): NavbarData {
@@ -34,6 +35,7 @@ export class FamilyDashboardComponent implements OnInit {
       userName: this.userName,
       userEmail: this.userEmail,
       userRole: this.userRole,
+      isAdmin: this.isAdmin,
       isLoading: this.isLoading,
       errorMessage: this.errorMessage
     };
@@ -123,10 +125,12 @@ export class FamilyDashboardComponent implements OnInit {
           console.log('✅ User data from observable:', user);
           this.userName = user.name || 'Usuário';
           this.userEmail = user.email || '';
+          this.isAdmin = user.is_admin || false;
           
           console.log('👤 Dados do usuário atualizados:', {
             userName: this.userName,
-            userEmail: this.userEmail
+            userEmail: this.userEmail,
+            isAdmin: this.isAdmin
           });
           
           this.cdr.detectChanges();
@@ -152,6 +156,7 @@ export class FamilyDashboardComponent implements OnInit {
         if (response.usuarioAtual) {
           this.userName = response.usuarioAtual.name || 'Usuário';
           this.userEmail = response.usuarioAtual.email || '';
+          this.isAdmin = response.usuarioAtual.is_admin || false;
         }
       },
       error: (error) => {
@@ -159,6 +164,7 @@ export class FamilyDashboardComponent implements OnInit {
         // Se falhar, usar dados básicos
         this.userName = 'Usuário Logado';
         this.userEmail = 'usuario@email.com';
+        this.isAdmin = false;
       }
     });
   }

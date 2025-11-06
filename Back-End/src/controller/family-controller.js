@@ -184,3 +184,56 @@ export async function get_user_family(req, res) {
         res.status(500).json({ mensagem: "Erro interno no servidor." });
     };
 };
+
+export async function get_family_members(req, res) {
+    
+    if (!req.usuario || !req.usuario.id) {
+        return res.status(401).json({mensagem: "Usuário não autenticado."})
+    };
+
+    try {
+        // Primeiro, encontra a família do usuário
+        const membroFamilia = await prisma.familyMember.findFirst({
+            where: {
+                user_id: req.usuario.id
+            }
+        });
+
+        if (!membroFamilia) {
+            return res.status(404).json({mensagem: "Usuário não está em nenhuma família."});
+        };
+
+        // Busca todos os membros da família
+        const membros = await prisma.familyMember.findMany({
+            where: {
+                family_id: membroFamilia.family_id
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        is_admin: true
+                    }
+                }
+            }
+        });
+
+        const membrosFormatados = membros.map(membro => ({
+            id: membro.user.id,
+            name: membro.user.name,
+            email: membro.user.email,
+            role: membro.role,
+            is_admin: membro.user.is_admin
+        }));
+
+        return res.status(200).json({
+            membros: membrosFormatados
+        });
+
+    } catch (err) {
+        console.error('Erro ao buscar membros da família:', err.message);
+        res.status(500).json({ mensagem: "Erro interno no servidor." });
+    };
+};

@@ -14,11 +14,11 @@
     <div class="family-section">
       <div class="family-avatar">
         <div class="family-image">
-          <span class="fas fa-house"></span>
+          <span><img src="img/familyflow_logo.jpg" alt=""></span>
         </div>
       </div>
       <div class="family-info">
-        <h1 class="family-name">{{ data.familyName }}</h1>
+        <h1 class="family-name">Família {{ data.familyName }}</h1>
         <p class="family-description">Organize e acompanhe as atividades da sua família!</p>
       </div>
     </div>
@@ -27,6 +27,7 @@
       <div class="user-info">
         <span class="user-name">{{ data.userName }}</span>
         <span class="user-email">{{ data.userEmail }}</span>
+        <span *ngIf="data.isAdmin" class="user-role">Administrador</span>
       </div>
       <div class="user-avatar">
         <div class="user-image">

@@ -7,6 +7,7 @@ export interface NavbarData {
   userName: string;
   userEmail: string;
   userRole: string;
+  isAdmin: boolean;
   isLoading: boolean;
   errorMessage: string;
 }
@@ -28,6 +29,7 @@ export class NavbarDataComponent {
     userName: '',
     userEmail: '',
     userRole: '',
+    isAdmin: false,
     isLoading: true,
     errorMessage: ''
   };

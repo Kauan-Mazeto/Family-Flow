@@ -1,3 +1,44 @@
-<p>
-  family-navbar works!
-</p>
+<div class="text-initial">
+    <h1>Membros da Família</h1>
+    <p>Veja todos os membros que fazem parte da sua família aqui</p>
+</div>
+
+
+<div class="total-members">
+    <h1 class="text">Total de membros</h1>
+    <span class="members" *ngIf="!isLoading">{{ totalMembers }}</span>
+    <span class="members loading" *ngIf="isLoading">Carregando...</span>
+</div>
+
+<div class="table-container">
+    <table class="table-members">
+        <thead>
+            <tr>
+                <th><p>Nome</p></th>
+                <th><p>Email</p></th>
+                <th><p>Papel</p></th>
+            </tr>
+        </thead>
+        <tbody *ngIf="!isLoading && familyMembers.length > 0">
+            <tr *ngFor="let member of familyMembers">
+                <td>{{ member.name }}</td>
+                <td>{{ member.email }}</td>
+                <td>
+                    <span class="role-badge" [ngClass]="member.role.toLowerCase()">
+                        {{ member.role === 'ADMIN' ? 'Administrador' : 'Membro' }}
+                    </span>
+                </td>
+            </tr>
+        </tbody>
+        <tbody *ngIf="isLoading">
+            <tr>
+                <td colspan="3" class="loading-row">Carregando membros...</td>
+            </tr>
+        </tbody>
+        <tbody *ngIf="!isLoading && familyMembers.length === 0">
+            <tr>
+                <td colspan="3" class="no-members">Nenhum membro encontrado</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

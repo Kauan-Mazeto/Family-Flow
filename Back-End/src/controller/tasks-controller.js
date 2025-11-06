@@ -32,16 +32,11 @@ export async function task_adm(req, res) {
             data: {
                 description: desc_task,
                 title: name_task,
-                member_id: Number(id_member),
                 member_name: member_task,
                 priority: priority_task,
                 status: status_task,
                 type_task: type_task,
-                family: {
-                    connect: { 
-                        id: Number(id_family) 
-                    }
-                }
+                family_id: Number(id_family)
             }
         });
 
@@ -79,15 +74,11 @@ export async function task_users_create(req, res) {
             data: {
                 description: desc_task,
                 title: name_task,
-                member_id: Number(req.usuario.id),
+                member_name: req.usuario.name || 'Usuário',
                 priority: priority_upperCase,
                 status: status_upperCase,
                 type_task: type_task,
-                family: {
-                    connect: { 
-                        id: Number(id_family) 
-                    }
-                }
+                family_id: Number(id_family)
             }
         });
 

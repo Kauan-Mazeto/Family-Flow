@@ -1,5 +1,5 @@
 import express from 'express';
-import { create_family, enter_family, get_user_family } from '../controller/family-controller.js';
+import { create_family, enter_family, get_user_family, get_family_members } from '../controller/family-controller.js';
 import { authToken } from '../middlewares/authToken.js';
 
 const rotas_family = express();
@@ -14,6 +14,10 @@ rotas_family.post('/family/enter', authToken, (req, res) => {
 
 rotas_family.get('/family/info', authToken, (req, res) => {
     get_user_family(req, res);
+});
+
+rotas_family.get('/family/members', authToken, (req, res) => {
+    get_family_members(req, res);
 });
 
 // Endpoint de teste para verificar autenticação
