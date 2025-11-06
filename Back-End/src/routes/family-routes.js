@@ -1,7 +1,7 @@
 import express from 'express';
 import { create_family, delete_family, enter_family, get_user_family } from '../controller/family-controller.js';
 import { authToken } from '../middlewares/authToken.js';
-import { authRole } from '../middlewares/authRole.js';
+import { authAdminFamily } from '../middlewares/authAdminFamily.js';
 
 const rotas_family = express();
 
@@ -17,7 +17,7 @@ rotas_family.get('/family/info', authToken, (req, res) => {
     get_user_family(req, res);
 });
 
-rotas_family.delete('/family/delete', authToken, authRole, (req, res) => {
+rotas_family.delete('/family/delete', authToken, authAdminFamily, (req, res) => {
     delete_family(req, res);
 });
 
