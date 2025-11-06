@@ -54,7 +54,7 @@ export async function create_task_user(req, res) {
 
     } catch (err) {
         res.status(500).json({ mensagem: "Erro interno no servidor." });
-        console.error(err);
+        return console.error(err);
     };
 };
 
@@ -89,6 +89,30 @@ export async function get_task_user(req, res) {
 
     } catch (err) {
         res.status(500).json({ mensagem: "Erro interno no servidor." });
-        console.error(err);
+        return console.error(err);
     };
+};
+
+
+export async function remove_task_user(req, res) {
+
+    const id_task = parseInt(req.params.id);
+
+    if (!id_task) {
+        return res.status(400).json({ mensagem: "ID da task não foi informado." })
+    };
+
+    try {
+        const task_remove = await prisma.task.delete({
+            where: {
+                id: id_task
+            }
+        });
+
+        return res.status(200).json({mensagem: "Task removida.", id_task})
+
+    } catch (err) {
+        res.status(500).json({ mensagem: "Erro interno no servidor." });
+        return console.error(err);
+    }
 };
