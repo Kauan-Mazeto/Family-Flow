@@ -60,9 +60,7 @@ export async function create_family(req, res) {
 
     } catch (err) {
         console.error('Erro ao criar família:', err.message);
-        res.status(500).json({ 
-            mensagem: "Erro interno no servidor."
-        });
+        return res.status(500).json({ mensagem: "Erro interno no servidor."});
     };
 };
 
@@ -156,7 +154,7 @@ export async function enter_family(req, res) {
 
     } catch (err) {
         console.error('Erro ao entrar na família:', err.message);
-        res.status(500).json({ mensagem: "Erro interno no servidor." });
+        return res.status(500).json({ mensagem: "Erro interno no servidor." });
     };
 };
 
@@ -191,7 +189,7 @@ export async function get_user_family(req, res) {
 
     } catch (err) {
         console.error('Erro ao buscar família do usuário:', err.message);
-        res.status(500).json({ mensagem: "Erro interno no servidor." });
+        return res.status(500).json({ mensagem: "Erro interno no servidor." });
     };
 };
 
