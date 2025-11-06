@@ -50,22 +50,16 @@ export async function usuario_atual_id(nomeMembro) {
     };
 };
 
-export async function family_id_task(idUsuario) {
-    
-    try {
-        const info_family = await prisma.FamilyMember.findFirst({
-            where: {
-                user_id: idUsuario
-            },
+export async function usuario_atual_nome(idUsuario) {
+    const info_user_name = await prisma.user.findFirst({
+        where: {
+            id: idUsuario
+        },
 
-            select: {
-                family_id: true
-            }
-        });
+        select: {
+            name: true
+        }
+    });
 
-        return info_family?.family_id || null;
-
-    } catch (err) {
-        console.error(err)
-    };
+    return info_user_name;
 };
