@@ -34,12 +34,9 @@ model Family {
   created_by  Int
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
-
-  // Relações
   createdBy User           @relation("UserCreatedFamilies", fields: [created_by], references: [id], onDelete: Cascade)
   members   FamilyMember[]
   tasks     Task[]
-
   @@map("family")
 }
 
@@ -50,8 +47,6 @@ model FamilyMember {
   role       Role     @default(MEMBER)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-
-  // Relações
   family        Family       @relation(fields: [family_id], references: [id], onDelete: Cascade)
   user          User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
@@ -70,8 +65,6 @@ model Task {
   status          TaskStatus   @default(PENDENTE)
   priority        TaskPriority @default(MEDIA)
   is_active       Boolean      @default(true)
-
-  // Relações
   family         Family        @relation(fields: [family_id], references: [id], onDelete: Cascade)
   @@map("task")
 }
