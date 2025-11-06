@@ -1,7 +1,8 @@
 import express from 'express';
 import { authRole } from '../middlewares/authRole.js';
 import { authToken } from '../middlewares/authToken.js';
-import { task_adm, remove_task_adm, create_task_user, get_task_user, patch_task_adm } from '../controller/tasks-controller.js';
+import { task_adm, remove_task_adm, patch_task_adm } from '../controller/tasks/tasks-controller-admin.js';
+import { create_task_user, get_task_user } from '../controller/tasks/tasks-controller-anyone.js';
 
 const rotas_tasks = express();
 
@@ -26,3 +27,4 @@ rotas_tasks.get('/tasks/info', authToken, (req, res) => {
 });
 
 export default rotas_tasks;
+
