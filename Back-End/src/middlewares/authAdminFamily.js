@@ -1,4 +1,3 @@
-import { usuario_atual } from "../controller/functions/functions-controller-user.js";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
