@@ -257,5 +257,5 @@ export async function delete_family(req, res) {
     });
 
     return res.status(200).json({mensagem: "Familia excluida."});
->>>>>>> main
+
 };
