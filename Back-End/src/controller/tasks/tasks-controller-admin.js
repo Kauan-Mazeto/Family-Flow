@@ -66,7 +66,7 @@ export async function task_adm(req, res) {
     };
 };
 
-
+// pode ser usada tanto para remover task de usuario quanto admin.
 export async function remove_task_adm(req, res) {
     const { task_remove } = req.body;
     // isso vem do Front como um checkbox, o que tiver selecionado vem para ca(precisa mandar o titulo da task para o back)
@@ -91,20 +91,24 @@ export async function remove_task_adm(req, res) {
             }
         });
 
+        if (!verify_task_db) {
+            return res.status(404).json({ mensagem: "Task inválida ou inexistente." });
+        };
+
+        const return_id = verify_task_db.id;
+
         await prisma.task.delete({
             where: {
                 id: Number(verify_task_db.id)
             },
         });
 
-        return res.status(200).json({mensagem: "Task removida com sucesso.", verify_task_db});
+        return res.status(200).json({mensagem: "Task removida.", return_id});
 
     } catch (err) {
         res.status(500).json({ mensagem: "Erro interno no servidor." });
-        console.error(err);
-    };
-
-    
+        return console.error(err);
+    };   
 };
 
 export async function patch_task_adm(req, res) {
@@ -118,19 +122,6 @@ export async function patch_task_adm(req, res) {
     if (!id_task) {
         return res.status(404).json({ mensagem: "Informação(id) obrigatório." });
     };
-
-    // if (member_name_att) {
-    //     const member_id_att = await prisma.user.findFirst({
-    //         where: {
-    //             name: member_name_att,
-
-    //         },
-
-    //         select: {
-
-    //         }
-    //     });
-    // };
 
     try {
 
@@ -146,6 +137,7 @@ export async function patch_task_adm(req, res) {
         
         let member_id_final = current_task.id;
         let member_name_final = current_task.name;
+        // evitar erros
 
         const update_task = await prisma.task.update({
             where: {
@@ -162,9 +154,10 @@ export async function patch_task_adm(req, res) {
             }
         });
 
+        return res.status(200).json({mensagem: "Task atualizada." ,update_task});
 
     } catch (err) {
         res.status(500).json({ mensagem: "Erro interno no servidor." });
-        console.error(err);
+        return console.error(err);
     };
 };
