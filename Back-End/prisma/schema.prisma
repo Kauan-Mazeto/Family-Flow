@@ -19,8 +19,6 @@ model User {
   is_active     Boolean  @default(true)
   is_admin      Boolean  @default(false)
   created_at    DateTime @default(now())
-
-  // Relações
   createdFamilies   Family[]       @relation("UserCreatedFamilies")
   familyMemberships FamilyMember[]
 
