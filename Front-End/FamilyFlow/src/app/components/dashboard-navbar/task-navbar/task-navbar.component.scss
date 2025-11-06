@@ -77,69 +77,110 @@
                         background-color: rgb(16, 16, 198);
                     }
                 }
+
+                .admin-only-message {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    color: #6c757d;
+                    font-size: 0.9rem;
+                    margin-right: 2rem;
+                    padding: 0.75rem 1rem;
+                    background-color: #f8f9fa;
+                    border: 1px solid #dee2e6;
+                    border-radius: 8px;
+
+                    i {
+                        color: #ffc107;
+                    }
+                }
             }
         }
 
         .tasks {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 1.5rem;
             margin: 2rem;
+            align-items: center;
 
             .task-card {
                 background-color: white;
-                border-radius: 8px;
-                padding: 1rem;
+                border-radius: 12px;
+                padding: 1.5rem;
                 display: flex;
                 justify-content: space-between;
                 flex-direction: column;
-                align-items: center;
-                width: 500px;
+                align-items: stretch;
+                width: 100%;
+                max-width: 500px;
                 height: auto;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                border: 1px solid #e0e0e0;
+                transition: all 0.3s ease;
+                
+                &:hover {
+                    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+                    transform: translateY(-2px);
+                }
 
                 .task-info {
                     font-family: 'Poppins', sans-serif;
                     color: #333;
+                    flex: 1;
+                    margin-bottom: 1rem;
 
                     .responsible {
                         display: flex;
                         flex-direction: row;
                         align-items: center;
                         justify-content: space-between;
-                        margin-bottom: 0.5rem;
+                        margin-bottom: 1rem;
 
                         .check-response {
-                            width: 20px;
-                            height: 20px;
-                            margin-right: 1rem;
+                            width: 18px;
+                            height: 18px;
                             cursor: pointer;
+                            accent-color: rgb(193, 152, 86);
                         }
 
                         .fa-trash {
-                            color: black;
+                            color: #dc3545;
                             cursor: pointer;
-                            margin-left: 1rem;
+                            padding: 0.5rem;
+                            border-radius: 6px;
+                            transition: all 0.2s ease;
+                            
+                            &:hover {
+                                background-color: #f8f9fa;
+                                color: #c82333;
+                            }
                         }
                     }
 
                     h2 {
-                        margin-left: auto;
-                        font-size: 1.2rem;
-                        cursor: default;
+                        margin: 0 0 0.75rem 0;
+                        font-size: 1.25rem;
+                        font-weight: 600;
+                        color: #2c3e50;
+                        line-height: 1.3;
                     }
 
                     p {
-                        margin: 0.5rem 0 1rem 0;
-                        font-size: 1rem;
-                        cursor: default;
+                        margin: 0 0 0.75rem 0;
+                        font-size: 0.95rem;
+                        color: #555;
+                        line-height: 1.5;
                     }
 
                     .task-member {
                         font-size: 0.85rem;
-                        color: #666;
-                        font-style: italic;
-                        margin-top: 0.5rem;
+                        color: #6c757d;
+                        font-weight: 500;
+                        background-color: #f8f9fa;
+                        padding: 0.25rem 0.5rem;
+                        border-radius: 6px;
+                        display: inline-block;
                     }
                 }
 
@@ -147,59 +188,72 @@
                     display: flex;
                     flex-direction: row;
                     align-items: center;
-                    justify-content: space-between;
+                    justify-content: flex-start;
+                    gap: 0.75rem;
                     width: 100%;
+                    flex-wrap: wrap;
 
                     .task-priority {
-                        padding: 0.25rem 0.5rem;
+                        padding: 0.4rem 0.8rem;
                         border-radius: 20px;
-                        font-size: 0.9rem;
+                        font-size: 0.8rem;
                         text-align: center;
                         cursor: default;
-                        font-weight: 500;
+                        font-weight: 600;
+                        text-transform: capitalize;
+                        letter-spacing: 0.5px;
 
                         &.priority-baixa {
-                            background-color: #e0f2fe;
-                            color: #0277bd;
+                            background-color: #e8f5e8;
+                            color: #2e7d32;
+                            border: 1px solid #c8e6c9;
                         }
 
                         &.priority-media {
                             background-color: #fff3e0;
-                            color: #f57c00;
+                            color: #ef6c00;
+                            border: 1px solid #ffcc02;
                         }
 
                         &.priority-alta {
                             background-color: #ffebee;
-                            color: #d32f2f;
+                            color: #c62828;
+                            border: 1px solid #ef5350;
                         }
                     }
 
                     .task-status {
-                        padding: 0.25rem 0.5rem;
+                        padding: 0.4rem 0.8rem;
                         border-radius: 20px;
-                        font-size: 0.9rem;
+                        font-size: 0.8rem;
                         text-align: center;
                         cursor: default;
-                        font-weight: 500;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
 
                         &.status-pendente {
                             background-color: #fff3e0;
-                            color: #f57c00;
+                            color: #ef6c00;
+                            border: 1px solid #ffcc02;
                         }
 
                         &.status-progresso {
                             background-color: #e3f2fd;
-                            color: #1976d2;
+                            color: #1565c0;
+                            border: 1px solid #64b5f6;
                         }
 
                         &.status-concluida {
                             background-color: #e8f5e8;
-                            color: #388e3c;
+                            color: #2e7d32;
+                            border: 1px solid #4caf50;
                         }
 
                         &.status-atrasado {
                             background-color: #ffebee;
-                            color: #d32f2f;
+                            color: #c62828;
+                            border: 1px solid #ef5350;
                         }
                     }
 

@@ -50,7 +50,7 @@ export class NavbarAtalhosComponent implements OnInit {
     {
       nome: 'Configurações',
       icone: 'fas fa-gear',
-      rota: '/family/despesas',
+      rota: '/family/dashboard',
       ativo: false
     }
   ];

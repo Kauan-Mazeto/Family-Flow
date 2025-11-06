@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -46,10 +46,12 @@ export class TaskNavbarComponent implements OnInit {
   taskForm: FormGroup;
   familyMembers: FamilyMember[] = [];
   isLoading: boolean = false;
+  isAdmin: boolean = false;
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
   ) {
     this.taskForm = this.fb.group({
       description: [''],
@@ -60,12 +62,46 @@ export class TaskNavbarComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.initializeComponent();
+  }
+
+  private initializeComponent() {
+    // Fazer as verificações de forma sequencial
+    this.checkUserRole();
     this.loadFamilyMembers();
-    this.loadDailyTasks();
+    
+    // Aguardar um pouco antes de carregar as tarefas para garantir que a autenticação esteja pronta
+    setTimeout(() => {
+      this.loadDailyTasks();
+    }, 500);
+  }
+
+  checkUserRole() {
+    this.http.get<{familia: any}>(`${environment.apiUrl}/family/info`, {
+      withCredentials: true
+    }).subscribe({
+      next: (response) => {
+        this.isAdmin = response.familia?.role === 'ADMIN';
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('❌ Erro ao verificar papel do usuário na família:', error);
+        
+        // Retry após 1 segundo em caso de erro
+        setTimeout(() => {
+          this.checkUserRole();
+        }, 1000);
+      }
+    });
   }
 
   onTabClick(tabType: string) {
     this.activeTab = tabType;
+    
+    // Se mudou para a aba de tarefas diárias, recarregar os dados
+    if (tabType === 'diarias') {
+      this.loadDailyTasks();
+    }
   }
 
   get isTabActive() {
@@ -110,7 +146,27 @@ export class TaskNavbarComponent implements OnInit {
   }
 
   loadDailyTasks() {
-    this.dailyTasks = [];
+    this.http.get<{tasks: Task[]}>(`${environment.apiUrl}/tasks/daily/family`, {
+      withCredentials: true
+    }).subscribe({
+      next: (response) => {
+        this.dailyTasks = response.tasks || [];
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('❌ Erro ao carregar tarefas diárias:', error);
+        
+        // Se for erro 401 (não autenticado), tentar novamente em 1 segundo
+        if (error.status === 401) {
+          setTimeout(() => {
+            this.loadDailyTasks();
+          }, 1000);
+        } else {
+          this.dailyTasks = [];
+          this.cdr.detectChanges();
+        }
+      }
+    });
   }
 
   onSubmitTask() {
@@ -140,26 +196,39 @@ export class TaskNavbarComponent implements OnInit {
         withCredentials: true
       }).subscribe({
         next: (response) => {
-          
-          // Adicionar a nova tarefa à lista
+          // Adicionar a nova tarefa à lista usando os dados retornados do backend
           const newTask: Task = {
-            id: response.task?.id || Date.now(), // Usar timestamp como fallback
-            title: formData.name,
-            description: formData.description,
-            member_name: selectedMember?.name || 'Não atribuído',
-            priority: formData.priority,
-            status: 'PENDENTE',
-            type_task: 'diaria'
+            id: response.task.id,
+            title: response.task.title,
+            description: response.task.description,
+            member_name: response.task.member_name,
+            priority: response.task.priority,
+            status: response.task.status,
+            type_task: response.task.type_task
           };
           
           this.dailyTasks.push(newTask);
+          
+          // Recarregar a lista de tarefas para mostrar todas as tarefas da família
+          this.loadDailyTasks();
+          
+          // Forçar detecção de mudanças
+          this.cdr.detectChanges();
+          
+          // Limpar formulário
+          this.taskForm.reset({
+            description: '',
+            name: '',
+            member: '',
+            priority: 'MEDIA'
+          });
           
           this.closeCreateTaskModal();
           this.isLoading = false;
         },
         error: (error) => {
+          console.error('❌ Erro ao criar tarefa:', error);
           this.isLoading = false;
-          // TODO: Mostrar mensagem de erro para o usuário
         }
       });
     } else {

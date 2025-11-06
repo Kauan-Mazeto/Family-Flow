@@ -41,7 +41,7 @@ export class CreateFamilyComponent implements OnInit {
 
   // Função para criar família
   completeRegistration() {
-    console.log('CreateFamily: Iniciando processo de criação de família');
+
     
     if (!this.family_name.trim()) {
       this.error_message = 'Digite um nome para sua família';
@@ -56,7 +56,7 @@ export class CreateFamilyComponent implements OnInit {
     this.is_loading = true;
     this.clear_errors();
     
-    console.log('CreateFamily: Validações concluídas, obtendo dados temporários...');
+
     
     // Obter dados temporários do registro
     const tempData = this.registrationFlow.getTempData();
@@ -82,12 +82,12 @@ export class CreateFamilyComponent implements OnInit {
       family_name: this.family_name.trim()
     };
 
-    console.log('CreateFamily: Chamando serviço de registro completo...');
+
 
     // Executar registro completo com criação de família (método simplificado)
     this.authService.completeRegistrationWithFamilySimple(completeData).subscribe({
       next: (response) => {
-        console.log('CreateFamily: Registro e família criados com sucesso:', response);
+
         this.is_loading = false;
         
         // Limpar dados temporários

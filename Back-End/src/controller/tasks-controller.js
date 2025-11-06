@@ -9,6 +9,7 @@ const prisma = new PrismaClient();
 // |---------------------------------------------------------------|
 
 export async function task_adm(req, res) {
+    console.log('🔍 TASK_ADM: Dados recebidos:', JSON.stringify(req.body, null, 2));
 
     const { desc_task, name_task, member_task, priority_task, status_task, type_task } = req.body;
     // desc_task: descricao da tarefa
@@ -18,17 +19,29 @@ export async function task_adm(req, res) {
     // status_task: status da tarefa
     // type_task: tipo da tarefa(diaria/pontual)
 
-    if (!desc_task || !name_task || !member_task || !priority_task || !status_task || !type_task) {
-        return res.status(404).json({ mensagem: "Informações obrigatórias." });
+    if (!name_task || !member_task || !priority_task || !status_task || !type_task) {
+        console.log('❌ TASK_ADM: Informações obrigatórias faltando');
+        console.log('❌ TASK_ADM: name_task:', name_task);
+        console.log('❌ TASK_ADM: member_task:', member_task);
+        console.log('❌ TASK_ADM: priority_task:', priority_task);
+        console.log('❌ TASK_ADM: status_task:', status_task);
+        console.log('❌ TASK_ADM: type_task:', type_task);
+        return res.status(400).json({ mensagem: "Informações obrigatórias." });
     };
 
-    const id_member = await usuario_atual_id(member_task);
+    console.log('🔍 TASK_ADM: Buscando ID do membro:', member_task);
+    let id_member = await usuario_atual_id(member_task);
+    console.log('🔍 TASK_ADM: ID do membro encontrado:', id_member);
 
+    // Se não encontrou o membro pelo nome, usar o usuário logado
     if (!id_member) {
-        return res.status(404).json({ mensagem: "Membro não encontrado." });
+        console.log('⚠️ TASK_ADM: Membro não encontrado, usando usuário logado:', req.usuario.id);
+        id_member = req.usuario.id;
     };
 
+    console.log('🔍 TASK_ADM: Buscando ID da família para o membro:', id_member);
     const id_family = await family_id_task(id_member);
+    console.log('🔍 TASK_ADM: ID da família encontrado:', id_family);
     
     try {
 
@@ -44,15 +57,16 @@ export async function task_adm(req, res) {
             }
         });
 
+        console.log('✅ TASK_ADM: Tarefa criada com sucesso:', task_info);
         return res.status(201).json({
                 mensagem: "Task criada.",  
-                task_info
+                task: task_info
             }
         );
 
     } catch (err) {
+        console.error('❌ TASK_ADM: Erro ao criar tarefa:', err);
         res.status(500).json({ mensagem: "Erro interno no servidor." });
-        console.error(err);
     };
 };
 

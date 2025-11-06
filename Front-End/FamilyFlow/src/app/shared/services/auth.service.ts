@@ -42,8 +42,7 @@ export class AuthService {
    */
   login(credentials: LoginRequest): Observable<LoginResponse> {
     this.loadingSubject.next(true);
-    console.log('AuthService: Fazendo login para:', credentials.email);
-    console.log('AuthService: URL completa:', `${this.API_URL}${this.endpoints.login}`);
+
     
     return this.http.post<LoginResponse>(
       `${this.API_URL}${this.endpoints.login}`, 
@@ -302,32 +301,7 @@ export class AuthService {
     );
   }
 
-  /**
-   * Método de teste para verificar se a autenticação está funcionando
-   */
-  testAuth(): Observable<any> {
-    console.log('AuthService:  TESTE DE AUTENTICAÇÃO');
-    console.log('AuthService:  Cookies disponíveis:', document.cookie);
-    
-    return this.http.get(
-      `${this.API_URL}/family/test-auth`,
-      { 
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    ).pipe(
-      map(response => {
-        console.log('AuthService:  TESTE AUTH - Usuário autenticado:', response);
-        return response;
-      }),
-      catchError(error => {
-        console.error('AuthService:  TESTE AUTH - Falha na autenticação:', error);
-        return throwError(() => error);
-      })
-    );
-  }
+
 
   /**
    * Método de teste público para debugar criação de família
@@ -496,11 +470,7 @@ export class AuthService {
             // 3. Se deve criar família, fazer isso agora que está autenticado
             if (userData.family_option === 'create' && userData.family_name) {
               
-              // Primeiro, testar se a autenticação está funcionando
-              return this.testAuth().pipe(
-                switchMap(authTest => {
-              
-                  return this.http.post<CreateFamilyResponse>(
+              return this.http.post<CreateFamilyResponse>(
                 `${this.API_URL}${this.endpoints.createFamily}`,
                 { nome_familia: userData.family_name },
                 { 
@@ -525,8 +495,6 @@ export class AuthService {
                   return throwError(() => ({
                     mensagem: `Usuário criado, mas erro na família: ${familyError.error?.mensagem || 'Erro interno do servidor'}`
                   }));
-                })
-              );
                 })
               );
               

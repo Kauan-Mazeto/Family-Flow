@@ -25,52 +25,17 @@
         <div class="desc">
             <div class="desc-text">
                 <h1>Tarefas Diárias</h1>
-                <p>Tarefas criadas apenas pelo Administrador</p>
+                <p>Tarefas criadas pelo Administrador - visíveis para toda a família</p>
             </div>
 
-            <button class="create-task" (click)="openCreateTaskModal()">
+            <button class="create-task" (click)="openCreateTaskModal()" *ngIf="isAdmin">
                 <i class="fas fa-plus"></i> 
                 Criar Tarefa Diária
             </button>
-        </div>
-    </div>
-
-    <div class="tasks">
-        <div class="task-card">
-            <div class="task-info">
-                <div class="responsible">
-                    <input type="checkbox" class="check-response">
-                    <span class="fas fa-trash"></span>
-                </div>
-                <h2>Limpar a cozinha</h2>
-                <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ullam fugiat doloremque rerum architecto. Corporis praesentium veritatis, sapiente ipsam, sint voluptates in incidunt tempore ducimus error, facilis atque tenetur? Similique, quidem!</p>
-                
+            <div class="admin-only-message" *ngIf="!isAdmin">
+                <i class="fas fa-lock"></i>
+                <span>Apenas administradores podem criar tarefas diárias</span>
             </div>
-
-            <div class="task-atribute">
-                <span class="task-priority">Prioridade alta</span>
-                <span class="task-status">Pendente</span>
-                <span class="task-responsible">João Silva</span>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
-<!--Conteúdo de Tarefas Pontuais-->
-<div class="task" *ngIf="isTabActive.pontuais">
-    <div class="task-desc">
-        <div class="desc">
-            <div class="desc-text">
-                <h1>Tarefas Pontuais</h1>
-                <p>Tarefas criadas e visualizadas por você</p>
-            </div>
-
-            <button class="create-task">
-                <i class="fas fa-plus"></i> 
-                Criar Tarefa Pontual
-            </button>
         </div>
     </div>
 
@@ -99,8 +64,45 @@
         <!-- Mensagem quando não há tarefas -->
         <div class="no-tasks" *ngIf="dailyTasks.length === 0">
             <i class="fas fa-tasks"></i>
-            <p>Nenhuma tarefa diária criada ainda.</p>
-            <p>Clique em "Criar Tarefa" para começar!</p>
+            <h3>Nenhuma tarefa diária criada ainda.</h3>
+        </div>
+    </div>
+</div>
+
+
+
+<!--Conteúdo de Tarefas Pontuais-->
+<div class="task" *ngIf="isTabActive.pontuais">
+    <div class="task-desc">
+        <div class="desc">
+            <div class="desc-text">
+                <h1>Tarefas Pontuais</h1>
+                <p>Suas tarefas pessoais - visíveis apenas para você</p>
+            </div>
+
+            <button class="create-task">
+                <i class="fas fa-plus"></i> 
+                Criar Tarefa Pontual
+            </button>
+        </div>
+    </div>
+
+    <div class="tasks">
+        <div class="task-card">
+            <div class="task-info">
+                <div class="responsible">
+                    <input type="checkbox" class="check-response">
+                    <span class="fas fa-trash"></span>
+                </div>
+                <h2>Tarefa Pontual Exemplo</h2>
+                <p>Esta funcionalidade será implementada em breve</p>
+                <small class="task-member">Responsável: Em desenvolvimento</small>
+            </div>
+
+            <div class="task-atribute">
+                <span class="task-priority">Prioridade média</span>
+                <span class="task-status">Em desenvolvimento</span>
+            </div>
         </div>
     </div>
 </div>

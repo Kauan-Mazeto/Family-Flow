@@ -17,8 +17,8 @@
       </div>
     </div>
     <div class="exit-adm">
-      <p class="adm" *ngIf="!isLoading && userData">
-        {{ userData.is_admin ? 'Administrador' : 'Membro' }}
+      <p class="adm" [class.admin-role]="isUserAdmin" [class.member-role]="!isUserAdmin" *ngIf="!isLoading && familyData">
+        {{ userRoleText }}
       </p>
       <p class="adm" *ngIf="isLoading">Carregando...</p>
       <div class="exit">

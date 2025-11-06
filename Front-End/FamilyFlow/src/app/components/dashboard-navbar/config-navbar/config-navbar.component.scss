@@ -68,8 +68,24 @@
                     display: flex;
                     align-items: center;
                     margin-left: auto;
-                    font-size: 1.5rem;
+                    font-size: 1rem;
                     color: #555;
+                    padding: 8px 16px;
+                    border-radius: 20px;
+                    font-weight: 600;
+                    transition: all 0.2s ease;
+
+                    &.admin-role {
+                        background-color: #ffeaa7;
+                        color: #d63031;
+                        border: 2px solid #fdcb6e;
+                    }
+
+                    &.member-role {
+                        background-color: #ddd6fe;
+                        color: #6366f1;
+                        border: 2px solid #c4b5fd;
+                    }
                 }
 
                 .exit {

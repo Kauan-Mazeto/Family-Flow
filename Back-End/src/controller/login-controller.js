@@ -86,9 +86,12 @@ export async function login_usuario(req, res) {
                 email: true,
                 password_hash: true,
                 is_active: true,
-                name: true
+                name: true,
+                is_admin: true
             }
         });
+
+
 
         // ----------------------------------------------------
         // AQUI VOCE ESTA VERIFICANDO SE ELE ESTA LOGADO E SE ELE ESTA ATIVO, 
@@ -110,7 +113,9 @@ export async function login_usuario(req, res) {
 
         const token_jwt = jwt.sign({
             id: usuario_temporario_retornar.id, 
-            email: usuario_temporario_retornar.email
+            email: usuario_temporario_retornar.email,
+            name: usuario_temporario_retornar.name,
+            is_admin: usuario_temporario_retornar.is_admin
         }, JWT_SECRET_KEY, {expiresIn: "1h"});
 
         // ----------------------------------------------------

@@ -48,19 +48,11 @@ export class ConfigNavbarComponent implements OnInit {
       withCredentials: true
     }).subscribe({
       next: (response) => {
-        console.log('✅ Resposta completa do endpoint /users/verify:', JSON.stringify(response, null, 2));
         this.userData = response.usuario;
-        console.log('👤 Dados do usuário carregados:', JSON.stringify(this.userData, null, 2));
-        if (this.userData) {
-          console.log('🔍 Campo name:', this.userData.name);
-          console.log('🔍 Campo nome:', (this.userData as any).nome);
-          console.log('🔍 Todas as propriedades do usuário:', Object.keys(this.userData));
-        }
         this.checkLoadingComplete();
       },
       error: (error) => {
         console.error('❌ Erro ao carregar dados do usuário:', error);
-        console.error('❌ Detalhes do erro:', error.error);
         this.checkLoadingComplete();
       }
     });
@@ -71,18 +63,14 @@ export class ConfigNavbarComponent implements OnInit {
       withCredentials: true
     }).subscribe({
       next: (response) => {
-        console.log('✅ Resposta completa do endpoint /family/info:', JSON.stringify(response, null, 2));
         this.familyData = response.familia;
         if (this.familyData) {
           this.familyCodeArray = this.familyData.codigo.split('');
-          console.log('🏠 Dados da família carregados:', JSON.stringify(this.familyData, null, 2));
-          console.log('🔤 Código da família dividido:', this.familyCodeArray);
         }
         this.checkLoadingComplete();
       },
       error: (error) => {
         console.error('❌ Erro ao carregar dados da família:', error);
-        console.error('❌ Detalhes do erro:', error.error);
         this.checkLoadingComplete();
       }
     });
@@ -94,7 +82,16 @@ export class ConfigNavbarComponent implements OnInit {
     if (this.requestsCompleted >= 2) {
       this.isLoading = false;
       this.cdr.detectChanges();
-      console.log('✅ Carregamento das configurações concluído');
     }
+  }
+
+  // Método helper para verificar se o usuário é admin
+  get isUserAdmin(): boolean {
+    return this.familyData?.role === 'ADMIN';
+  }
+
+  // Método helper para obter o texto do role
+  get userRoleText(): string {
+    return this.isUserAdmin ? 'Administrador' : 'Membro';
   }
 }
