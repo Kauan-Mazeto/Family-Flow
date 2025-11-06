@@ -301,3 +301,107 @@ export async function get_task_user(req, res) {
         console.error(err);
     };
 };
+
+// |---------------------------------------------------------------|
+// | Funções específicas para tarefas diárias da família          |
+// |---------------------------------------------------------------|
+
+export async function create_daily_task_admin(req, res) {
+    const { desc_task, name_task, member_task, priority_task, status_task = 'PENDENTE', type_task = 'diaria' } = req.body;
+
+    if (!name_task || !member_task || !priority_task) {
+        return res.status(400).json({ mensagem: "Informações obrigatórias: name_task, member_task, priority_task." });
+    }
+
+    try {
+        // Buscar a família do usuário logado (admin)
+        const adminFamilyMember = await prisma.familyMember.findFirst({
+            where: { user_id: req.usuario.id }
+        });
+
+        if (!adminFamilyMember) {
+            return res.status(400).json({ mensagem: "Admin não está em nenhuma família." });
+        }
+
+        // Buscar o membro da família pelo nome
+        const targetMember = await prisma.familyMember.findFirst({
+            where: {
+                family_id: adminFamilyMember.family_id,
+                user: {
+                    name: member_task
+                }
+            },
+            include: {
+                user: true
+            }
+        });
+
+        if (!targetMember) {
+            return res.status(400).json({ mensagem: `Membro '${member_task}' não encontrado na família.` });
+        }
+
+        const task_info = await prisma.task.create({
+            data: {
+                description: desc_task || 'Sem descrição',
+                title: name_task,
+                member_name: targetMember.user.name,
+                member_id: targetMember.user_id,
+                priority: priority_task.toUpperCase(),
+                status: status_task.toUpperCase(),
+                type_task: type_task,
+                family_id: adminFamilyMember.family_id
+            }
+        });
+
+        return res.status(201).json({
+            mensagem: "Tarefa diária criada com sucesso!",
+            task: {
+                id: task_info.id,
+                title: task_info.title,
+                description: task_info.description,
+                member_name: task_info.member_name,
+                priority: task_info.priority,
+                status: task_info.status,
+                type_task: task_info.type_task
+            }
+        });
+
+    } catch (err) {
+        console.error('❌ Erro ao criar tarefa diária:', err);
+        return res.status(500).json({ mensagem: "Erro interno no servidor." });
+    }
+}
+
+export async function get_family_daily_tasks_controller(req, res) {
+    try {
+        // Buscar a família do usuário logado
+        const familyMember = await prisma.familyMember.findFirst({
+            where: { user_id: req.usuario.id }
+        });
+
+        if (!familyMember) {
+            return res.status(400).json({ mensagem: "Usuário não está em nenhuma família." });
+        }
+
+        // Buscar todas as tarefas diárias da família
+        const tasks = await prisma.task.findMany({
+            where: {
+                family_id: familyMember.family_id,
+                type_task: 'diaria',
+                is_active: true
+            },
+            orderBy: {
+                id: 'desc'
+            }
+        });
+
+        return res.status(200).json({
+            mensagem: "Tarefas diárias carregadas com sucesso!",
+            tasks: tasks
+        });
+
+    } catch (err) {
+        console.error('❌ Erro ao carregar tarefas diárias:', err);
+        return res.status(500).json({ mensagem: "Erro interno no servidor." });
+    }
+}

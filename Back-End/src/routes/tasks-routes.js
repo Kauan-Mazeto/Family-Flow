@@ -1,13 +1,12 @@
 import express from 'express';
 import { authRole } from '../middlewares/authRole.js';
 import { authToken } from '../middlewares/authToken.js';
-import { task_adm, remove_task_adm, create_task_user, get_task_user, patch_task_adm } from '../controller/tasks-controller.js';
-import { create_daily_task_simple, get_family_daily_tasks } from '../controller/tasks-simple.js';
+import { task_adm, remove_task_adm, create_task_user, get_task_user, patch_task_adm, create_daily_task_admin, get_family_daily_tasks_controller } from '../controller/tasks-controller.js';
 
 const rotas_tasks = express();
 
 rotas_tasks.post('/tasks/create/daily', authToken, authRole, (req, res) => {
-    create_daily_task_simple(req, res);
+    create_daily_task_admin(req, res);
 });
 
 rotas_tasks.delete('/tasks/delete', authToken, authRole, (req, res) => {
@@ -27,7 +26,7 @@ rotas_tasks.get('/tasks/info', authToken, (req, res) => {
 });
 
 rotas_tasks.get('/tasks/daily/family', authToken, (req, res) => {
-    get_family_daily_tasks(req, res);
+    get_family_daily_tasks_controller(req, res);
 });
 
 export default rotas_tasks;
