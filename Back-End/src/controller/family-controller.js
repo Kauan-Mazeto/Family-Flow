@@ -198,7 +198,7 @@ export async function get_user_family(req, res) {
 export async function delete_family(req, res) {
     const { code_family } = req.body;
     // vem do front o código da familia. ex: C2V0BQT7
-
+    
     if (!code_family) {
         return res.status(400).json({mensagem: "Codigo familiar é obrigatorio."})
     };
