@@ -185,7 +185,8 @@ export async function get_user_family(req, res) {
                 id: membroFamilia.family.id,
                 nome: membroFamilia.family.name,
                 codigo: membroFamilia.family.family_code,
-                role: membroFamilia.role
+                role: membroFamilia.role,
+                user_id: req.usuario.id
             }
         });
 

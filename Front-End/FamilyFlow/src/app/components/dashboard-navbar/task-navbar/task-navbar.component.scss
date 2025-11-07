@@ -142,6 +142,12 @@
                             height: 18px;
                             cursor: pointer;
                             accent-color: rgb(193, 152, 86);
+                            
+                            &:disabled {
+                                cursor: not-allowed;
+                                opacity: 0.5;
+                                accent-color: #ccc;
+                            }
                         }
 
                         .fa-trash {
@@ -597,6 +603,12 @@
                                 height: 18px;
                                 accent-color: #10b981;
                                 cursor: pointer;
+                                
+                                &:disabled {
+                                    cursor: not-allowed;
+                                    opacity: 0.5;
+                                    accent-color: #ccc;
+                                }
                             }
 
                             .fa-trash {

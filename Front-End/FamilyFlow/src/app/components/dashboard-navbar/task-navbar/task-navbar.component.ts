@@ -30,6 +30,7 @@ interface Task {
   title: string;
   description: string;
   member_name: string;
+  member_id: number;
   priority: string;
   status: string;
   type_task: string;
@@ -53,6 +54,7 @@ export class TaskNavbarComponent implements OnInit {
   familyMembers: FamilyMember[] = [];
   isLoading: boolean = false;
   isAdmin: boolean = false;
+  currentUserId: number = 0;
 
   constructor(
     private fb: FormBuilder,
@@ -88,6 +90,8 @@ export class TaskNavbarComponent implements OnInit {
     }).subscribe({
       next: (response: any) => {
         this.isAdmin = response.familia?.role === 'ADMIN';
+        this.currentUserId = response.familia?.user_id || 0;
+        console.log('👤 ID do usuário atual:', this.currentUserId);
         this.cdr.detectChanges();
       },
       error: (error) => {
@@ -209,6 +213,7 @@ export class TaskNavbarComponent implements OnInit {
             title: response.task.title,
             description: response.task.description,
             member_name: response.task.member_name,
+            member_id: response.task.member_id,
             priority: response.task.priority,
             status: response.task.status,
             type_task: response.task.type_task
@@ -258,7 +263,13 @@ export class TaskNavbarComponent implements OnInit {
     console.log('🎯 Status atual:', task.status);
     console.log('🎯 URL da requisição:', `${environment.apiUrl}/tasks/${task.id}/complete`);
     
-      console.log('🎯 onTaskComplete called for:', task.id, task.title);
+    // Verificar se o usuário pode editar esta tarefa
+    if (!this.canEditTask(task)) {
+      alert('Apenas o responsável pela tarefa pode marcá-la como concluída.');
+      return;
+    }
+    
+    console.log('🎯 onTaskComplete called for:', task.id, task.title);
 
       // Marcar como loading para bloquear UI
       task._loading = true;
@@ -315,7 +326,13 @@ export class TaskNavbarComponent implements OnInit {
   onTaskUncomplete(task: Task) {
     console.log('🔄 Desmarcando tarefa como concluída:', task.title);
     
-      console.log('🔄 onTaskUncomplete called for:', task.id, task.title);
+    // Verificar se o usuário pode editar esta tarefa
+    if (!this.canEditTask(task)) {
+      alert('Apenas o responsável pela tarefa pode desmarcá-la.');
+      return;
+    }
+    
+    console.log('🔄 onTaskUncomplete called for:', task.id, task.title);
 
       task._loading = true;
       this.cdr.detectChanges();
@@ -414,6 +431,11 @@ export class TaskNavbarComponent implements OnInit {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  canEditTask(task: Task): boolean {
+    // Usuário pode editar se é o responsável pela tarefa
+    return task.member_id === this.currentUserId;
   }
 
 }

@@ -436,6 +436,13 @@ export async function complete_task_controller(req, res) {
             return res.status(404).json({ mensagem: "Tarefa não encontrada." });
         }
 
+        // Verificar se o usuário é o responsável pela tarefa
+        if (task.member_id !== req.usuario.id) {
+            return res.status(403).json({ 
+                mensagem: "Apenas a pessoa responsável pela tarefa pode marcá-la como concluída." 
+            });
+        }
+
         // Atualizar a tarefa como concluída
         const updatedTask = await prisma.task.update({
             where: { id: taskId },
@@ -484,6 +491,13 @@ export async function uncomplete_task_controller(req, res) {
 
         if (!task) {
             return res.status(404).json({ mensagem: "Tarefa não encontrada." });
+        }
+
+        // Verificar se o usuário é o responsável pela tarefa
+        if (task.member_id !== req.usuario.id) {
+            return res.status(403).json({ 
+                mensagem: "Apenas a pessoa responsável pela tarefa pode desmarcá-la." 
+            });
         }
 
         // Atualizar a tarefa como pendente
