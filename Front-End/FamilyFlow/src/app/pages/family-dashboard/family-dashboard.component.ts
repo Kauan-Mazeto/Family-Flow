@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
 import { NavbarDataComponent, NavbarData } from '../../components/navbar/navbar.component';
 import { NavbarAtalhosComponent } from '../../components/navbar-atalhos/navbar-atalhos.component';
@@ -14,6 +15,7 @@ import { NavbarAtalhosComponent } from '../../components/navbar-atalhos/navbar-a
 export class FamilyDashboardComponent implements OnInit {
   
   authService = inject(AuthService);
+  router = inject(Router);
   cdr = inject(ChangeDetectorRef);
   
   familyName: string = '';
@@ -44,73 +46,66 @@ export class FamilyDashboardComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
-    console.log('🚀 FamilyDashboardComponent: Iniciando carregamento...');
+    console.log('🏠 Dashboard Component - Iniciando...');
+    
+    // VERIFICAÇÃO DE SEGURANÇA ADICIONAL NO COMPONENTE
+    this.performSecurityCheck();
     
     // Carregar dados
     this.loadFamilyInfo();
     this.loadUserInfo();
     
-    // Forçar saída do loading após 2 segundos no máximo
+    //saída do loading após 2 segundos no máximo
     setTimeout(() => {
-      console.log('⏰ Timeout: Verificando estado do loading...');
-      console.log('🔍 Estado atual isLoading:', this.isLoading);
-      console.log('🔍 Dados atuais:', {
-        familyName: this.familyName,
-        userName: this.userName,
-        userRole: this.userRole
-      });
       
       if (this.isLoading) {
-        console.log('⚠️ Ainda em loading, forçando saída...');
         this.isLoading = false;
         
         // Se não carregou nada, usar valores padrão
         if (!this.familyName) {
-          console.log('📝 Definindo familyName padrão');
           this.familyName = 'Minha Família';
           this.familyCode = 'FAM001';
         }
         if (!this.userName) {
-          console.log('📝 Definindo userName padrão');
           this.userName = 'Usuário';
           this.userEmail = 'usuario@email.com';
         }
         
         this.cdr.detectChanges();
-        console.log('🔄 ChangeDetectorRef.detectChanges() chamado no timeout');
-      } else {
-        console.log('✅ Loading já foi desabilitado normalmente');
       }
     }, 2000);
   }
 
   loadFamilyInfo() {
-    console.log('👨‍👩‍👧‍👦 Carregando informações da família...');
-    console.log('🔍 Estado atual isLoading:', this.isLoading);
     
     this.authService.getUserFamily().subscribe({
       next: (response) => {
-        console.log('✅ Family info received:', response);
+        // Verificar se realmente tem dados da família
+        if (!response.familia || !response.familia.nome) {
+          console.log('Usuário não possui família válida, redirecionando...');
+          this.router.navigate(['/family/option']);
+          return;
+        }
+        
         this.familyName = response.familia.nome;
         this.familyCode = response.familia.codigo;
         this.userRole = response.familia.role;
         this.isLoading = false;
         
-        console.log('🔄 Definindo isLoading = false');
-        console.log('📊 Dados atualizados:', {
-          familyName: this.familyName,
-          userRole: this.userRole,
-          isLoading: this.isLoading
-        });
-        
         this.cdr.detectChanges();
-        console.log('🔄 ChangeDetectorRef.detectChanges() chamado');
       },
       error: (error) => {
-        console.error('❌ Error loading family info:', error);
+        console.error('Erro ao carregar informações da família:', error);
+        
+        // Se erro indica que usuário não tem família, redirecionar
+        if (error.mensagem && error.mensagem.includes('não está em uma família')) {
+          console.log('Usuário não está em uma família, redirecionando...');
+          this.router.navigate(['/family/option']);
+          return;
+        }
+        
         this.errorMessage = error.mensagem || 'Erro ao carregar informações da família';
         this.isLoading = false;
-        console.log('🔄 Definindo isLoading = false (erro)');
         this.cdr.detectChanges();
       }
     });
@@ -122,37 +117,26 @@ export class FamilyDashboardComponent implements OnInit {
     this.authService.currentUser$.subscribe({
       next: (user) => {
         if (user) {
-          console.log('✅ User data from observable:', user);
           this.userName = user.name || 'Usuário';
           this.userEmail = user.email || '';
           this.isAdmin = user.is_admin || false;
           
-          console.log('👤 Dados do usuário atualizados:', {
-            userName: this.userName,
-            userEmail: this.userEmail,
-            isAdmin: this.isAdmin
-          });
-          
           this.cdr.detectChanges();
         } else {
-          console.log('⚠️ No user data in observable, trying to get current user...');
           // Se não há dados no observable, tentar obter do backend
           this.getCurrentUser();
         }
       },
       error: (error) => {
-        console.error('❌ Error loading user info:', error);
         this.getCurrentUser(); // Fallback
       }
     });
   }
 
   getCurrentUser() {
-    console.log('🔄 Tentando obter usuário do servidor...');
     // Método alternativo para obter dados do usuário
     this.authService.getCurrentUserFromServer().subscribe({
       next: (response) => {
-        console.log('✅ User data from /me endpoint:', response);
         if (response.usuarioAtual) {
           this.userName = response.usuarioAtual.name || 'Usuário';
           this.userEmail = response.usuarioAtual.email || '';
@@ -160,7 +144,6 @@ export class FamilyDashboardComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('❌ Error getting current user:', error);
         // Se falhar, usar dados básicos
         this.userName = 'Usuário Logado';
         this.userEmail = 'usuario@email.com';
@@ -169,9 +152,35 @@ export class FamilyDashboardComponent implements OnInit {
     });
   }
 
-  onTarefasClick(showTarefas: boolean) {
-    console.log('📋 Evento tarefas recebido:', showTarefas);
-    // Evento recebido do navbar-atalhos, mas a lógica agora está no próprio navbar-atalhos
+  /**
+   * Verificação de segurança adicional no componente
+   * Esta é a última linha de defesa contra acesso não autorizado
+   */
+  private performSecurityCheck() {
+    console.log('🔒 Dashboard - Verificação de segurança adicional');
+    
+    // Verificar se usuário está logado
+    if (!this.authService.isLoggedIn()) {
+      console.log('❌ Dashboard - Usuário não logado, redirecionando');
+      this.router.navigate(['/users/login']);
+      return;
+    }
+
+    // Verificar se tem família
+    this.authService.checkUserHasFamily().subscribe({
+      next: (hasFamily) => {
+        if (!hasFamily) {
+          console.log('❌ Dashboard - Usuário sem família, redirecionando');
+          this.router.navigate(['/family/option']);
+          return;
+        }
+        console.log('✅ Dashboard - Verificação de segurança passou');
+      },
+      error: (error) => {
+        console.error('❌ Dashboard - Erro na verificação, redirecionando', error);
+        this.router.navigate(['/family/option']);
+      }
+    });
   }
 
 }

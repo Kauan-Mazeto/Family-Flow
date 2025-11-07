@@ -9,7 +9,7 @@ export interface User {
   created_at: string;
 }
 
-// Dados para login (baseado no seu controller)
+// Dados para login
 export interface LoginRequest {
   email: string;
   password: string;
@@ -25,14 +25,14 @@ export interface TempRegisterData {
   family_code?: string;
 }
 
-// Dados para registro (baseado no seu controller)
+// Dados para registro
 export interface RegisterRequest {
   email_usuario: string;
   senha_usuario: string;
   nome_usuario: string;
 }
 
-// Resposta de login (baseada no seu controller)
+// Resposta de login
 export interface LoginResponse {
   mensagem: string;
   user: {
@@ -42,7 +42,7 @@ export interface LoginResponse {
   };
 }
 
-// Resposta de registro (baseada no seu controller)
+// Resposta de registro
 export interface RegisterResponse {
   mensagem: string;
   usuario: {
@@ -52,14 +52,20 @@ export interface RegisterResponse {
   };
 }
 
-// Resposta de usuário atual (baseada no seu controller)
+// Resposta de usuário atual
 export interface UserMeResponse {
   usuarioAtual: User;
+  user_active_system?: {
+    family_id: number;
+    id: number;
+    role: string;
+  };
 }
 
-// Resposta de erro (baseada nas suas respostas de erro)
+// Resposta de erro
 export interface ErrorResponse {
   mensagem: string;
+  erro_tipo?: string;
 }
 
 // Interface para criar família

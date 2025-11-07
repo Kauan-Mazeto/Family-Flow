@@ -19,12 +19,12 @@
     </h3>
 </div>
 
-<!--Conteúdo de Tarefas Diárias-->
+<!--Conteúdo de Tarefas Diárias - Kanban Board-->
 <div class="task" *ngIf="isTabActive.diarias">
     <div class="task-desc">
         <div class="desc">
             <div class="desc-text">
-                <h1>Tarefas Diárias</h1>
+                <h1>Tarefas Diárias - Quadro Kanban</h1>
                 <p>Tarefas criadas pelo Administrador - visíveis para toda a família</p>
             </div>
 
@@ -39,32 +39,106 @@
         </div>
     </div>
 
-    <div class="tasks">
-        <div class="task-card" *ngFor="let task of dailyTasks">
-            <div class="task-info">
-                <div class="responsible">
-                    <input type="checkbox" class="check-response">
-                    <span class="fas fa-trash"></span>
-                </div>
-                <h2>{{ task.title }}</h2>
-                <p>{{ task.description || 'Sem descrição' }}</p>
-                <small class="task-member">Responsável: {{ task.member_name }}</small>
+    <!-- Quadro Kanban com dois colunas -->
+    <div class="kanban-board">
+        <!-- Coluna de Tarefas Atribuídas -->
+        <div class="kanban-column">
+            <div class="column-header">
+                <h3>
+                    <i class="fas fa-clipboard-list"></i>
+                    Tarefas Atribuídas
+                </h3>
+                <span class="task-count">{{ getAssignedTasks().length }}</span>
             </div>
 
-            <div class="task-atribute">
-                <span class="task-priority" [ngClass]="'priority-' + task.priority.toLowerCase()">
-                    Prioridade {{ task.priority.toLowerCase() }}
-                </span>
-                <span class="task-status" [ngClass]="'status-' + task.status.toLowerCase()">
-                    {{ task.status }}
-                </span>
+            <div class="column-content">
+                <div class="task-card assigned" *ngFor="let task of getAssignedTasks()">
+                    <div class="task-info">
+                        <div class="responsible">
+                            <input 
+                                type="checkbox" 
+                                class="check-response"
+                                [checked]="false"
+                                (change)="onTaskComplete(task)"
+                            >
+                            <span class="fas fa-trash" (click)="onDeleteTask(task)" *ngIf="isAdmin"></span>
+                        </div>
+                        <h2>{{ task.title }}</h2>
+                        <p>{{ task.description || 'Sem descrição' }}</p>
+                        <small class="task-member">Responsável: {{ task.member_name }}</small>
+                    </div>
+
+                    <div class="task-atribute">
+                        <span class="task-priority" [ngClass]="'priority-' + task.priority.toLowerCase()">
+                            <i class="fas fa-flag"></i>
+                            {{ getPriorityLabel(task.priority) }}
+                        </span>
+                        <span class="task-status status-pendente">
+                            <i class="fas fa-clock"></i>
+                            Pendente
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Mensagem quando não há tarefas atribuídas -->
+                <div class="no-tasks" *ngIf="getAssignedTasks().length === 0">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h4>Nenhuma tarefa atribuída</h4>
+                    <p>As novas tarefas aparecerão aqui</p>
+                </div>
             </div>
         </div>
 
-        <!-- Mensagem quando não há tarefas -->
-        <div class="no-tasks" *ngIf="dailyTasks.length === 0">
-            <i class="fas fa-tasks"></i>
-            <h3>Nenhuma tarefa diária criada ainda.</h3>
+        <!-- Coluna de Tarefas Concluídas -->
+        <div class="kanban-column">
+            <div class="column-header completed">
+                <h3>
+                    <i class="fas fa-check-circle"></i>
+                    Tarefas Concluídas
+                </h3>
+                <span class="task-count completed">{{ getCompletedTasks().length }}</span>
+            </div>
+
+            <div class="column-content">
+                <div class="task-card completed" *ngFor="let task of getCompletedTasks()">
+                    <div class="task-info">
+                        <div class="responsible">
+                            <input 
+                                type="checkbox" 
+                                class="check-response"
+                                [checked]="true"
+                                (change)="onTaskUncomplete(task)"
+                            >
+                            <span class="fas fa-trash" (click)="onDeleteTask(task)" *ngIf="isAdmin"></span>
+                        </div>
+                        <h2>{{ task.title }}</h2>
+                        <p>{{ task.description || 'Sem descrição' }}</p>
+                        <small class="task-member">Responsável: {{ task.member_name }}</small>
+                        <small class="completion-time" *ngIf="task.completed_at">
+                            <i class="fas fa-calendar-check"></i>
+                            Concluída em: {{ formatDate(task.completed_at) }}
+                        </small>
+                    </div>
+
+                    <div class="task-atribute">
+                        <span class="task-priority completed" [ngClass]="'priority-' + task.priority.toLowerCase()">
+                            <i class="fas fa-flag"></i>
+                            {{ getPriorityLabel(task.priority) }}
+                        </span>
+                        <span class="task-status status-concluida">
+                            <i class="fas fa-check-circle"></i>
+                            Concluída
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Mensagem quando não há tarefas concluídas -->
+                <div class="no-tasks" *ngIf="getCompletedTasks().length === 0">
+                    <i class="fas fa-check-circle"></i>
+                    <h4>Nenhuma tarefa concluída</h4>
+                    <p>As tarefas concluídas aparecerão aqui</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>

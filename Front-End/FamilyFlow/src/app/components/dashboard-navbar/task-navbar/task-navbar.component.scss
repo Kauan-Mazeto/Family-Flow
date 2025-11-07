@@ -500,6 +500,231 @@
         }
     }
 
+    // Estilos do Quadro Kanban
+    .kanban-board {
+        display: flex;
+        gap: 2rem;
+        margin: 2rem;
+        min-height: 500px;
+
+        .kanban-column {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+
+            .column-header {
+                background-color: blue;
+                color: white;
+                padding: 1rem 1.5rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                &.completed {
+                    background-color: rgb(236, 149, 8);
+                }
+
+                h3 {
+                    margin: 0;
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+
+                    i {
+                        font-size: 1rem;
+                    }
+                }
+
+                .task-count {
+                    background: rgba(255, 255, 255, 0.2);
+                    padding: 0.25rem 0.75rem;
+                    border-radius: 20px;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+
+                    &.completed {
+                        background: rgba(255, 255, 255, 0.25);
+                    }
+                }
+            }
+
+            .column-content {
+                padding: 1rem;
+                max-height: 600px;
+                overflow-y: auto;
+
+                .task-card {
+                    background: white;
+                    border-radius: 8px;
+                    padding: 1rem;
+                    margin-bottom: 1rem;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    transition: all 0.3s ease;
+                    border-left: 4px solid #6366f1;
+
+                    &.completed {
+                        border-left-color: #10b981;
+                        background: #f0fdf4;
+
+                        .task-info h2 {
+                            text-decoration: line-through;
+                            color: #6b7280;
+                        }
+
+                        .task-priority.completed {
+                            opacity: 0.7;
+                        }
+                    }
+
+                    &:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    }
+
+                    .task-info {
+                        .responsible {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 0.75rem;
+
+                            .check-response {
+                                width: 18px;
+                                height: 18px;
+                                accent-color: #10b981;
+                                cursor: pointer;
+                            }
+
+                            .fa-trash {
+                                color: #ef4444;
+                                cursor: pointer;
+                                padding: 0.25rem;
+                                border-radius: 4px;
+                                transition: all 0.2s;
+
+                                &:hover {
+                                    background: #fef2f2;
+                                    color: #dc2626;
+                                }
+                            }
+                        }
+
+                        h2 {
+                            margin: 0 0 0.5rem 0;
+                            font-size: 1.1rem;
+                            color: #1f2937;
+                            font-weight: 600;
+                        }
+
+                        p {
+                            margin: 0 0 0.75rem 0;
+                            color: #6b7280;
+                            font-size: 0.9rem;
+                            line-height: 1.4;
+                        }
+
+                        .task-member {
+                            display: block;
+                            color: #9ca3af;
+                            font-size: 0.8rem;
+                            margin-bottom: 0.5rem;
+                        }
+
+                        .completion-time {
+                            display: block;
+                            color: #059669;
+                            font-size: 0.75rem;
+                            font-weight: 500;
+                            margin-top: 0.5rem;
+
+                            i {
+                                margin-right: 0.25rem;
+                            }
+                        }
+                    }
+
+                    .task-atribute {
+                        display: flex;
+                        gap: 0.5rem;
+                        flex-wrap: wrap;
+
+                        .task-priority,
+                        .task-status {
+                            padding: 0.25rem 0.75rem;
+                            border-radius: 20px;
+                            font-size: 0.75rem;
+                            font-weight: 600;
+                            display: flex;
+                            align-items: center;
+                            gap: 0.25rem;
+
+                            i {
+                                font-size: 0.7rem;
+                            }
+                        }
+
+                        .task-priority {
+                            &.priority-baixa {
+                                background: #f3f4f6;
+                                color: #6b7280;
+                            }
+
+                            &.priority-media {
+                                background: #fef3c7;
+                                color: #d97706;
+                            }
+
+                            &.priority-alta {
+                                background: #fee2e2;
+                                color: #dc2626;
+                            }
+                        }
+
+                        .task-status {
+                            &.status-pendente {
+                                background: #fef3c7;
+                                color: #d97706;
+                            }
+
+                            &.status-concluida {
+                                background: #dcfce7;
+                                color: #059669;
+                            }
+                        }
+                    }
+                }
+
+                .no-tasks {
+                    text-align: center;
+                    color: #9ca3af;
+                    padding: 2rem 1rem;
+
+                    i {
+                        font-size: 3rem;
+                        margin-bottom: 1rem;
+                        opacity: 0.3;
+                    }
+
+                    h4 {
+                        margin: 0 0 0.5rem 0;
+                        font-size: 1.1rem;
+                        color: #6b7280;
+                    }
+
+                    p {
+                        margin: 0;
+                        font-size: 0.9rem;
+                        color: #9ca3af;
+                    }
+                }
+            }
+        }
+    }
+
     // Animações para transição suave
     @keyframes fadeIn {
         from {
@@ -520,6 +745,65 @@
         to {
             opacity: 1;
             transform: translateY(0) scale(1);
+        }
+    }
+
+    // Responsividade para o Kanban
+    @media (max-width: 1024px) {
+        .kanban-board {
+            flex-direction: column;
+            gap: 1.5rem;
+            margin: 1rem;
+
+            .kanban-column {
+                .column-content {
+                    max-height: 400px;
+                }
+            }
+        }
+    }
+
+    @media (max-width: 768px) {
+        .kanban-board {
+            margin: 0.5rem;
+            gap: 1rem;
+
+            .kanban-column {
+                .column-header {
+                    padding: 0.75rem 1rem;
+
+                    h3 {
+                        font-size: 1rem;
+                    }
+                }
+
+                .column-content {
+                    padding: 0.75rem;
+
+                    .task-card {
+                        padding: 0.75rem;
+                        margin-bottom: 0.75rem;
+
+                        .task-info {
+                            h2 {
+                                font-size: 1rem;
+                            }
+
+                            p {
+                                font-size: 0.85rem;
+                            }
+                        }
+
+                        .task-atribute {
+                            .task-priority,
+                            .task-status {
+                                font-size: 0.7rem;
+                                padding: 0.2rem 0.6rem;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

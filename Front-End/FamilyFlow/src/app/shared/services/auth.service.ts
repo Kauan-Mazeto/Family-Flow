@@ -154,6 +154,30 @@ export class AuthService {
   }
 
   /**
+   * Limpar estado local de autenticação (para resolver estados inconsistentes)
+   */
+  clearLocalState(): void {
+    console.log('🧹 Limpando estado local de autenticação');
+    this.currentUserSubject.next(null);
+    
+    // Limpar possíveis dados no localStorage
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userToken');
+    }
+    
+    // Limpar possíveis dados no sessionStorage
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem('currentUser');
+      sessionStorage.removeItem('authToken');
+      sessionStorage.removeItem('userToken');
+    }
+    
+    console.log('🧹 Estado local completamente limpo');
+  }
+
+  /**
    * Verificar se usuário está logado
    */
   isLoggedIn(): boolean {
@@ -171,7 +195,7 @@ export class AuthService {
    * Carregar informações do usuário atual
    */
   loadUserInfo(): void {
-    console.log('AuthService: 👤 Carregando informações do usuário...');
+    console.log('AuthService: Carregando informações do usuário...');
     this.getCurrentUserFromServer().subscribe({
       next: (response) => {
         console.log('AuthService: Informações do usuário carregadas:', response);
@@ -351,7 +375,6 @@ export class AuthService {
 
   /**
    * Validar código de família (baseado na rota POST /family/enter)
-   * @deprecated Use enterFamily() instead - este método faz a mesma coisa
    */
   validateFamilyCode(codeData: EnterFamilyRequest): Observable<EnterFamilyResponse> {
     return this.enterFamily(codeData);
@@ -391,7 +414,7 @@ export class AuthService {
             console.log('AuthService:  Testando autenticação antes de criar família...');
             
             // Aguardar um pouco para garantir que o cookie seja definido
-            console.log('AuthService: ⏱️ Aguardando cookie ser definido...');
+            console.log('AuthService: Aguardando cookie ser definido...');
             return new Observable(observer => {
               setTimeout(() => {
                 observer.next(loginResponse);
@@ -442,9 +465,6 @@ export class AuthService {
     );
   }
 
-  /**
-   * Registro completo otimizado - foco na criação correta do usuário e família
-   */  
   completeRegistrationWithFamilySimple(userData: CompleteRegisterRequest): Observable<RegisterResponse> {
     this.loadingSubject.next(true);
 
@@ -483,9 +503,9 @@ export class AuthService {
                 }
               ).pipe(
                 map(fullResponse => {
-                  console.log('AuthService: 📥 RESPOSTA COMPLETA DO BACKEND:', fullResponse);
+                  console.log('AuthService: RESPOSTA COMPLETA DO BACKEND:', fullResponse);
                   const familyResponse = fullResponse.body as CreateFamilyResponse;
-                  console.log('AuthService: ✅ FAMÍLIA CRIADA E USUÁRIO ADICIONADO COMO ADMIN:', familyResponse);
+                  console.log('AuthService: FAMÍLIA CRIADA E USUÁRIO ADICIONADO COMO ADMIN:', familyResponse);
                   return registerResponse;
                 }),
                 catchError(familyError => {
@@ -512,11 +532,11 @@ export class AuthService {
                 }
               ).pipe(
                 map(familyResponse => {
-                  console.log('AuthService: ✅ ENTROU NA FAMÍLIA:', familyResponse);
+                  console.log('AuthService:  ENTROU NA FAMÍLIA:', familyResponse);
                   return registerResponse;
                 }),
                 catchError(familyError => {
-                  console.error('AuthService: ❌ ERRO AO ENTRAR NA FAMÍLIA:', familyError);
+                  console.error('AuthService:  ERRO AO ENTRAR NA FAMÍLIA:', familyError);
                   return throwError(() => ({
                     mensagem: `Usuário criado, mas erro ao entrar na família: ${familyError.error?.mensagem || 'Erro desconhecido'}`
                   }));
@@ -524,14 +544,14 @@ export class AuthService {
               );
               
             } else {
-              console.log('AuthService: ✅ REGISTRO CONCLUÍDO SEM FAMÍLIA');
+              console.log('AuthService:  REGISTRO CONCLUÍDO SEM FAMÍLIA');
               return of(registerResponse);
             }
           })
         );
       }),
       finalize(() => {
-        console.log('AuthService: 🏁 PROCESSO FINALIZADO');
+        console.log('AuthService:  PROCESSO FINALIZADO');
         this.loadingSubject.next(false);
       }),
       catchError(this.handleError.bind(this))
@@ -542,7 +562,7 @@ export class AuthService {
    * Obter informações da família do usuário atual
    */
   getUserFamily(): Observable<{familia: {id: number, nome: string, codigo: string, role: string}}> {
-    console.log('AuthService: 📱 Buscando informações da família do usuário...');
+    console.log('AuthService:  Buscando informações da família do usuário...');
     
     return this.http.get<{familia: {id: number, nome: string, codigo: string, role: string}}>(
       `${this.API_URL}/family/info`,
@@ -586,6 +606,30 @@ export class AuthService {
         console.log('AuthService: Erro do backend');
         if (error.error && error.error.mensagem) {
           errorMessage = error.error.mensagem;
+          
+          // Tratar tipos específicos de erro
+          if (error.error.erro_tipo) {
+            switch (error.error.erro_tipo) {
+              case 'USUARIO_NAO_EXISTE':
+                errorMessage = 'Usuário não encontrado. Verifique seu email.';
+                break;
+              case 'SENHA_INCORRETA':
+                errorMessage = 'Senha incorreta. Tente novamente.';
+                break;
+              case 'USUARIO_INATIVO':
+                errorMessage = 'Sua conta foi desativada. Entre em contato com o suporte.';
+                break;
+              case 'CAMPOS_OBRIGATORIOS':
+                errorMessage = 'Todos os campos são obrigatórios.';
+                break;
+              case 'EMAIL_FORMATO_INVALIDO':
+                errorMessage = 'Formato de email inválido.';
+                break;
+              case 'SENHA_MUITO_CURTA':
+                errorMessage = 'Senha deve ter pelo menos 8 caracteres.';
+                break;
+            }
+          }
         } else {
           switch (error.status) {
             case 0:
@@ -595,7 +639,13 @@ export class AuthService {
               errorMessage = 'Dados inválidos ou incompletos';
               break;
             case 401:
-              errorMessage = 'Email ou senha inválidos';
+              errorMessage = 'Credenciais inválidas';
+              break;
+            case 403:
+              errorMessage = 'Acesso negado';
+              break;
+            case 404:
+              errorMessage = 'Usuário não encontrado';
               break;
             case 409:
               errorMessage = 'Email já cadastrado';
@@ -625,10 +675,31 @@ export class AuthService {
     
     console.log('AuthService: Mensagem de erro final:', errorMessage);
     
-    const errorResponse: ErrorResponse = {
+    // Se o erro original tem erro_tipo, preservar essa informação
+    let errorResponse: ErrorResponse = {
       mensagem: errorMessage
     };
     
+    if (error instanceof HttpErrorResponse && error.error && error.error.erro_tipo) {
+      errorResponse.erro_tipo = error.error.erro_tipo;
+    }
+    
     return throwError(() => errorResponse);
+  }
+
+  /**
+   * Verificar se o usuário tem família
+   */
+  checkUserHasFamily(): Observable<boolean> {
+    return this.getCurrentUserFromServer().pipe(
+      map(response => {
+        // Se user_active_system existe e não contém mensagem de erro, usuário tem família
+        return !!(response.user_active_system && response.user_active_system.family_id);
+      }),
+      catchError(() => {
+        // Em caso de erro, assumir que não tem família
+        return of(false);
+      })
+    );
   }
 }

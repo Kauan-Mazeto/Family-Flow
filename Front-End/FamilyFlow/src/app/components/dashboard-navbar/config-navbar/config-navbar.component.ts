@@ -1,6 +1,8 @@
 import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { AuthService } from '../../../shared/services/auth.service';
 import { environment } from '../../../../environments/environment';
 
 interface UserData {
@@ -30,11 +32,15 @@ export class ConfigNavbarComponent implements OnInit {
   // Usando injeção moderna do Angular 14+
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
+  private authService = inject(AuthService);
 
   userData: UserData | null = null;
   familyData: FamilyData | null = null;
   isLoading: boolean = true;
   familyCodeArray: string[] = [];
+  isLoggingOut: boolean = false;
+  isLeavingFamily: boolean = false;
   private requestsCompleted = 0;
 
   ngOnInit() {
@@ -52,7 +58,7 @@ export class ConfigNavbarComponent implements OnInit {
         this.checkLoadingComplete();
       },
       error: (error) => {
-        console.error('❌ Erro ao carregar dados do usuário:', error);
+        console.error('Erro ao carregar dados do usuário:', error);
         this.checkLoadingComplete();
       }
     });
@@ -70,7 +76,7 @@ export class ConfigNavbarComponent implements OnInit {
         this.checkLoadingComplete();
       },
       error: (error) => {
-        console.error('❌ Erro ao carregar dados da família:', error);
+        console.error('Erro ao carregar dados da família:', error);
         this.checkLoadingComplete();
       }
     });
@@ -93,5 +99,70 @@ export class ConfigNavbarComponent implements OnInit {
   // Método helper para obter o texto do role
   get userRoleText(): string {
     return this.isUserAdmin ? 'Administrador' : 'Membro';
+  }
+
+  // Função para fazer logout da conta
+  logoutUser() {
+    if (this.isLoggingOut) return;
+    
+    const confirmLogout = confirm('Tem certeza que deseja sair da sua conta?');
+    if (!confirmLogout) return;
+
+    this.isLoggingOut = true;
+    
+    this.authService.logout().subscribe({
+      next: (response) => {
+        alert('Logout realizado com sucesso!');
+        this.router.navigate(['/initial']);
+      },
+      error: (error) => {
+        
+        // Mesmo com erro, redirecionar para página inicial por segurança
+        alert('Erro no logout, mas você será redirecionado por segurança.');
+        this.router.navigate(['/initial']);
+      },
+      complete: () => {
+        this.isLoggingOut = false;
+      }
+    });
+  }
+
+  // Função para sair da família
+  leaveFamily() {
+    if (this.isLeavingFamily) return;
+    
+    const confirmLeave = confirm('Tem certeza que deseja sair da família? Você precisará de um novo código para entrar novamente.');
+    if (!confirmLeave) return;
+
+    this.isLeavingFamily = true;
+
+    this.http.post(`${environment.apiUrl}/family/leave`, {}, {
+      withCredentials: true
+    }).subscribe({
+      next: (response: any) => {
+        alert('Você saiu da família com sucesso!');
+        // Redirecionar para página de login para reautenticar
+        this.router.navigate(['/users/login']);
+      },
+      error: (error) => {
+        
+        let errorMessage = 'Erro ao sair da família. Tente novamente.';
+        
+        if (error.error?.mensagem) {
+          errorMessage = error.error.mensagem;
+        } else if (error.status === 400) {
+          errorMessage = 'Operação não permitida. Verifique se você pode sair da família.';
+        } else if (error.status === 401) {
+          errorMessage = 'Sessão expirada. Faça login novamente.';
+        } else if (error.status === 404) {
+          errorMessage = 'Endpoint não encontrado. Verifique se o backend está atualizado.';
+        }
+        
+        alert(errorMessage);
+      },
+      complete: () => {
+        this.isLeavingFamily = false;
+      }
+    });
   }
 }

@@ -1,5 +1,5 @@
 import express from 'express';
-import { create_family, delete_family, enter_family, get_user_family, get_family_members } from '../controller/family-controller.js';
+import { create_family, delete_family, enter_family, get_user_family, get_family_members, leave_family } from '../controller/family-controller.js';
 import { authToken } from '../middlewares/authToken.js';
 import { authAdminFamily } from '../middlewares/authAdminFamily.js';
 
@@ -19,6 +19,10 @@ rotas_family.get('/family/info', authToken, (req, res) => {
 
 rotas_family.get('/family/members', authToken, (req, res) => {
     get_family_members(req, res);
+});
+
+rotas_family.post('/family/leave', authToken, (req, res) => {
+    leave_family(req, res);
 });
 
 rotas_family.delete('/family/delete', authToken, authAdminFamily, (req, res) => {

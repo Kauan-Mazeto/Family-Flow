@@ -1,7 +1,7 @@
 import express from 'express';
 import { authRole } from '../middlewares/authRole.js';
 import { authToken } from '../middlewares/authToken.js';
-import { task_adm, remove_task_adm, create_task_user, get_task_user, patch_task_adm, create_daily_task_admin, get_family_daily_tasks_controller } from '../controller/tasks-controller.js';
+import { task_adm, remove_task_adm, create_task_user, get_task_user, patch_task_adm, create_daily_task_admin, get_family_daily_tasks_controller, complete_task_controller, uncomplete_task_controller, delete_task_controller } from '../controller/tasks-controller.js';
 
 const rotas_tasks = express();
 
@@ -27,6 +27,19 @@ rotas_tasks.get('/tasks/info', authToken, (req, res) => {
 
 rotas_tasks.get('/tasks/daily/family', authToken, (req, res) => {
     get_family_daily_tasks_controller(req, res);
+});
+
+// Novas rotas para o sistema Kanban
+rotas_tasks.put('/tasks/:id/complete', authToken, (req, res) => {
+    complete_task_controller(req, res);
+});
+
+rotas_tasks.put('/tasks/:id/uncomplete', authToken, (req, res) => {
+    uncomplete_task_controller(req, res);
+});
+
+rotas_tasks.delete('/tasks/:id', authToken, authRole, (req, res) => {
+    delete_task_controller(req, res);
 });
 
 export default rotas_tasks;

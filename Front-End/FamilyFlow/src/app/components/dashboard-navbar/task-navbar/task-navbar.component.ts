@@ -20,6 +20,11 @@ interface CreateTaskRequest {
   type_task: string;
 }
 
+interface TaskApiResponse {
+  mensagem: string;
+  task: Task;
+}
+
 interface Task {
   id: number;
   title: string;
@@ -28,8 +33,9 @@ interface Task {
   priority: string;
   status: string;
   type_task: string;
+  completed_at?: string;
+  _loading?: boolean;
 }
-
 @Component({
   selector: 'app-task-navbar',
   standalone: true,
@@ -80,12 +86,12 @@ export class TaskNavbarComponent implements OnInit {
     this.http.get<{familia: any}>(`${environment.apiUrl}/family/info`, {
       withCredentials: true
     }).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         this.isAdmin = response.familia?.role === 'ADMIN';
         this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('❌ Erro ao verificar papel do usuário na família:', error);
+        console.error(' Erro ao verificar papel do usuário na família:', error);
         
         // Retry após 1 segundo em caso de erro
         setTimeout(() => {
@@ -128,7 +134,7 @@ export class TaskNavbarComponent implements OnInit {
     this.http.get<{membros: FamilyMember[]}>(`${environment.apiUrl}/family/members`, {
       withCredentials: true
     }).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         this.familyMembers = response.membros;
         
         // Define o primeiro membro como padrão no formulário
@@ -154,7 +160,7 @@ export class TaskNavbarComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('❌ Erro ao carregar tarefas diárias:', error);
+        console.error('Erro ao carregar tarefas diárias:', error);
         
         // Se for erro 401 (não autenticado), tentar novamente em 1 segundo
         if (error.status === 401) {
@@ -191,7 +197,8 @@ export class TaskNavbarComponent implements OnInit {
         status_task: 'PENDENTE',
         type_task: 'diaria'
       };
-
+      
+      // Enviar dados para o backend
       this.http.post<{task: any}>(`${environment.apiUrl}/tasks/create/daily`, taskData, {
         withCredentials: true
       }).subscribe({
@@ -212,7 +219,7 @@ export class TaskNavbarComponent implements OnInit {
           // Recarregar a lista de tarefas para mostrar todas as tarefas da família
           this.loadDailyTasks();
           
-          // Forçar detecção de mudanças
+          //detecção de mudanças
           this.cdr.detectChanges();
           
           // Limpar formulário
@@ -227,7 +234,7 @@ export class TaskNavbarComponent implements OnInit {
           this.isLoading = false;
         },
         error: (error) => {
-          console.error('❌ Erro ao criar tarefa:', error);
+          console.error('Erro ao criar tarefa:', error);
           this.isLoading = false;
         }
       });
@@ -236,6 +243,177 @@ export class TaskNavbarComponent implements OnInit {
     }
   }
 
+  // Métodos para o sistema Kanban
+  getAssignedTasks(): Task[] {
+    return this.dailyTasks.filter(task => task.status === 'PENDENTE' || task.status === 'EM_ANDAMENTO');
+  }
 
+  getCompletedTasks(): Task[] {
+    return this.dailyTasks.filter(task => task.status === 'CONCLUIDA');
+  }
+
+  onTaskComplete(task: Task) {
+    console.log('🎯 Completando tarefa:', task.title);
+    console.log('🎯 ID da tarefa:', task.id);
+    console.log('🎯 Status atual:', task.status);
+    console.log('🎯 URL da requisição:', `${environment.apiUrl}/tasks/${task.id}/complete`);
+    
+      console.log('🎯 onTaskComplete called for:', task.id, task.title);
+
+      // Marcar como loading para bloquear UI
+      task._loading = true;
+      this.cdr.detectChanges();
+
+      // Otimisticamente atualizar UI para concluída
+      const previousStatus = task.status;
+      const previousCompletedAt = task.completed_at;
+      task.status = 'CONCLUIDA';
+      task.completed_at = new Date().toISOString();
+      this.cdr.detectChanges();
+
+      this.http.put<TaskApiResponse>(`${environment.apiUrl}/tasks/${task.id}/complete`, {}, {
+        withCredentials: true
+      }).subscribe({
+        next: (response) => {
+          console.log('✅ Tarefa marcada como concluída no backend:', task.id);
+          task._loading = false;
+          // Atualizar com valores do backend se fornecidos
+          if (response && response.task) {
+            const idx = this.dailyTasks.findIndex(t => t.id === task.id);
+            if (idx !== -1) {
+              this.dailyTasks[idx] = { ...this.dailyTasks[idx], ...response.task } as Task;
+            }
+          }
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('❌ Erro ao completar tarefa:', error);
+          console.error('❌ Status do erro:', error.status);
+          console.error('❌ Mensagem do erro:', error.error);
+          console.error('❌ URL da requisição:', error.url);
+          
+          // Reverter mudanças locais
+          task.status = previousStatus;
+          task.completed_at = previousCompletedAt;
+          task._loading = false;
+          this.cdr.detectChanges();
+          
+          let errorMessage = 'Erro ao marcar tarefa como concluída. Tente novamente.';
+          if (error.status === 0) {
+            errorMessage = 'Servidor não está respondendo. Verifique se o backend está rodando.';
+          } else if (error.status === 500) {
+            errorMessage = 'Erro interno do servidor. Verifique os logs do backend.';
+          } else if (error.error?.mensagem) {
+            errorMessage = error.error.mensagem;
+          }
+          
+          alert(errorMessage);
+        }
+      });
+  }
+
+  onTaskUncomplete(task: Task) {
+    console.log('🔄 Desmarcando tarefa como concluída:', task.title);
+    
+      console.log('🔄 onTaskUncomplete called for:', task.id, task.title);
+
+      task._loading = true;
+      this.cdr.detectChanges();
+
+      const previousStatus = task.status;
+      const previousCompletedAt = task.completed_at;
+      task.status = 'PENDENTE';
+      task.completed_at = undefined;
+      this.cdr.detectChanges();
+
+      this.http.put<TaskApiResponse>(`${environment.apiUrl}/tasks/${task.id}/uncomplete`, {}, {
+        withCredentials: true
+      }).subscribe({
+        next: (response) => {
+          console.log('✅ Tarefa desmarcada no backend:', task.id);
+          task._loading = false;
+          if (response && response.task) {
+            const idx = this.dailyTasks.findIndex(t => t.id === task.id);
+            if (idx !== -1) {
+              this.dailyTasks[idx] = { ...this.dailyTasks[idx], ...response.task } as Task;
+            }
+          }
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('❌ Erro ao desmarcar tarefa:', error);
+          console.error('❌ Status do erro:', error.status);
+          console.error('❌ Mensagem do erro:', error.error);
+          console.error('❌ URL da requisição:', error.url);
+          
+          // Reverter
+          task.status = previousStatus;
+          task.completed_at = previousCompletedAt;
+          task._loading = false;
+          this.cdr.detectChanges();
+          
+          let errorMessage = 'Erro ao desmarcar tarefa. Tente novamente.';
+          if (error.status === 0) {
+            errorMessage = 'Servidor não está respondendo. Verifique se o backend está rodando.';
+          } else if (error.status === 500) {
+            errorMessage = 'Erro interno do servidor. Verifique os logs do backend.';
+          } else if (error.error?.mensagem) {
+            errorMessage = error.error.mensagem;
+          }
+          
+          alert(errorMessage);
+        }
+      });
+  }
+
+  onDeleteTask(task: Task) {
+    if (!this.isAdmin) {
+      console.log('❌ Apenas administradores podem deletar tarefas');
+      return;
+    }
+
+    if (confirm(`Tem certeza que deseja deletar a tarefa "${task.title}"?`)) {
+      console.log('🗑️ Deletando tarefa:', task.title);
+      
+      this.http.delete<TaskApiResponse>(`${environment.apiUrl}/tasks/${task.id}`, {
+        withCredentials: true
+      }).subscribe({
+        next: (response) => {
+          console.log('✅ Tarefa deletada no backend');
+          
+          // Remover localmente
+          this.dailyTasks = this.dailyTasks.filter(t => t.id !== task.id);
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('❌ Erro ao deletar tarefa:', error);
+          // Recarregar tarefas em caso de erro
+          this.loadDailyTasks();
+        }
+      });
+    }
+  }
+
+  getPriorityLabel(priority: string): string {
+    const priorityMap: {[key: string]: string} = {
+      'BAIXA': 'Baixa',
+      'MEDIA': 'Média', 
+      'ALTA': 'Alta'
+    };
+    return priorityMap[priority] || priority;
+  }
+
+  formatDate(dateString: string): string {
+    if (!dateString) return '';
+    
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
 
 }

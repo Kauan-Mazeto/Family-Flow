@@ -3,4 +3,208 @@
   min-height: 100vh;
   background: #f8fafc;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  
+  // Dashboard Layout Responsiveness
+  .dashboard-container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    
+    @media (max-width: 1024px) {
+      padding: 0 0.75rem;
+    }
+    
+    @media (max-width: 768px) {
+      padding: 0 0.5rem;
+    }
+    
+    @media (max-width: 480px) {
+      padding: 0 0.25rem;
+    }
+  }
+  
+  // Main Content Area
+  .dashboard-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 2rem 0;
+    
+    @media (max-width: 1024px) {
+      gap: 1.25rem;
+      padding: 1.5rem 0;
+    }
+    
+    @media (max-width: 768px) {
+      gap: 1rem;
+      padding: 1rem 0;
+    }
+    
+    @media (max-width: 480px) {
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+    }
+  }
+  
+  // Cards and Widgets
+  .dashboard-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    
+    @media (max-width: 1024px) {
+      padding: 1.25rem;
+      border-radius: 10px;
+    }
+    
+    @media (max-width: 768px) {
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
+    }
+    
+    @media (max-width: 480px) {
+      padding: 0.75rem;
+      border-radius: 6px;
+    }
+    
+    &:hover {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+      
+      @media (max-width: 768px) {
+        transform: none;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+  
+  // Grid Layout for Dashboard Components
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    
+    @media (max-width: 1024px) {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+    
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    
+    @media (max-width: 480px) {
+      gap: 0.75rem;
+    }
+  }
+  
+  // Quick Actions Area
+  .quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    
+    @media (max-width: 768px) {
+      gap: 0.75rem;
+    }
+    
+    @media (max-width: 480px) {
+      gap: 0.5rem;
+      flex-direction: column;
+    }
+    
+    .action-btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+      
+      @media (max-width: 768px) {
+        padding: 0.65rem 1.25rem;
+        font-size: 0.9rem;
+      }
+      
+      @media (max-width: 480px) {
+        padding: 0.75rem;
+        width: 100%;
+        font-size: 0.95rem;
+      }
+      
+      &.primary {
+        background: linear-gradient(135deg, rgb(179, 131, 53) 0%, rgb(236, 149, 8) 100%);
+        color: white;
+        
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px rgba(179, 131, 53, 0.3);
+          
+          @media (max-width: 768px) {
+            transform: none;
+          }
+        }
+      }
+      
+      &.secondary {
+        background: #f1f5f9;
+        color: #475569;
+        
+        &:hover {
+          background: #e2e8f0;
+          transform: translateY(-1px);
+          
+          @media (max-width: 768px) {
+            transform: none;
+          }
+        }
+      }
+    }
+  }
+  
+  // Responsive Typography
+  h1, h2, h3, h4, h5, h6 {
+    @media (max-width: 768px) {
+      font-size: calc(1rem + 2vw);
+    }
+    
+    @media (max-width: 480px) {
+      font-size: calc(0.9rem + 2.5vw);
+    }
+  }
+  
+  // Loading States
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #e2e8f0;
+      border-top: 3px solid rgb(179, 131, 53);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      
+      @media (max-width: 480px) {
+        width: 35px;
+        height: 35px;
+        border-width: 2px;
+      }
+    }
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 }

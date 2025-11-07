@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8080', // Conectar diretamente ao backend
+  apiUrl: 'http://localhost:8080',
   endpoints: {
     login: '/users/login',
     register: '/users/register', 

@@ -405,3 +405,157 @@ export async function get_family_daily_tasks_controller(req, res) {
         return res.status(500).json({ mensagem: "Erro interno no servidor." });
     }
 }
+
+// Novos controllers para o sistema Kanban
+export async function complete_task_controller(req, res) {
+    try {
+        const taskId = parseInt(req.params.id);
+        
+        if (!taskId) {
+            return res.status(400).json({ mensagem: "ID da tarefa é obrigatório." });
+        }
+
+        // Verificar se a tarefa existe e se o usuário tem acesso a ela
+        const familyMember = await prisma.familyMember.findFirst({
+            where: { user_id: req.usuario.id }
+        });
+
+        if (!familyMember) {
+            return res.status(400).json({ mensagem: "Usuário não está em nenhuma família." });
+        }
+
+        const task = await prisma.task.findFirst({
+            where: {
+                id: taskId,
+                family_id: familyMember.family_id,
+                is_active: true
+            }
+        });
+
+        if (!task) {
+            return res.status(404).json({ mensagem: "Tarefa não encontrada." });
+        }
+
+        // Atualizar a tarefa como concluída
+        const updatedTask = await prisma.task.update({
+            where: { id: taskId },
+            data: {
+                status: 'CONCLUIDA'
+            }
+        });
+
+        console.log('✅ Tarefa marcada como concluída:', updatedTask.title);
+
+        return res.status(200).json({
+            mensagem: "Tarefa marcada como concluída!",
+            task: updatedTask
+        });
+
+    } catch (err) {
+        console.error('❌ Erro ao completar tarefa:', err);
+        return res.status(500).json({ mensagem: "Erro interno no servidor." });
+    }
+}
+
+export async function uncomplete_task_controller(req, res) {
+    try {
+        const taskId = parseInt(req.params.id);
+        
+        if (!taskId) {
+            return res.status(400).json({ mensagem: "ID da tarefa é obrigatório." });
+        }
+
+        // Verificar se a tarefa existe e se o usuário tem acesso a ela
+        const familyMember = await prisma.familyMember.findFirst({
+            where: { user_id: req.usuario.id }
+        });
+
+        if (!familyMember) {
+            return res.status(400).json({ mensagem: "Usuário não está em nenhuma família." });
+        }
+
+        const task = await prisma.task.findFirst({
+            where: {
+                id: taskId,
+                family_id: familyMember.family_id,
+                is_active: true
+            }
+        });
+
+        if (!task) {
+            return res.status(404).json({ mensagem: "Tarefa não encontrada." });
+        }
+
+        // Atualizar a tarefa como pendente
+        const updatedTask = await prisma.task.update({
+            where: { id: taskId },
+            data: {
+                status: 'PENDENTE'
+            }
+        });
+
+        console.log('🔄 Tarefa desmarcada como concluída:', updatedTask.title);
+
+        return res.status(200).json({
+            mensagem: "Tarefa desmarcada como concluída!",
+            task: updatedTask
+        });
+
+    } catch (err) {
+        console.error('❌ Erro ao desmarcar tarefa:', err);
+        return res.status(500).json({ mensagem: "Erro interno no servidor." });
+    }
+}
+
+export async function delete_task_controller(req, res) {
+    try {
+        const taskId = parseInt(req.params.id);
+        
+        if (!taskId) {
+            return res.status(400).json({ mensagem: "ID da tarefa é obrigatório." });
+        }
+
+        // Verificar se o usuário é admin da família
+        const familyMember = await prisma.familyMember.findFirst({
+            where: { 
+                user_id: req.usuario.id,
+                role: 'ADMIN'
+            }
+        });
+
+        if (!familyMember) {
+            return res.status(403).json({ mensagem: "Apenas administradores podem deletar tarefas." });
+        }
+
+        const task = await prisma.task.findFirst({
+            where: {
+                id: taskId,
+                family_id: familyMember.family_id,
+                is_active: true
+            }
+        });
+
+        if (!task) {
+            return res.status(404).json({ mensagem: "Tarefa não encontrada." });
+        }
+
+        // Soft delete - marcar como inativo
+        const deletedTask = await prisma.task.update({
+            where: { id: taskId },
+            data: {
+                is_active: false
+            }
+        });
+
+        console.log('🗑️ Tarefa deletada (soft delete):', deletedTask.title);
+
+        return res.status(200).json({
+            mensagem: "Tarefa deletada com sucesso!",
+            task: deletedTask
+        });
+
+    } catch (err) {
+        console.error('❌ Erro ao deletar tarefa:', err);
+        return res.status(500).json({ mensagem: "Erro interno no servidor." });
+    }
+}

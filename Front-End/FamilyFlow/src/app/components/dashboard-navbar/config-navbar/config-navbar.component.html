@@ -22,7 +22,9 @@
       </p>
       <p class="adm" *ngIf="isLoading">Carregando...</p>
       <div class="exit">
-        <button>Exit</button>
+        <button (click)="logoutUser()" [disabled]="isLoggingOut">
+          {{ isLoggingOut ? 'Saindo...' : 'Sair' }}
+        </button>
       </div>
     </div>
   </div>
@@ -58,6 +60,8 @@
   </div>
 
   <div class="exit">
-    <button>Exit</button>
+    <button (click)="leaveFamily()" [disabled]="isLeavingFamily">
+      {{ isLeavingFamily ? 'Saindo...' : 'Sair da Família' }}
+    </button>
   </div>
 </div>
