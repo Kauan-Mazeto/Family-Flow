@@ -1,18 +1,16 @@
 import { PrismaClient } from '@prisma/client';
 import { family_id_task } from '../functions/functions-controller-family.js';
 import { usuario_atual_nome } from '../functions/functions-controller-user.js';
+import { verifier_date } from '../functions/functions-controller-date.js';
 
 const prisma = new PrismaClient();
-
 
 // |----------------------------------------------------------------------------------------|
 // | as functions abaixo representam das tasks exclusivas do usuario que a criou da familia.|
 // |----------------------------------------------------------------------------------------|
 
-
-
 export async function create_task_user(req, res) {
-    const { desc_task, name_task, priority_task, status_task, type_task } = req.body;
+    const { desc_task, name_task, priority_task, status_task, type_task, date_start, date_end } = req.body;
     // desc_task: descricao da tarefa
     // name_task: nome da tarefa
     // member_task: sempre vai ser o usuario que esta logado
@@ -20,15 +18,16 @@ export async function create_task_user(req, res) {
     // status_task: status da tarefa
     // type_task: tipo da tarefa(diaria/pontual)
 
-    if (!desc_task || !name_task || !priority_task || !status_task || !type_task) {
+    if (!desc_task || !name_task || !priority_task || !status_task || !type_task || !date_start || !date_end) {
         return res.status(404).json({ mensagem: "Informações obrigatórias." });
     };
 
     const id_family = await family_id_task(req.usuario.id);
     const name_active = await usuario_atual_nome(req.usuario.id);
+    const remaining_days = await verifier_date(date_start, date_end);
     const priority_upperCase = priority_task.toUpperCase();
     const status_upperCase = status_task.toUpperCase();
-
+    
     try {
         const task_info = await prisma.task.create({
             data: {
@@ -39,6 +38,9 @@ export async function create_task_user(req, res) {
                 priority: priority_upperCase,
                 status: status_upperCase,
                 type_task: type_task,
+                date_start: new Date(date_start + "T00:00:00Z"),
+                date_end: new Date(date_end + "T00:00:00Z"),
+                days: remaining_days,
                 family: {
                     connect: { 
                         id: Number(id_family) 
@@ -77,6 +79,9 @@ export async function get_task_user(req, res) {
                 description: true,
                 status: true,
                 priority: true,
+                date_end: true,
+                date_start: true,
+                days: true
             }
         });
 

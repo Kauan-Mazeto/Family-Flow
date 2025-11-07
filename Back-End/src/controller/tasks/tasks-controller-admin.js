@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { family_id_task } from '../functions/functions-controller-family.js';
 import { usuario_atual_id } from '../functions/functions-controller-user.js';
+import { verifier_date } from '../functions/functions-controller-date.js';
 
 const prisma = new PrismaClient();
 
@@ -11,7 +12,7 @@ const prisma = new PrismaClient();
 
 export async function task_adm(req, res) {
 
-    const { desc_task, name_task, member_task, priority_task, status_task, type_task } = req.body;
+    const { desc_task, name_task, member_task, priority_task, status_task, type_task, date_start, date_end } = req.body;
     // desc_task: descricao da tarefa
     // name_task: nome da tarefa
     // member_task: membro que ira realizar aquela tarefa
@@ -19,7 +20,7 @@ export async function task_adm(req, res) {
     // status_task: status da tarefa
     // type_task: tipo da tarefa(diaria/pontual)
 
-    if (!desc_task || !name_task || !member_task || !priority_task || !status_task || !type_task) {
+    if (!desc_task || !name_task || !member_task || !priority_task || !status_task || !type_task || !date_start || !date_end) {
         return res.status(404).json({ mensagem: "Informações obrigatórias." });
     };
 
@@ -30,6 +31,7 @@ export async function task_adm(req, res) {
     };
 
     const id_family = await family_id_task(id_member);
+    const remaining_days = await verifier_date(date_start, date_end);
 
     if (!id_family) {
         return res.status(404).json({ mensagem: "Família não encontrada para o membro informado." });
@@ -46,6 +48,9 @@ export async function task_adm(req, res) {
                 priority: priority_task,
                 status: status_task,
                 type_task: type_task,
+                date_start: date_start,
+                date_end: date_end,
+                days: remaining_days,
                 family: {
                     connect: { 
                         id: Number(id_family) 
