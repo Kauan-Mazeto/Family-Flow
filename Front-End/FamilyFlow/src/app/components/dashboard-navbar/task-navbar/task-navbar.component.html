@@ -450,3 +450,55 @@
         </form>
     </div>
 </div>
+
+<!--Conteúdo de Gráfico de Tarefas-->
+<div class="task-chart" *ngIf="isTabActive.grafico">
+    <div class="chart-header">
+        <div class="chart-title">
+            <h1>Estatísticas das Tarefas Diárias</h1>
+            <p>Visualização das tarefas concluídas por membro da família</p>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <div class="chart-wrapper">
+            <div class="chart-content">
+                <canvas #taskChart id="taskChart" width="400" height="400"></canvas>
+            </div>
+        </div>
+        
+        <div class="chart-legend">
+            <h3>Legenda</h3>
+            <div class="legend-items">
+                <div class="legend-item" *ngFor="let member of familyMembers; let i = index">
+                    <span class="legend-color" [style.background-color]="getChartColor(i)"></span>
+                    <span class="legend-label">{{ member.name }}</span>
+                    <span class="legend-count">{{ getCompletedTasksCount(member.id) }} tarefas</span>
+                </div>
+            </div>
+            
+            <div class="chart-stats">
+                <div class="stat-item">
+                    <strong>Total de tarefas:</strong>
+                    <span>{{ dailyTasks.length }}</span>
+                </div>
+                <div class="stat-item">
+                    <strong>Tarefas concluídas:</strong>
+                    <span>{{ getCompletedDailyTasks().length }}</span>
+                </div>
+                <div class="stat-item">
+                    <strong>Taxa de conclusão:</strong>
+                    <span>{{ getCompletionRate() }}%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="chart-info" *ngIf="dailyTasks.length === 0">
+        <div class="no-data-message">
+            <i class="fas fa-chart-pie"></i>
+            <h3>Nenhuma tarefa encontrada</h3>
+            <p>Crie algumas tarefas diárias para visualizar as estatísticas</p>
+        </div>
+    </div>
+</div>

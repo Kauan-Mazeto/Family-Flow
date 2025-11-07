@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -46,7 +46,9 @@ interface Task {
   styleUrls: ['./task-navbar.component.scss']
 })
 
-export class TaskNavbarComponent implements OnInit {
+export class TaskNavbarComponent implements OnInit, AfterViewInit {
+  
+  @ViewChild('taskChart') taskChartRef!: ElementRef<HTMLCanvasElement>;
   
   activeTab: string = 'diarias';
   dailyTasks: Task[] = [];
@@ -59,6 +61,9 @@ export class TaskNavbarComponent implements OnInit {
   isLoading: boolean = false;
   isAdmin: boolean = false;
   currentUserId: number = 0;
+  
+  // Chart instance
+  private chart: any;
 
   constructor(
     private fb: FormBuilder,
@@ -82,6 +87,10 @@ export class TaskNavbarComponent implements OnInit {
 
   ngOnInit() {
     this.initializeComponent();
+  }
+
+  ngAfterViewInit() {
+    // O gráfico será inicializado quando a aba for ativada
   }
 
   private initializeComponent() {
@@ -124,6 +133,11 @@ export class TaskNavbarComponent implements OnInit {
       this.loadDailyTasks();
     } else if (tabType === 'pontuais') {
       this.loadPunctualTasks();
+    } else if (tabType === 'grafico') {
+      // Aguardar o DOM ser atualizado antes de inicializar o gráfico
+      setTimeout(() => {
+        this.initChart();
+      }, 100);
     }
   }
 
@@ -204,10 +218,14 @@ export class TaskNavbarComponent implements OnInit {
   }
 
   loadPunctualTasks() {
+    console.log('🔄 Carregando tarefas pontuais...');
+    console.log('🔗 Endpoint:', `${environment.apiUrl}/tasks/punctual/user`);
+    
     this.http.get<{tasks: Task[]}>(`${environment.apiUrl}/tasks/punctual/user`, {
       withCredentials: true
     }).subscribe({
       next: (response) => {
+        console.log('📋 Resposta do servidor (tarefas pontuais):', response);
         this.punctualTasks = response.tasks || [];
         console.log('📋 Tarefas pontuais carregadas:', this.punctualTasks.length);
         this.cdr.detectChanges();
@@ -301,6 +319,11 @@ export class TaskNavbarComponent implements OnInit {
     const nameControl = this.punctualTaskForm.get('name');
     const dateControl = this.punctualTaskForm.get('scheduled_date');
     
+    console.log('🚀 Iniciando criação de tarefa pontual...');
+    console.log('📝 Estado do formulário:', this.punctualTaskForm.value);
+    console.log('✅ Nome válido:', nameControl?.valid);
+    console.log('📅 Data válida:', dateControl?.valid);
+    
     if (nameControl && nameControl.valid && nameControl.value?.trim() && 
         dateControl && dateControl.valid && dateControl.value) {
       this.isLoading = true;
@@ -313,6 +336,9 @@ export class TaskNavbarComponent implements OnInit {
         priority_task: formData.priority,
         scheduled_date: formData.scheduled_date
       };
+      
+      console.log('📤 Dados que serão enviados:', taskData);
+      console.log('🔗 Endpoint:', `${environment.apiUrl}/tasks/create/punctual`);
       
       // Enviar dados para o backend
       this.http.post<{task: any}>(`${environment.apiUrl}/tasks/create/punctual`, taskData, {
@@ -351,7 +377,10 @@ export class TaskNavbarComponent implements OnInit {
           this.isLoading = false;
         },
         error: (error) => {
-          console.error('Erro ao criar tarefa pontual:', error);
+          console.error('❌ Erro ao criar tarefa pontual:', error);
+          console.error('❌ Status do erro:', error.status);
+          console.error('❌ Mensagem do erro:', error.error);
+          console.error('❌ URL que falhou:', error.url);
           this.isLoading = false;
         }
       });
@@ -572,6 +601,138 @@ export class TaskNavbarComponent implements OnInit {
       month: '2-digit',
       year: 'numeric'
     });
+  }
+
+  // Métodos para o gráfico
+  initChart() {
+    if (this.taskChartRef && this.taskChartRef.nativeElement) {
+      this.loadChartLibrary().then(() => {
+        this.createChart();
+      });
+    }
+  }
+
+  private loadChartLibrary(): Promise<any> {
+    return new Promise((resolve) => {
+      if (typeof (window as any).Chart !== 'undefined') {
+        resolve((window as any).Chart);
+      } else {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+        script.onload = () => {
+          resolve((window as any).Chart);
+        };
+        document.head.appendChild(script);
+      }
+    });
+  }
+
+  private createChart() {
+    const ctx = this.taskChartRef.nativeElement.getContext('2d');
+    const Chart = (window as any).Chart;
+
+    if (this.chart) {
+      this.chart.destroy();
+    }
+
+    const data = this.getChartData();
+    
+    // Se não há dados, não criar gráfico
+    if (data.values.every(val => val === 0)) {
+      return;
+    }
+    
+    this.chart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: data.labels,
+        datasets: [{
+          data: data.values,
+          backgroundColor: data.colors,
+          borderWidth: 3,
+          borderColor: '#ffffff',
+          hoverBorderWidth: 4,
+          hoverBorderColor: '#ffffff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false // Usaremos nossa própria legenda
+          },
+          title: {
+            display: true,
+            text: 'Tarefas Concluídas por Membro',
+            font: {
+              size: 18,
+              weight: 'bold'
+            },
+            color: '#d36d1a',
+            padding: 20
+          },
+          tooltip: {
+            callbacks: {
+              label: (context: any) => {
+                const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                return `${context.label}: ${context.parsed} tarefas (${percentage}%)`;
+              }
+            }
+          }
+        },
+        animation: {
+          animateRotate: true,
+          duration: 1000
+        }
+      }
+    });
+  }
+
+  private getChartData() {
+    const memberTaskCounts = this.familyMembers.map((member, index) => ({
+      name: member.name,
+      count: this.getCompletedTasksCount(member.id),
+      color: this.getChartColor(index)
+    }));
+
+    return {
+      labels: memberTaskCounts.map(m => m.name),
+      values: memberTaskCounts.map(m => m.count),
+      colors: memberTaskCounts.map(m => m.color)
+    };
+  }
+
+  getCompletedTasksCount(memberId: number): number {
+    return this.dailyTasks.filter(task => 
+      task.member_id === memberId && task.status === 'CONCLUIDA'
+    ).length;
+  }
+
+  getChartColor(index: number): string {
+    // Cores do sistema: laranja navbar, azul kanban, verde kanban
+    const colors = [
+      '#d36d1a', // Laranja navbar
+      '#007bff', // Azul kanban
+      '#28a745', // Verde kanban
+      '#ffc107', // Amarelo (complementar)
+      '#6f42c1', // Roxo (complementar)
+      '#dc3545', // Vermelho (complementar)
+      '#17a2b8', // Ciano (complementar)
+      '#fd7e14'  // Laranja claro (complementar)
+    ];
+    return colors[index % colors.length];
+  }
+
+  getCompletedDailyTasks(): Task[] {
+    return this.dailyTasks.filter(task => task.status === 'CONCLUIDA');
+  }
+
+  getCompletionRate(): number {
+    if (this.dailyTasks.length === 0) return 0;
+    const completed = this.getCompletedDailyTasks().length;
+    return Math.round((completed / this.dailyTasks.length) * 100);
   }
 
 }
