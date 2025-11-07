@@ -51,15 +51,21 @@ export async function usuario_atual_id(nomeMembro) {
 };
 
 export async function usuario_atual_nome(idUsuario) {
-    const info_user_name = await prisma.user.findFirst({
-        where: {
-            id: idUsuario
-        },
 
-        select: {
-            name: true
-        }
-    });
+    try {
+        const info_user_name = await prisma.user.findFirst({
+            where: {
+                id: idUsuario
+            },
 
-    return info_user_name;
+            select: {
+                name: true
+            }
+        });
+
+        return info_user_name;
+        
+    } catch (err) {
+        console.error(err);
+    };
 };
