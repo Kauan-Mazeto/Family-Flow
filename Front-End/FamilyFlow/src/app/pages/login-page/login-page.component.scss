@@ -130,78 +130,19 @@
 
             
             .field-error {
-                display: flex;
-                align-items: center;
-                color: red;
+                color: #dc3545;
                 font-family: $fonte-principal;
-                font-size: 0.8rem;
-                font-weight: 600;
+                font-size: 0.9rem;
                 margin-bottom: 1rem;
-                border: none;
-                overflow: hidden;
-                
-                &::after {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    left: -100%;
-                    width: 100%;
-                    height: 100%;
-                    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-                }
             }
             
-            
-            @keyframes slideIn {
-                0% {
-                    opacity: 0;
-                    transform: translateY(-20px) scale(0.9);
-                }
-                100% {
-                    opacity: 1;
-                    transform: translateY(0) scale(1);
-                }
-            }
-            
-
         }
         
         .general-error {
-            color: #ffffff;
-            background: linear-gradient(135deg, #ff4757 0%, #ff3838 100%);
+            color: #dc3545;
             font-family: $fonte-principal;
-            font-size: 0.95rem;
-            font-weight: 600;
-            text-align: center;
-            animation: slideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            max-width: 420px;
-            padding: 1.5rem 2rem;
-            border: none;
-            border-radius: 16px;
-            margin-bottom: 2rem;
-            box-shadow: 0 12px 35px rgba(255, 71, 87, 0.4), 0 5px 15px rgba(0, 0, 0, 0.1);
-            position: relative;
-            overflow: hidden;
-            
-            &::before {
-                content: "🚨";
-                display: block;
-                font-size: 1.5rem;
-                margin-bottom: 0.75rem;
-                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-                animation: bounce 1s infinite alternate;
-            }
-            
-            &::after {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: -100%;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-                animation: shimmer 2.5s infinite;
-            }
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
         }
     }
 
@@ -299,14 +240,13 @@
             }
             
             .general-error {
-                max-width: 95%;
-                padding: 1.2rem 1.5rem;
-                font-size: 0.9rem;
+                color: #dc3545;
+                font-size: 0.85rem;
             }
             
             .field-error {
-                font-size: 0.85rem;
-                padding: 0.8rem 1rem;
+                color: #dc3545;
+                font-size: 0.8rem;
             }
         }
     }
@@ -347,18 +287,13 @@
             }
             
             .general-error {
-                padding: 1rem 1.2rem;
-                font-size: 0.85rem;
-                
-                &::before {
-                    font-size: 1.2rem;
-                    margin-bottom: 0.5rem;
-                }
+                color: #dc3545;
+                font-size: 0.8rem;
             }
             
             .field-error {
-                font-size: 0.8rem;
-                padding: 0.7rem 0.9rem;
+                color: #dc3545;
+                font-size: 0.75rem;
             }
         }
     }

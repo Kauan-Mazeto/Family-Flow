@@ -33,8 +33,7 @@ export class AuthService {
   public loading$ = this.loadingSubject.asObservable();
 
   constructor(private http: HttpClient) {
-    // Verificar se usuário está autenticado ao inicializar
-    this.loadUserInfo();
+    // O guard será responsável por verificar a autenticação quando necessário
   }
 
   /**
@@ -118,21 +117,52 @@ export class AuthService {
    * Buscar dados completos do usuário atual (baseado na sua rota POST /users/me)
    */
   getCurrentUserFromServer(): Observable<UserMeResponse> {
+    console.log('📡 AuthService: Fazendo requisição para verificar usuário no servidor...');
+    console.log('📡 AuthService: URL:', `${this.API_URL}${this.endpoints.userMe}`);
+    console.log('📡 AuthService: Cookies disponíveis:', document.cookie);
+    
+    // Verificar se há cookie tokenAuth
+    const cookies = document.cookie.split(';');
+    const tokenAuth = cookies.find(cookie => cookie.trim().startsWith('tokenAuth='));
+    console.log('📡 AuthService: Token encontrado:', tokenAuth ? 'SIM' : 'NÃO');
+    
     this.loadingSubject.next(true);
     
     return this.http.post<UserMeResponse>(
       `${this.API_URL}${this.endpoints.userMe}`,
       {}, // Body vazio, dados vêm do token/cookie
-      { withCredentials: true }
+      { 
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        observe: 'response' // Para ver headers da resposta
+      }
     ).pipe(
-      map(response => {
-        if (response.usuarioAtual) {
+      map(fullResponse => {
+        const response = fullResponse.body as UserMeResponse;
+        console.log('✅ AuthService: Status da resposta:', fullResponse.status);
+        console.log('✅ AuthService: Headers da resposta:', fullResponse.headers);
+        console.log('✅ AuthService: Corpo da resposta:', response);
+        
+        if (response && response.usuarioAtual) {
+          console.log('✅ AuthService: Usuário encontrado, atualizando cache:', response.usuarioAtual);
           this.currentUserSubject.next(response.usuarioAtual);
+        } else {
+          console.log('⚠️ AuthService: Resposta não contém usuarioAtual');
         }
+        
         this.loadingSubject.next(false);
         return response;
       }),
-      catchError(this.handleError.bind(this))
+      catchError((error) => {
+        console.error('❌ AuthService: Erro na verificação do usuário:', error);
+        console.error('❌ AuthService: Status do erro:', error.status);
+        console.error('❌ AuthService: Corpo do erro:', error.error);
+        console.error('❌ AuthService: URL do erro:', error.url);
+        this.loadingSubject.next(false);
+        return this.handleError(error);
+      })
     );
   }
 

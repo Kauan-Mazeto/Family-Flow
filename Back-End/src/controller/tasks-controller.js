@@ -573,3 +573,92 @@ export async function delete_task_controller(req, res) {
         return res.status(500).json({ mensagem: "Erro interno no servidor." });
     }
 }
+
+// Controllers para tarefas pontuais
+export async function create_punctual_task_controller(req, res) {
+    try {
+        const { desc_task, name_task, priority_task, scheduled_date } = req.body;
+
+        if (!name_task || !scheduled_date) {
+            return res.status(400).json({ mensagem: "Nome da tarefa e data de agendamento são obrigatórios." });
+        }
+
+        // Verificar se o usuário está em uma família
+        const familyMember = await prisma.familyMember.findFirst({
+            where: { user_id: req.usuario.id }
+        });
+
+        if (!familyMember) {
+            return res.status(400).json({ mensagem: "Usuário não está em nenhuma família." });
+        }
+
+        // Obter dados do usuário
+        const user = await prisma.user.findUnique({
+            where: { id: req.usuario.id }
+        });
+
+        // Criar a tarefa pontual
+        const newTask = await prisma.task.create({
+            data: {
+                type_task: 'PONTUAL',
+                title: name_task,
+                description: desc_task || null,
+                member_id: req.usuario.id,
+                member_name: user.name,
+                family_id: familyMember.family_id,
+                priority: priority_task || 'MEDIA',
+                status: 'PENDENTE',
+                scheduled_date: new Date(scheduled_date)
+            }
+        });
+
+        console.log('✅ Tarefa pontual criada:', newTask.title);
+
+        return res.status(201).json({
+            mensagem: "Tarefa pontual criada com sucesso!",
+            task: newTask
+        });
+
+    } catch (err) {
+        console.error('❌ Erro ao criar tarefa pontual:', err);
+        return res.status(500).json({ mensagem: "Erro interno no servidor." });
+    }
+}
+
+export async function get_user_punctual_tasks_controller(req, res) {
+    try {
+        // Verificar se o usuário está em uma família
+        const familyMember = await prisma.familyMember.findFirst({
+            where: { user_id: req.usuario.id }
+        });
+
+        if (!familyMember) {
+            return res.status(400).json({ mensagem: "Usuário não está em nenhuma família." });
+        }
+
+        // Buscar apenas as tarefas pontuais do próprio usuário
+        const tasks = await prisma.task.findMany({
+            where: {
+                family_id: familyMember.family_id,
+                member_id: req.usuario.id, // Apenas tarefas do usuário atual
+                type_task: 'PONTUAL',
+                is_active: true
+            },
+            orderBy: [
+                { scheduled_date: 'asc' },
+                { priority: 'desc' }
+            ]
+        });
+
+        console.log(`📋 Carregadas ${tasks.length} tarefas pontuais para usuário ${req.usuario.id}`);
+
+        return res.status(200).json({
+            mensagem: "Tarefas pontuais carregadas com sucesso!",
+            tasks: tasks
+        });
+
+    } catch (err) {
+        console.error('❌ Erro ao carregar tarefas pontuais:', err);
+        return res.status(500).json({ mensagem: "Erro interno no servidor." });
+    }
+}

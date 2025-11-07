@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { map, catchError, of } from 'rxjs';
+import { map, catchError, of, switchMap } from 'rxjs';
 
 export const familyGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
@@ -11,36 +11,66 @@ export const familyGuard: CanActivateFn = (route, state) => {
   console.log('🛡️ FamilyGuard - Verificando acesso ao dashboard');
   console.log('🔗 URL solicitada:', state.url);
 
-  // Verificar se o usuário está logado
-  if (!authService.isLoggedIn()) {
-    console.log('❌ Usuário não está logado, redirecionando para login');
-    router.navigate(['/users/login'], { 
-      queryParams: { returnUrl: state.url }
-    });
-    return false;
+  // Se já temos um usuário no cache, prosseguir com verificação de família
+  const currentUser = authService.getCurrentUser();
+  if (currentUser) {
+    console.log('✅ FamilyGuard: Usuário já autenticado no cache:', currentUser.name);
+    return checkFamily(authService, router);
   }
 
-  console.log('✅ Usuário está logado, verificando família...');
-
-  // Se está logado, verificar se tem família
-  return authService.checkUserHasFamily().pipe(
-    map(hasFamily => {
-      if (hasFamily) {
-        console.log('✅ Usuário tem família, permitindo acesso ao dashboard');
-        return true;
+  // Se não temos usuário no cache, verificar no servidor primeiro
+  console.log('🔄 FamilyGuard: Verificando autenticação no servidor...');
+  
+  return authService.getCurrentUserFromServer().pipe(
+    map(response => {
+      if (response && response.usuarioAtual) {
+        console.log('✅ FamilyGuard: Usuário autenticado no servidor:', response.usuarioAtual.name);
+        // Não retornamos aqui, precisamos verificar a família
+        return null; // Indica que deve continuar para verificação de família
       } else {
-        console.log('❌ Usuário NÃO tem família, bloqueando acesso ao dashboard');
-        console.log('🔄 Redirecionando para escolha de família');
-        router.navigate(['/family/option']);
+        console.log('❌ FamilyGuard: Usuário não autenticado, redirecionando para login');
+        router.navigate(['/users/login'], { 
+          queryParams: { returnUrl: state.url }
+        });
         return false;
       }
     }),
+    // Depois da verificação de autenticação, verificar família
+    switchMap((authResult: false | null) => {
+      if (authResult === false) {
+        return of(false); // Já redirecionou para login
+      }
+      return checkFamily(authService, router);
+    }),
     catchError(error => {
-      console.error('❌ Erro ao verificar família do usuário:', error);
-      console.log('🔄 Em caso de erro, redirecionando para escolha de família por segurança');
-      // Em caso de erro, redirecionar para escolha de família por segurança
-      router.navigate(['/family/option']);
+      console.error('❌ FamilyGuard: Erro na verificação:', error);
+      router.navigate(['/users/login'], { 
+        queryParams: { returnUrl: state.url }
+      });
       return of(false);
     })
   );
 };
+
+// Função auxiliar para verificar família
+function checkFamily(authService: AuthService, router: Router) {
+  console.log('✅ FamilyGuard: Verificando família...');
+  
+  return authService.checkUserHasFamily().pipe(
+    map((hasFamily: boolean) => {
+      if (hasFamily) {
+        console.log('✅ FamilyGuard: Usuário tem família, permitindo acesso ao dashboard');
+        return true;
+      } else {
+        console.log('❌ FamilyGuard: Usuário NÃO tem família, redirecionando para escolha');
+        router.navigate(['/family/option']);
+        return false;
+      }
+    }),
+    catchError((error: any) => {
+      console.error('❌ FamilyGuard: Erro ao verificar família:', error);
+      router.navigate(['/family/option']);
+      return of(false);
+    })
+  );
+}

@@ -35,6 +35,7 @@ interface Task {
   status: string;
   type_task: string;
   completed_at?: string;
+  scheduled_date?: string;
   _loading?: boolean;
 }
 @Component({
@@ -49,8 +50,11 @@ export class TaskNavbarComponent implements OnInit {
   
   activeTab: string = 'diarias';
   dailyTasks: Task[] = [];
+  punctualTasks: Task[] = [];
   showCreateTaskModal: boolean = false;
+  showCreatePunctualTaskModal: boolean = false;
   taskForm: FormGroup;
+  punctualTaskForm: FormGroup;
   familyMembers: FamilyMember[] = [];
   isLoading: boolean = false;
   isAdmin: boolean = false;
@@ -66,6 +70,13 @@ export class TaskNavbarComponent implements OnInit {
       name: ['', Validators.required],
       member: [''],
       priority: ['MEDIA']
+    });
+
+    this.punctualTaskForm = this.fb.group({
+      description: [''],
+      name: ['', Validators.required],
+      priority: ['MEDIA'],
+      scheduled_date: ['', Validators.required]
     });
   }
 
@@ -108,9 +119,11 @@ export class TaskNavbarComponent implements OnInit {
   onTabClick(tabType: string) {
     this.activeTab = tabType;
     
-    // Se mudou para a aba de tarefas diárias, recarregar os dados
+    // Carregar dados conforme a aba selecionada
     if (tabType === 'diarias') {
       this.loadDailyTasks();
+    } else if (tabType === 'pontuais') {
+      this.loadPunctualTasks();
     }
   }
 
@@ -131,6 +144,17 @@ export class TaskNavbarComponent implements OnInit {
     this.taskForm.reset({
       priority: 'MEDIA',
       member: this.familyMembers.length > 0 ? this.familyMembers[0].id.toString() : ''
+    });
+  }
+
+  openCreatePunctualTaskModal() {
+    this.showCreatePunctualTaskModal = true;
+  }
+
+  closeCreatePunctualTaskModal() {
+    this.showCreatePunctualTaskModal = false;
+    this.punctualTaskForm.reset({
+      priority: 'MEDIA'
     });
   }
 
@@ -173,6 +197,31 @@ export class TaskNavbarComponent implements OnInit {
           }, 1000);
         } else {
           this.dailyTasks = [];
+          this.cdr.detectChanges();
+        }
+      }
+    });
+  }
+
+  loadPunctualTasks() {
+    this.http.get<{tasks: Task[]}>(`${environment.apiUrl}/tasks/punctual/user`, {
+      withCredentials: true
+    }).subscribe({
+      next: (response) => {
+        this.punctualTasks = response.tasks || [];
+        console.log('📋 Tarefas pontuais carregadas:', this.punctualTasks.length);
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Erro ao carregar tarefas pontuais:', error);
+        
+        // Se for erro 401 (não autenticado), tentar novamente em 1 segundo
+        if (error.status === 401) {
+          setTimeout(() => {
+            this.loadPunctualTasks();
+          }, 1000);
+        } else {
+          this.punctualTasks = [];
           this.cdr.detectChanges();
         }
       }
@@ -248,6 +297,70 @@ export class TaskNavbarComponent implements OnInit {
     }
   }
 
+  onSubmitPunctualTask() {
+    const nameControl = this.punctualTaskForm.get('name');
+    const dateControl = this.punctualTaskForm.get('scheduled_date');
+    
+    if (nameControl && nameControl.valid && nameControl.value?.trim() && 
+        dateControl && dateControl.valid && dateControl.value) {
+      this.isLoading = true;
+      
+      const formData = this.punctualTaskForm.value;
+      
+      const taskData = {
+        desc_task: formData.description || '',
+        name_task: formData.name,
+        priority_task: formData.priority,
+        scheduled_date: formData.scheduled_date
+      };
+      
+      // Enviar dados para o backend
+      this.http.post<{task: any}>(`${environment.apiUrl}/tasks/create/punctual`, taskData, {
+        withCredentials: true
+      }).subscribe({
+        next: (response) => {
+          console.log('✅ Tarefa pontual criada:', response.task);
+          
+          // Adicionar a nova tarefa à lista
+          const newTask: Task = {
+            id: response.task.id,
+            title: response.task.title,
+            description: response.task.description,
+            member_name: response.task.member_name,
+            member_id: response.task.member_id,
+            priority: response.task.priority,
+            status: response.task.status,
+            type_task: response.task.type_task,
+            scheduled_date: response.task.scheduled_date
+          };
+          
+          this.punctualTasks.push(newTask);
+          
+          // Recarregar a lista de tarefas pontuais
+          this.loadPunctualTasks();
+          
+          // Reset do formulário
+          this.punctualTaskForm.reset({
+            description: '',
+            name: '',
+            priority: 'MEDIA',
+            scheduled_date: ''
+          });
+          
+          this.closeCreatePunctualTaskModal();
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Erro ao criar tarefa pontual:', error);
+          this.isLoading = false;
+        }
+      });
+    } else {
+      nameControl?.markAsTouched();
+      dateControl?.markAsTouched();
+    }
+  }
+
   // Métodos para o sistema Kanban
   getAssignedTasks(): Task[] {
     return this.dailyTasks.filter(task => task.status === 'PENDENTE' || task.status === 'EM_ANDAMENTO');
@@ -255,6 +368,15 @@ export class TaskNavbarComponent implements OnInit {
 
   getCompletedTasks(): Task[] {
     return this.dailyTasks.filter(task => task.status === 'CONCLUIDA');
+  }
+
+  // Métodos para tarefas pontuais
+  getAssignedPunctualTasks(): Task[] {
+    return this.punctualTasks.filter(task => task.status === 'PENDENTE' || task.status === 'EM_ANDAMENTO');
+  }
+
+  getCompletedPunctualTasks(): Task[] {
+    return this.punctualTasks.filter(task => task.status === 'CONCLUIDA');
   }
 
   onTaskComplete(task: Task) {
@@ -384,11 +506,6 @@ export class TaskNavbarComponent implements OnInit {
   }
 
   onDeleteTask(task: Task) {
-    if (!this.isAdmin) {
-      console.log('❌ Apenas administradores podem deletar tarefas');
-      return;
-    }
-
     if (confirm(`Tem certeza que deseja deletar a tarefa "${task.title}"?`)) {
       console.log('🗑️ Deletando tarefa:', task.title);
       
@@ -398,14 +515,22 @@ export class TaskNavbarComponent implements OnInit {
         next: (response) => {
           console.log('✅ Tarefa deletada no backend');
           
-          // Remover localmente
+          // Remover localmente das tarefas diárias
           this.dailyTasks = this.dailyTasks.filter(t => t.id !== task.id);
+          
+          // Remover localmente das tarefas pontuais
+          this.punctualTasks = this.punctualTasks.filter(t => t.id !== task.id);
+          
           this.cdr.detectChanges();
         },
         error: (error) => {
           console.error('❌ Erro ao deletar tarefa:', error);
           // Recarregar tarefas em caso de erro
-          this.loadDailyTasks();
+          if (this.isTabActive.diarias) {
+            this.loadDailyTasks();
+          } else if (this.isTabActive.pontuais) {
+            this.loadPunctualTasks();
+          }
         }
       });
     }
@@ -436,6 +561,17 @@ export class TaskNavbarComponent implements OnInit {
   canEditTask(task: Task): boolean {
     // Usuário pode editar se é o responsável pela tarefa
     return task.member_id === this.currentUserId;
+  }
+
+  formatScheduledDate(dateString: string): string {
+    if (!dateString) return '';
+    
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
   }
 
 }
