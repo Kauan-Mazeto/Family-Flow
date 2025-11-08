@@ -32,9 +32,9 @@ model Family {
   created_by  Int
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
-  createdBy User           @relation("UserCreatedFamilies", fields: [created_by], references: [id], onDelete: Cascade)
-  members   FamilyMember[]
-  tasks     Task[]
+  createdBy   User     @relation("UserCreatedFamilies", fields: [created_by], references: [id], onDelete: Cascade)
+  members     FamilyMember[]
+  tasks       Task[]
   @@map("family")
 }
 
@@ -45,8 +45,9 @@ model FamilyMember {
   role       Role     @default(MEMBER)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-  family        Family       @relation(fields: [family_id], references: [id], onDelete: Cascade)
-  user          User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  mesada     Mesada?
+  family     Family       @relation(fields: [family_id], references: [id], onDelete: Cascade)
+  user       User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@unique([family_id, user_id])
   @@map("familia_member")
@@ -66,8 +67,21 @@ model Task {
   date_start      DateTime     @default(now())
   date_end        DateTime
   days            Int
-  family         Family        @relation(fields: [family_id], references: [id], onDelete: Cascade)
+  reward_value    Float?        @default(0.0)
+  family          Family        @relation(fields: [family_id], references: [id], onDelete: Cascade)
   @@map("task")
+}
+
+model Mesada {
+  id            Int      @id @default(autoincrement())
+  family_member Int       @unique 
+  balance       Float     @default(0.0)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  member  FamilyMember @relation(fields: [family_member], references: [id], onDelete: Cascade)
+
+  @@map("mesada")
 }
 
 enum Role {
