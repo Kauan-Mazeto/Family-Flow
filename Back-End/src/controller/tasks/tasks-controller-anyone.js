@@ -2,7 +2,6 @@ import { PrismaClient } from '@prisma/client';
 import { family_id_task } from '../functions/functions-controller-family.js';
 import { usuario_atual_nome } from '../functions/functions-controller-user.js';
 import { verifier_date } from '../functions/functions-controller-date.js';
-import { rewards_task } from '../functions/functions-controller-rewards.js';
 
 const prisma = new PrismaClient();
 
@@ -128,74 +127,81 @@ export async function update_status(req, res) {
     const id_task = parseInt(req.params.id);
 
     if (!status_task) {
-        return res.status(400).json({ mensagem: "Status da task não foi informado." })
-    };
-
+        return res.status(400).json({ mensagem: "Status da task não foi informado." });
+    }
     if (!id_task) {
-        return res.status(400).json({ mensagem: "ID da task não foi informado." })
-    };
+        return res.status(400).json({ mensagem: "ID da task não foi informado." });
+    }
 
     try {
-
         const task = await prisma.task.findUnique({
-            where: {
-                id: id_task
+            where: { 
+                id: id_task 
             }
         });
 
         if (!task) {
-            return res.status(400).json({ mensagem: "Task inexistente ou inválida." })
+            return res.status(400).json({ mensagem: "Task inexistente ou inválida." });
         };
 
         if (task.status === "CONCLUIDA" && status_task === "CONCLUIDA") {
             return res.status(400).json({ mensagem: "Essa task já foi concluída antes." });
         };
 
-        let reward_value = 0.0;
-        const priority_task = await rewards_task(id_task);
+        await prisma.task.update({
+            where: { 
+                id: id_task 
+            },
+            data: { 
+                status: status_task 
+            }
+        });
 
-        if (priority_task.priority === "BAIXA") {
-            reward_value = 0.50;
-        } else if (priority_task.priority === "MEDIA") {
-            reward_value = 1;
-        } else {
-            reward_value = 1.50;
+        if (status_task !== "CONCLUIDA") {
+            return res.status(200).json({ mensagem: "Status da task atualizado!" });
         };
 
+        let reward_value = 0;
+        if (task.priority === "BAIXA") {
+            reward_value = 0.50
+        } else if (task.priority === "MEDIA") {
+            reward_value = 1.00
+        } else {
+            reward_value = 1.50
+        };
 
+        await prisma.task.update({
+            where: { 
+                id: id_task 
+            },
+            data: { 
+                reward_value: { 
+                    increment: reward_value 
+                }
+            }
+        });
 
-    } catch(Err) {
-        res.status(500).json({ mensagem: "Erro interno no servidor." });
-        return console.error(err);
+        await prisma.mesada.upsert({
+            where: { 
+                family_member: task.member_id 
+            },
+            update: { 
+                balance: { 
+                    increment: reward_value 
+                } 
+            },
+            create: { 
+                family_member: task.member_id, balance: reward_value 
+            }
+        });
+
+        return res.status(200).json({
+            mensagem: "Task concluída e recompensa adicionada!",
+            recompensa: reward_value
+        });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ mensagem: "Erro interno no servidor." });
     };
 };
-
-
-
-
-
-
-
-
-// const update_status = await prisma.task.update({
-//     where: {
-//         id: id_task
-//     },
-
-//     data: {
-//         status: status_task,
-//         reward_value: reward_value
-//     }
-// });
-
-// let reward_value = 0.0;
-
-// const priority_task = await rewards_task(id_task);
-
-// if (priority_task.priority === "BAIXA") {
-//     reward_value = 0.50;
-// } else if (priority_task.priority === "MEDIA") {
-//     reward_value = 1;
-// } else {
-//     reward_value = 1.50;
-// };
