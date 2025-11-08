@@ -111,14 +111,14 @@
             
             <div class="info-item">
               <strong>Prioridade:</strong>
-              <span class="priority-badge" [class]="'priority-' + selectedTask.priority?.toLowerCase()">
+              <span class="priority-badge" [class]="'priority-' + selectedTask.priority.toLowerCase()">
                 {{ formatPriority(selectedTask.priority) }}
               </span>
             </div>
             
             <div class="info-item">
               <strong>Status:</strong>
-              <span class="status-badge" [class]="'status-' + selectedTask.status?.toLowerCase()">
+              <span class="status-badge" [class]="'status-' + selectedTask.status.toLowerCase()">
                 {{ formatStatus(selectedTask.status) }}
               </span>
             </div>
