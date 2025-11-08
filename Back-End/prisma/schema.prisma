@@ -74,7 +74,7 @@ model Task {
 
 model Mesada {
   id            Int      @id @default(autoincrement())
-  family_member Int       @unique // cada membro tem uma mesada acumulada única
+  family_member Int       @unique 
   balance       Float     @default(0.0)
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
