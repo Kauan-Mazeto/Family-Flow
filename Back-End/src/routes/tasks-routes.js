@@ -31,6 +31,7 @@ rotas_tasks.get('/tasks/info', authToken, (req, res) => {
     get_task_user(req, res);
 });
 
+// rota p/ concluir tarefa
 rotas_tasks.patch('/tasks/conclude/:id', authToken, authTaskMember, (req, res) => {
     update_status(req, res)
 });
