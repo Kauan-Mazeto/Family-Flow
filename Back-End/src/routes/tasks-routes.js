@@ -31,5 +31,9 @@ rotas_tasks.get('/tasks/info', authToken, (req, res) => {
     get_task_user(req, res);
 });
 
+rotas_tasks.patch('/tasks/conclude/:id', authToken, authTaskMember, (req, res) => {
+
+});
+
 export default rotas_tasks;
 
