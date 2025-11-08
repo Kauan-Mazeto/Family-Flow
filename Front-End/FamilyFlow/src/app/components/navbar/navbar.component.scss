@@ -176,6 +176,40 @@
         gap: 0.4rem;
       }
 
+      // Botão de logout
+      .logout-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        
+        &:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.3);
+          border-color: rgba(255, 255, 255, 0.5);
+          transform: translateY(-1px);
+        }
+        
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+        
+        @media (max-width: 1024px) {
+          padding: 0.45rem 0.9rem;
+          font-size: 0.85rem;
+        }
+        
+        @media (max-width: 480px) {
+          padding: 0.4rem 0.8rem;
+          font-size: 0.8rem;
+        }
+      }
+
       .user-info {
         text-align: right;
         
@@ -251,8 +285,7 @@
           align-items: center;
           justify-content: center;
           border: 2px solid rgba(255, 255, 255, 0.3);
-          transition: transform 0.3s ease;
-          cursor: pointer;
+          transition: all 0.3s ease;
           
           @media (max-width: 1024px) {
             width: 42px;
@@ -274,6 +307,20 @@
             
             @media (max-width: 480px) {
               font-size: 1.1rem;
+            }
+          }
+          
+          .user-initial {
+            font-size: 1.2rem;
+            color: white;
+            font-weight: 600;
+            
+            @media (max-width: 1024px) {
+              font-size: 1.1rem;
+            }
+            
+            @media (max-width: 480px) {
+              font-size: 1rem;
             }
           }
         }

@@ -176,7 +176,32 @@ export class AuthService {
       { withCredentials: true }
     ).pipe(
       map(response => {
+        // Limpar estado do usuário após logout
         this.currentUserSubject.next(null);
+        this.clearLocalState();
+        return response;
+      }),
+      catchError(error => {
+        // Mesmo com erro no logout, limpar estado local
+        this.currentUserSubject.next(null);
+        this.clearLocalState();
+        return this.handleError(error);
+      })
+    );
+  }
+
+  /**
+   * Apagar conta do usuário permanentemente
+   */
+  deleteAccount(): Observable<any> {
+    return this.http.delete(
+      `${this.API_URL}${this.endpoints.deleteAccount}`,
+      { withCredentials: true }
+    ).pipe(
+      map(response => {
+        // Limpar estado do usuário após apagar conta
+        this.currentUserSubject.next(null);
+        this.clearLocalState();
         return response;
       }),
       catchError(this.handleError.bind(this))

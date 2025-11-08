@@ -38,7 +38,6 @@ rotas_tasks.get('/tasks/daily/family', authToken, (req, res) => {
     get_family_daily_tasks_controller(req, res);
 });
 
-// Novas rotas para o sistema Kanban
 rotas_tasks.put('/tasks/:id/complete', authToken, (req, res) => {
     complete_task_controller(req, res);
 });

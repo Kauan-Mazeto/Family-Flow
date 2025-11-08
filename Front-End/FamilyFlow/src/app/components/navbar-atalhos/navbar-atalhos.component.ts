@@ -32,25 +32,25 @@ export class NavbarAtalhosComponent implements OnInit {
     {
       nome: 'Tarefas',
       icone: 'fas fa-tasks',
-      rota: '/family/tarefas',
+      rota: '',
       ativo: true
     },
     {
       nome: 'Família',
       icone: 'fas fa-home',
-      rota: '/family/dashboard',
+      rota: '',
       ativo: false
     },
     {
       nome: 'Calendário',
       icone: 'fas fa-calendar-alt',
-      rota: '/family/calendario',
+      rota: '',
       ativo: false
     },
     {
       nome: 'Configurações',
       icone: 'fas fa-gear',
-      rota: '/family/dashboard',
+      rota: '',
       ativo: false
     }
   ];

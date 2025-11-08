@@ -161,6 +161,13 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
     });
   }
 
+  selectPredefinedTask(taskName: string, taskDescription: string) {
+    this.taskForm.patchValue({
+      name: taskName,
+      description: taskDescription
+    });
+  }
+
   openCreatePunctualTaskModal() {
     this.showCreatePunctualTaskModal = true;
   }
@@ -194,11 +201,28 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
   }
 
   loadDailyTasks() {
+    console.log('🔄 Carregando tarefas diárias...');
+    console.log('🔗 Endpoint:', `${environment.apiUrl}/tasks/daily/family`);
+    
     this.http.get<{tasks: Task[]}>(`${environment.apiUrl}/tasks/daily/family`, {
       withCredentials: true
     }).subscribe({
       next: (response) => {
+        console.log('📋 Resposta do servidor (tarefas diárias):', response);
         this.dailyTasks = response.tasks || [];
+        console.log('📋 Tarefas diárias carregadas:', this.dailyTasks.length);
+        
+        // Log detalhado das tarefas
+        this.dailyTasks.forEach((task, index) => {
+          console.log(`  ${index + 1}. Tarefa "${task.title}":`, {
+            id: task.id,
+            member_id: task.member_id,
+            member_name: task.member_name,
+            status: task.status,
+            priority: task.priority
+          });
+        });
+        
         this.cdr.detectChanges();
       },
       error: (error) => {
@@ -589,7 +613,20 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
 
   canEditTask(task: Task): boolean {
     // Usuário pode editar se é o responsável pela tarefa
+    console.log('🔍 Verificando permissão para editar tarefa:');
+    console.log('  - ID da tarefa:', task.id, '- Título:', task.title);
+    console.log('  - member_id da tarefa:', task.member_id);
+    console.log('  - currentUserId:', this.currentUserId);
+    console.log('  - Pode editar:', task.member_id === this.currentUserId);
+    
     return task.member_id === this.currentUserId;
+  }
+
+  testClick(task: Task) {
+    console.log('🖱️ TESTE: Click no checkbox da tarefa:', task.id, task.title);
+    console.log('🖱️ TESTE: Pode editar?', this.canEditTask(task));
+    console.log('🖱️ TESTE: Loading?', task._loading);
+    console.log('🖱️ TESTE: Disabled?', !this.canEditTask(task) || task._loading);
   }
 
   formatScheduledDate(dateString: string): string {

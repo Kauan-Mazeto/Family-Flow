@@ -6,7 +6,6 @@
       class="atalho-item"
       [class.ativo]="atalho.ativo"
       (click)="onAtalhoClick(atalho)"
-      [routerLink]="atalho.nome !== 'Tarefas' ? atalho.rota : null"
     >
       <i [class]="atalho.icone" class="atalho-icone"></i>
       <span class="atalho-nome">{{ atalho.nome }}</span>

@@ -7,7 +7,10 @@ export const environment = {
     userMe: '/users/me',
     logout: '/users/logout',
     changePassword: '/users/changePassword',
+    deleteAccount: '/users/delete',
     createFamily: '/family/create',
-    enterFamily: '/family/enter'
+    enterFamily: '/family/enter',
+    familyMembers: '/family/members',
+    promoteAdmin: '/family/promote-admin'
   }
 };

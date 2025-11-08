@@ -1,67 +1,184 @@
-<div class="text">
-  <h1>Configurações</h1>
-  <p>Aqui você pode gerenciar as configurações do sistema</p>
-</div>
-
-<div class="config-user">
-  <div class="info-user">
-    <div class="user">
-      <span class="img-user"><i class="fas fa-user"></i></span>
-      <div class="name-user" *ngIf="!isLoading && userData">
-        <h1>{{ userData.name || userData.nome || 'Nome não disponível' }}</h1>
-        <p>{{ userData.email }}</p>
-      </div>
-      <div class="name-user" *ngIf="isLoading">
-        <h1>Carregando...</h1>
-        <p>Carregando...</p>
-      </div>
-    </div>
-    <div class="exit-adm">
-      <p class="adm" [class.admin-role]="isUserAdmin" [class.member-role]="!isUserAdmin" *ngIf="!isLoading && familyData">
-        {{ userRoleText }}
-      </p>
-      <p class="adm" *ngIf="isLoading">Carregando...</p>
-      <div class="exit">
-        <button (click)="logoutUser()" [disabled]="isLoggingOut">
-          {{ isLoggingOut ? 'Saindo...' : 'Sair' }}
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="config-family">
-  <div class="info-family">
-    <div class="family">
-      <span class="img-family"><img src="img/familyflow_logo.jpg" alt=""></span>
-      <div class="name-family" *ngIf="!isLoading && familyData">
-        <h1>Família {{ familyData.nome }}</h1>
-      </div>
-      <div class="name-family" *ngIf="isLoading">
-        <h1>Carregando...</h1>
-      </div>
-    </div>
-  </div>
-  <div class="codig">
-    <p>Código da Família</p>
-    <div class="family-code" *ngIf="!isLoading && familyData">
-      <span class="code" *ngFor="let char of familyCodeArray">{{ char }}</span>
-    </div>
-    <div class="family-code loading" *ngIf="isLoading">
-      <span class="code">●</span>
-      <span class="code">●</span>
-      <span class="code">●</span>
-      <span class="code">●</span>
-      <span class="code">●</span>
-      <span class="code">●</span>
-      <span class="code">●</span>
-      <span class="code">●</span>
+<div class="config-container">
+  <!-- Header no padrão das outras telas -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Configurações</h1>
+      <p>Gerencie suas informações pessoais e familiares</p>
     </div>
   </div>
 
-  <div class="exit">
-    <button (click)="leaveFamily()" [disabled]="isLeavingFamily">
-      {{ isLeavingFamily ? 'Saindo...' : 'Sair da Família' }}
-    </button>
+  <!-- Seções das configurações -->
+  <div class="config-sections">
+    
+    <!-- Meu Perfil -->
+    <div class="config-section">
+      <div class="section-header">
+        <h2>Meu Perfil</h2>
+      </div>
+      
+      <div class="section-content">
+        <!-- Carregando -->
+        <div class="loading-info" *ngIf="isLoading">
+          <div class="loading-avatar"></div>
+          <div class="loading-text">
+            <div class="loading-line"></div>
+            <div class="loading-line short"></div>
+          </div>
+        </div>
+        
+        <!-- Informações do usuário -->
+        <div class="profile-info" *ngIf="!isLoading && userData">
+          <div class="profile-avatar">
+            {{ (userData.name || userData.nome || 'U').charAt(0).toUpperCase() }}
+          </div>
+          
+          <div class="profile-details">
+            <h3>{{ userData.name || userData.nome || 'Nome não disponível' }}</h3>
+            <p class="email">{{ userData.email }}</p>
+            <span class="role-badge" [class.admin]="isUserAdmin">
+              {{ userRoleText }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Ações do perfil -->
+        <div class="profile-actions" *ngIf="!isLoading">
+          <button class="btn-danger" (click)="deleteAccount()" [disabled]="isDeletingAccount">
+            {{ isDeletingAccount ? 'Apagando conta...' : 'Apagar Conta' }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Minha Família -->
+    <div class="config-section">
+      <div class="section-header">
+        <h2>Minha Família</h2>
+      </div>
+      
+      <div class="section-content">
+        <!-- Carregando -->
+        <div class="loading-info" *ngIf="isLoading">
+          <div class="loading-text">
+            <div class="loading-line"></div>
+            <div class="family-code-loading">
+              <div class="code-loading" *ngFor="let i of [1,2,3,4,5,6,7,8]"></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Informações da família -->
+        <div class="family-info" *ngIf="!isLoading && familyData">
+          <div class="family-name">
+            <h3>{{ familyData.nome }}</h3>
+            <p>Sua família no Family Flow</p>
+          </div>
+          
+          <div class="family-code">
+            <label>Código da Família:</label>
+            <div class="code-display">
+              <div class="code-numbers">
+                <span *ngFor="let char of familyCodeArray">{{ char }}</span>
+              </div>
+              <button class="copy-code" (click)="copyFamilyCode()" title="Copiar código">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+            <small>Compartilhe este código para adicionar novos membros</small>
+          </div>
+        </div>
+        
+        <div class="section-actions">
+          <button class="btn-danger" (click)="leaveFamily()" [disabled]="isLeavingFamily">
+            {{ isLeavingFamily ? 'Saindo da família...' : 'Sair da Família' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Membros da Família (apenas para administradores) -->
+    <div class="config-section" *ngIf="showMembersSection">
+      <div class="section-header">
+        <h2>Promover Membros</h2>
+      </div>
+      
+      <div class="section-content">
+        <!-- Carregando membros -->
+        <div class="loading-info" *ngIf="isLoadingMembers">
+          <div class="loading-spinner"></div>
+          <span>Carregando membros...</span>
+        </div>
+        
+        <!-- Lista de membros (apenas não-administradores) -->
+        <div class="members-list" *ngIf="!isLoadingMembers && getNonAdminMembers().length > 0">
+          <div class="member-item" *ngFor="let member of getNonAdminMembers()">
+            <div class="member-info">
+              <div class="member-avatar">
+                {{ (member.name || member.nome || 'U').charAt(0).toUpperCase() }}
+              </div>
+              <div class="member-details">
+                <h4>{{ member.name || member.nome || 'Nome não disponível' }}</h4>
+                <p class="member-email">{{ member.email }}</p>
+                <span class="member-role">
+                  Membro
+                </span>
+              </div>
+            </div>
+            <div class="member-actions">
+              <button 
+                class="btn-secondary" 
+                (click)="promoteToAdmin(member)"
+                [disabled]="isPromotingMember">
+                {{ isPromotingMember ? 'Promovendo...' : 'Tornar Admin' }}
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Mensagem se não há membros não-administradores -->
+        <div class="no-members" *ngIf="!isLoadingMembers && familyMembers && familyMembers.length > 0 && getNonAdminMembers().length === 0">
+          <i class="fas fa-crown"></i>
+          <p>Todos os membros da família já são administradores.</p>
+          <small>Não há membros para promover no momento.</small>
+        </div>
+        
+        <!-- Mensagem se não há membros na família -->
+        <div class="no-members" *ngIf="!isLoadingMembers && (!familyMembers || familyMembers.length <= 1)">
+          <i class="fas fa-users"></i>
+          <p>Sua família tem apenas você como membro.</p>
+          <small>Compartilhe o código da família para adicionar novos membros.</small>
+        </div>
+        
+        <!-- Mensagem se erro ao carregar -->
+        <div class="no-members" *ngIf="!isLoadingMembers && !familyMembers">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>Erro ao carregar membros da família.</p>
+          <small>Tente recarregar a página.</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Outras Opções -->
+    <div class="config-section">
+      <div class="section-header">
+        <h2>Outras Opções</h2>
+      </div>
+      
+      <div class="section-content">
+        <div class="options-list">
+          <div class="option-item" (click)="showAbout()">
+            <i class="fas fa-info-circle"></i>
+            <span>Sobre o Family Flow</span>
+          </div>
+          
+          <div class="option-item" (click)="showHelp()">
+            <i class="fas fa-question-circle"></i>
+            <span>Ajuda e suporte</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>

@@ -1,5 +1,5 @@
 import express from 'express';
-import { create_family, delete_family, enter_family, get_user_family, get_family_members, leave_family } from '../controller/family-controller.js';
+import { create_family, delete_family, enter_family, get_user_family, get_family_members, leave_family, promote_to_admin } from '../controller/family-controller.js';
 import { authToken } from '../middlewares/authToken.js';
 import { authAdminFamily } from '../middlewares/authAdminFamily.js';
 
@@ -27,6 +27,10 @@ rotas_family.post('/family/leave', authToken, (req, res) => {
 
 rotas_family.delete('/family/delete', authToken, authAdminFamily, (req, res) => {
     delete_family(req, res);
+});
+
+rotas_family.post('/family/promote-admin', authToken, (req, res) => {
+    promote_to_admin(req, res);
 });
 
 // Endpoint de teste para verificar autenticação

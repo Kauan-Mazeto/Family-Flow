@@ -134,6 +134,13 @@ export class FamilyDashboardComponent implements OnInit {
   }
 
   getCurrentUser() {
+    // Verificar se ainda há um usuário logado antes de fazer a chamada
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) {
+      console.log('👤 Usuário não logado, pulando verificação');
+      return;
+    }
+
     // Método alternativo para obter dados do usuário
     this.authService.getCurrentUserFromServer().subscribe({
       next: (response) => {
@@ -144,7 +151,16 @@ export class FamilyDashboardComponent implements OnInit {
         }
       },
       error: (error) => {
-        // Se falhar, usar dados básicos
+        // Log do erro mas não fazer nada se usuário não estiver logado
+        console.error('Erro ao obter usuário:', error);
+        
+        // Se erro 401, provavelmente usuário não está mais logado
+        if (error.status === 401) {
+          console.log('🔐 Token inválido, usuário provavelmente fez logout');
+          return;
+        }
+
+        // Para outros erros, usar dados básicos
         this.userName = 'Usuário Logado';
         this.userEmail = 'usuario@email.com';
         this.isAdmin = false;
