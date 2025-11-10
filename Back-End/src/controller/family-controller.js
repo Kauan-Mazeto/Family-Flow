@@ -183,7 +183,8 @@ export async function get_user_family(req, res) {
                 id: membroFamilia.family.id,
                 nome: membroFamilia.family.name,
                 codigo: membroFamilia.family.family_code,
-                role: membroFamilia.role
+                role: membroFamilia.role,
+                user_id: req.usuario.id
             }
         });
 
@@ -192,6 +193,119 @@ export async function get_user_family(req, res) {
         return res.status(500).json({ mensagem: "Erro interno no servidor." });
     };
 };
+
+export async function get_family_members(req, res) {
+    
+    if (!req.usuario || !req.usuario.id) {
+        return res.status(401).json({mensagem: "Usuário não autenticado."})
+    };
+
+    try {
+        // Primeiro, encontra a família do usuário
+        const membroFamilia = await prisma.familyMember.findFirst({
+            where: {
+                user_id: req.usuario.id
+            }
+        });
+
+        if (!membroFamilia) {
+            return res.status(404).json({mensagem: "Usuário não está em nenhuma família."});
+        };
+
+        // Busca todos os membros da família
+        const membros = await prisma.familyMember.findMany({
+            where: {
+                family_id: membroFamilia.family_id
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        is_admin: true
+                    }
+                }
+            }
+        });
+
+        const membrosFormatados = membros.map(membro => ({
+            id: membro.user.id,
+            name: membro.user.name,
+            email: membro.user.email,
+            role: membro.role,
+            is_admin: membro.role === 'ADMIN'
+        }));
+
+        return res.status(200).json({
+            membros: membrosFormatados
+        });
+
+    } catch (err) {
+        console.error('Erro ao buscar membros da família:', err.message);
+        res.status(500).json({ mensagem: "Erro interno no servidor." });
+    };
+};
+
+export async function leave_family(req, res) {
+    if (!req.usuario || !req.usuario.id) {
+        return res.status(401).json({mensagem: "Usuário não autenticado."});
+    }
+
+    try {
+        // Verificar se o usuário está em uma família
+        const familyMember = await prisma.familyMember.findFirst({
+            where: {
+                user_id: req.usuario.id
+            },
+            include: {
+                family: true
+            }
+        });
+
+        if (!familyMember) {
+            return res.status(400).json({mensagem: "Você não está em nenhuma família."});
+        }
+
+        // Verificar se é admin e se há outros membros
+        if (familyMember.role === 'ADMIN') {
+            const otherMembers = await prisma.familyMember.count({
+                where: {
+                    family_id: familyMember.family_id,
+                    user_id: { not: req.usuario.id }
+                }
+            });
+
+            if (otherMembers > 0) {
+                return res.status(400).json({
+                    mensagem: "Como administrador, você deve transferir a administração ou excluir a família antes de sair."
+                });
+            }
+        }
+
+        // Remover o usuário da família
+        await prisma.familyMember.delete({
+            where: {
+                id: familyMember.id
+            }
+        });
+
+        // Se era o último membro (admin), deletar a família também
+        if (familyMember.role === 'ADMIN') {
+            await prisma.family.delete({
+                where: {
+                    id: familyMember.family_id
+                }
+            });
+        }
+
+        return res.status(200).json({mensagem: "Você saiu da família com sucesso."});
+
+    } catch (err) {
+        console.error('Erro ao sair da família:', err);
+        return res.status(500).json({mensagem: "Erro interno no servidor."});
+    }
+}
 
 export async function delete_family(req, res) {
 
@@ -202,4 +316,83 @@ export async function delete_family(req, res) {
     });
 
     return res.status(200).json({mensagem: "Familia excluida."});
+
+};
+
+export async function promote_to_admin(req, res) {
+    const { userId, memberId, user_id } = req.body;
+    
+    // Suportar diferentes formatos de ID
+    const targetUserId = userId || memberId || user_id;
+
+    if (!req.usuario || !req.usuario.id) {
+        return res.status(401).json({mensagem: "Usuário não autenticado."});
+    }
+
+    if (!targetUserId) {
+        return res.status(400).json({mensagem: "ID do usuário é obrigatório."});
+    }
+
+    try {
+        // Verificar se o usuário atual é admin da família
+        const currentUserFamily = await prisma.familyMember.findFirst({
+            where: {
+                user_id: req.usuario.id
+            },
+            include: {
+                family: true
+            }
+        });
+
+        if (!currentUserFamily) {
+            return res.status(404).json({mensagem: "Você não pertence a nenhuma família."});
+        }
+
+        if (currentUserFamily.role !== 'ADMIN') {
+            return res.status(403).json({mensagem: "Apenas administradores podem promover outros membros."});
+        }
+
+        // Verificar se o usuário a ser promovido existe e está na mesma família
+        const targetMember = await prisma.familyMember.findFirst({
+            where: {
+                user_id: parseInt(targetUserId),
+                family_id: currentUserFamily.family_id
+            },
+            include: {
+                user: true
+            }
+        });
+
+        if (!targetMember) {
+            return res.status(404).json({mensagem: "Usuário não encontrado na família."});
+        }
+
+        if (targetMember.role === 'ADMIN') {
+            return res.status(400).json({mensagem: "Usuário já é administrador."});
+        }
+
+        // Promover o usuário para admin
+        await prisma.familyMember.update({
+            where: {
+                id: targetMember.id
+            },
+            data: {
+                role: 'ADMIN'
+            }
+        });
+
+        return res.status(200).json({
+            mensagem: `${targetMember.user.name || targetMember.user.email} agora é administrador da família.`,
+            usuario_promovido: {
+                id: targetMember.user.id,
+                name: targetMember.user.name,
+                email: targetMember.user.email,
+                role: 'ADMIN'
+            }
+        });
+
+    } catch (err) {
+        console.error('Erro ao promover usuário:', err);
+        return res.status(500).json({mensagem: "Erro interno no servidor."});
+    }
 };

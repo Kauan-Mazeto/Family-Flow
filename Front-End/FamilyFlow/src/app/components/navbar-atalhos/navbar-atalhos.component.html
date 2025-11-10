@@ -6,7 +6,6 @@
       class="atalho-item"
       [class.ativo]="atalho.ativo"
       (click)="onAtalhoClick(atalho)"
-      [routerLink]="atalho.nome !== 'Tarefas' ? atalho.rota : null"
     >
       <i [class]="atalho.icone" class="atalho-icone"></i>
       <span class="atalho-nome">{{ atalho.nome }}</span>
@@ -14,4 +13,8 @@
   </div>
 </nav>
 
+<app-task-navbar *ngIf="showTaskNavbar"></app-task-navbar>
 <app-family-navbar *ngIf="showFamilyNavbar"></app-family-navbar>
+<app-calendary-navbar *ngIf="showCalendaryNavbar"></app-calendary-navbar>
+<app-config-navbar *ngIf="showConfigNavbar"></app-config-navbar>
+<app-mesada-navbar *ngIf="showMesadaNavbar"></app-mesada-navbar>

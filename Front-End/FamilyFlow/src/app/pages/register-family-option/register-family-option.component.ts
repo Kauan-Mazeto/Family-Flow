@@ -38,11 +38,4 @@ export class RegisterFamilyOptionComponent implements OnInit {
     this.navegador.navigate(['/family/enter']);
   }
 
-  // Pular configuração de família
-  skipFamilySetup() {
-    // Por enquanto, redireciona para login
-    // TODO: Implementar lógica para registrar sem família
-    this.navegador.navigate(['/users/login']);
-  }
-
 }

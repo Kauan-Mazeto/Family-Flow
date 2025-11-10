@@ -1,0 +1,151 @@
+<div class="text">
+  <h1>Calendário de Tarefas</h1>
+  <p>Visualize suas tarefas pontuais em um calendário interativo</p>
+</div>
+
+<div class="calendary-tasks">
+  <div class="calendar-container">
+    <div class="calendar-header">
+      <div class="calendar-controls">
+        <button type="button" class="calendar-btn" (click)="changeView('dayGridMonth')" 
+                [class.active]="currentView === 'dayGridMonth'">
+          <i class="fas fa-calendar-alt"></i> Mês
+        </button>
+        <button type="button" class="calendar-btn" (click)="changeView('dayGridWeek')" 
+                [class.active]="currentView === 'dayGridWeek'">
+          <i class="fas fa-calendar-week"></i> Semana
+        </button>
+        <button type="button" class="calendar-btn" (click)="changeView('listWeek')" 
+                [class.active]="currentView === 'listWeek'">
+          <i class="fas fa-list"></i> Lista
+        </button>
+      </div>
+      
+      <div class="calendar-navigation">
+        <button type="button" class="nav-btn" (click)="goToPrevious()">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <h3 class="calendar-title">{{ currentTitle }}</h3>
+        <button type="button" class="nav-btn" (click)="goToNext()">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+        <button type="button" class="today-btn" (click)="goToToday()">
+          Hoje
+        </button>
+      </div>
+    </div>
+
+    <div class="calendar-wrapper">
+      <div #calendar class="calendar-content"></div>
+      
+      <div class="calendar-legend">
+        <h4>Legenda de Prioridades</h4>
+        <div class="legend-items">
+          <div class="legend-item">
+            <div class="legend-color high-priority"></div>
+            <span>Alta Prioridade</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color medium-priority"></div>
+            <span>Média Prioridade</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color low-priority"></div>
+            <span>Baixa Prioridade</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color completed-task"></div>
+            <span>Tarefa Concluída</span>
+          </div>
+        </div>
+        
+        <div class="calendar-stats" *ngIf="calendarStats">
+          <h4>Estatísticas</h4>
+          <div class="stat-item">
+            <span class="stat-label">Total de Tarefas:</span>
+            <span class="stat-value">{{ calendarStats.total }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Concluídas:</span>
+            <span class="stat-value completed">{{ calendarStats.completed }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Pendentes:</span>
+            <span class="stat-value pending">{{ calendarStats.pending }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Taxa de Conclusão:</span>
+            <span class="stat-value rate">{{ calendarStats.completionRate }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para detalhes da tarefa -->
+    <div class="task-modal" [class.show]="showTaskModal" *ngIf="selectedTask">
+      <div class="modal-overlay" (click)="closeTaskModal()"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>{{ selectedTask.title }}</h3>
+          <button type="button" class="close-btn" (click)="closeTaskModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="task-info">
+            <div class="info-item">
+              <strong>Descrição:</strong>
+              <p>{{ selectedTask.description || 'Sem descrição' }}</p>
+            </div>
+            
+            <div class="info-item">
+              <strong>Data Agendada:</strong>
+              <p>{{ formatDate(selectedTask.scheduled_date) }}</p>
+            </div>
+            
+            <div class="info-item">
+              <strong>Responsável:</strong>
+              <p>{{ selectedTask.member_name }}</p>
+            </div>
+            
+            <div class="info-item">
+              <strong>Prioridade:</strong>
+              <span class="priority-badge" [class]="'priority-' + selectedTask.priority.toLowerCase()">
+                {{ formatPriority(selectedTask.priority) }}
+              </span>
+            </div>
+            
+            <div class="info-item">
+              <strong>Status:</strong>
+              <span class="status-badge" [class]="'status-' + selectedTask.status.toLowerCase()">
+                {{ formatStatus(selectedTask.status) }}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-footer" *ngIf="canEditTask(selectedTask)">
+          <button type="button" 
+                  class="action-btn complete-btn" 
+                  *ngIf="selectedTask.status !== 'CONCLUIDA'"
+                  (click)="completeTask(selectedTask)">
+            <i class="fas fa-check"></i> Marcar como Concluída
+          </button>
+          <button type="button" 
+                  class="action-btn uncomplete-btn" 
+                  *ngIf="selectedTask.status === 'CONCLUIDA'"
+                  (click)="uncompleteTask(selectedTask)">
+            <i class="fas fa-undo"></i> Desmarcar Conclusão
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div class="calendar-loader" *ngIf="isLoading">
+    <div class="loader-spinner"></div>
+    <p>Carregando calendário...</p>
+  </div>
+</div>

@@ -65,10 +65,7 @@ export class RegisterPageComponent implements OnInit, OnDestroy {
 
   // Método para fazer registro
   on_register() {
-    console.log('Iniciando registro...');
-    console.log('Nome:', this.nome);
-    console.log('Email:', this.email);
-    console.log('Password:', this.password);
+    console.log('Iniciando processo de registro...');
     
     // Limpar erros anteriores
     this.clear_errors();
@@ -105,14 +102,20 @@ export class RegisterPageComponent implements OnInit, OnDestroy {
     }
 
     // Salvar dados temporariamente (não registra no banco ainda)
-    console.log('Salvando dados temporários...');
+    console.log('Salvando dados temporários:', { nome: this.nome, email: this.email });
     
     this.registrationFlow.setUserData(this.nome, this.email, this.password);
     
-    console.log('Dados salvos, navegando para escolha de família...');
+    console.log('Dados salvos, navegando para /family/option');
     
     // Navegar para a próxima etapa: escolher opção de família
-    this.navegador.navigate(['/family/option']);
+    this.navegador.navigate(['/family/option']).then(success => {
+      if (success) {
+        console.log('Navegação para /family/option bem-sucedida');
+      } else {
+        console.error('Falha na navegação para /family/option');
+      }
+    });
   }
 
   // Limpar todas as mensagens de erro

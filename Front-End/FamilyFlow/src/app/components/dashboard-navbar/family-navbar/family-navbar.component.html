@@ -1,44 +1,50 @@
-<div class="choice">
-    <h3 
-        [class.active]="isTabActive.diarias"
-        (click)="onTabClick('diarias')"
-    >
-        Tarefas Diárias
-    </h3>
-    <h3 
-        [class.active]="isTabActive.pontuais"
-        (click)="onTabClick('pontuais')"
-    >
-        Tarefas Pontuais
-    </h3>
-</div>
-
-<!-- Conteúdo de Tarefas Diárias - aparece apenas quando aba diárias está ativa -->
-<div class="daily-task" *ngIf="isTabActive.diarias">
-    <div class="daily-desc">
-        <div class="desc-text">
-            <h1>Tarefas Diárias</h1>
-            <p>Tarefas criadas apenas pelo Administrador</p>
+<div class="family-content">
+    <div class="family-desc">
+        <div class="desc">
+            <div class="desc-text">
+                <h1>Membros da Família</h1>
+                <p>Veja todos os membros que fazem parte da sua família aqui</p>
+            </div>
         </div>
-
-        <button class="daily-create-task">
-            <i class="fas fa-plus"></i> 
-            Criar Tarefa Diária
-        </button>
     </div>
 </div>
 
-<!-- Conteúdo de Tarefas Pontuais - aparece apenas quando aba pontuais está ativa -->
-<div class="punctual-task" *ngIf="isTabActive.pontuais">
-    <div class="punctual-desc">
-        <div class="desc-text">
-            <h1>Tarefas Pontuais</h1>
-            <p>Tarefas que podem ser criadas por qualquer membro</p>
-        </div>
 
-        <button class="punctual-create-task">
-            <i class="fas fa-plus"></i> 
-            Criar Tarefa Pontual
-        </button>
-    </div>
+<div class="total-members">
+    <h1 class="text">Total de membros</h1>
+    <span class="members" *ngIf="!isLoading">{{ totalMembers }}</span>
+    <span class="members loading" *ngIf="isLoading">Carregando...</span>
+</div>
+
+<div class="table-container">
+    <table class="table-members">
+        <thead>
+            <tr>
+                <th><p>Nome</p></th>
+                <th><p>Email</p></th>
+                <th><p>Papel</p></th>
+            </tr>
+        </thead>
+        <tbody *ngIf="!isLoading && familyMembers.length > 0">
+            <tr *ngFor="let member of familyMembers">
+                <td>{{ member.name }}</td>
+                <td>{{ member.email }}</td>
+                <td>
+                    <span class="role-badge" [ngClass]="member.role.toLowerCase()">
+                        {{ member.role === 'ADMIN' ? 'Administrador' : 'Membro' }}
+                    </span>
+                </td>
+            </tr>
+        </tbody>
+        <tbody *ngIf="isLoading">
+            <tr>
+                <td colspan="3" class="loading-row">Carregando membros...</td>
+            </tr>
+        </tbody>
+        <tbody *ngIf="!isLoading && familyMembers.length === 0">
+            <tr>
+                <td colspan="3" class="no-members">Nenhum membro encontrado</td>
+            </tr>
+        </tbody>
+    </table>
 </div>

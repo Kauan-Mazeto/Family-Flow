@@ -6,7 +6,7 @@ export async function usuario_atual(idUsuario) {
 
     try {
 
-        const user_active = await prisma.FamilyMember.findFirst({
+        const user_active = await prisma.familyMember.findFirst({
             where: {
                 user_id: Number(idUsuario)
             },

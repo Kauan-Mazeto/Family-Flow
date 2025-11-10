@@ -1,0 +1,547 @@
+<div class="choice">
+    <h3 
+        [class.active]="isTabActive.diarias"
+        (click)="onTabClick('diarias')"
+    >
+        Tarefas Diárias
+    </h3>
+    <h3 
+        [class.active]="isTabActive.pontuais"
+        (click)="onTabClick('pontuais')"
+    >
+        Tarefas Pontuais
+    </h3>
+    <h3
+        [class.active]="isTabActive.grafico"
+        (click)="onTabClick('grafico')"
+    >
+        Gráfico de Tarefas
+    </h3>
+</div>
+
+<!--Conteúdo de Tarefas Diárias - Kanban Board-->
+<div class="task" *ngIf="isTabActive.diarias">
+    <div class="task-desc">
+        <div class="desc">
+            <div class="desc-text">
+                <h1>Tarefas Diárias</h1>
+                <p>Tarefas criadas pelo Administrador - visíveis para toda a família</p>
+            </div>
+
+            <button class="create-task" (click)="openCreateTaskModal()" *ngIf="isAdmin">
+                <i class="fas fa-plus"></i> 
+                Criar Tarefa Diária
+            </button>
+            <div class="admin-only-message" *ngIf="!isAdmin">
+                <i class="fas fa-lock"></i>
+                <span>Apenas administradores podem criar tarefas diárias</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quadro Kanban com dois colunas -->
+    <div class="kanban-board">
+        <!-- Coluna de Tarefas Atribuídas -->
+        <div class="kanban-column">
+            <div class="column-header">
+                <h3>
+                    Tarefas Atribuídas
+                </h3>
+                <span class="task-count">{{ getAssignedTasks().length }}</span>
+            </div>
+
+            <div class="column-content">
+                <div class="task-card assigned" *ngFor="let task of getAssignedTasks()">
+                    <div class="task-info">
+                        <div class="responsible">
+                            <input 
+                                type="checkbox" 
+                                class="check-response"
+                                [checked]="false"
+                                [disabled]="!canEditTask(task) || task._loading"
+                                (change)="onTaskComplete(task)"
+                                (click)="testClick(task)"
+                                [title]="!canEditTask(task) ? 'Apenas o responsável pode marcar esta tarefa como concluída' : 'Clique para marcar como concluída'"
+                            >
+                            <span class="fas fa-trash" (click)="onDeleteTask(task)" *ngIf="isAdmin"></span>
+                        </div>
+                        <h2>{{ task.title }}</h2>
+                        <p>{{ task.description || 'Sem descrição' }}</p>
+                        <small class="task-member">Responsável: {{ task.member_name }}</small>
+                    </div>
+
+                    <div class="task-atribute">
+                        <span class="task-priority" [ngClass]="'priority-' + task.priority.toLowerCase()">
+                            <i class="fas fa-flag"></i>
+                            {{ getPriorityLabel(task.priority) }}
+                        </span>
+                        <span class="task-status status-pendente">
+                            <i class="fas fa-clock"></i>
+                            Pendente
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Mensagem quando não há tarefas atribuídas -->
+                <div class="no-tasks" *ngIf="getAssignedTasks().length === 0">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h4>Nenhuma tarefa atribuída</h4>
+                    <p>As novas tarefas aparecerão aqui</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna de Tarefas Concluídas -->
+        <div class="kanban-column">
+            <div class="column-header completed">
+                <h3>
+                    Tarefas Concluídas
+                </h3>
+                <span class="task-count completed">{{ getCompletedTasks().length }}</span>
+            </div>
+
+            <div class="column-content">
+                <div class="task-card completed" *ngFor="let task of getCompletedTasks()">
+                    <div class="task-info">
+                        <div class="responsible">
+                            <input 
+                                type="checkbox" 
+                                class="check-response"
+                                [checked]="true"
+                                [disabled]="!canEditTask(task) || task._loading"
+                                (change)="onTaskUncomplete(task)"
+                                [title]="!canEditTask(task) ? 'Apenas o responsável pode desmarcar esta tarefa' : ''"
+                            >
+                            <span class="fas fa-trash" (click)="onDeleteTask(task)" *ngIf="isAdmin"></span>
+                        </div>
+                        <h2>{{ task.title }}</h2>
+                        <p>{{ task.description || 'Sem descrição' }}</p>
+                        <small class="task-member">Responsável: {{ task.member_name }}</small>
+                        <small class="completion-time" *ngIf="task.completed_at">
+                            <i class="fas fa-calendar-check"></i>
+                            Concluída em: {{ formatDate(task.completed_at) }}
+                        </small>
+                    </div>
+
+                    <div class="task-atribute">
+                        <span class="task-priority completed" [ngClass]="'priority-' + task.priority.toLowerCase()">
+                            <i class="fas fa-flag"></i>
+                            {{ getPriorityLabel(task.priority) }}
+                        </span>
+                        <span class="task-status status-concluida">
+                            <i class="fas fa-check-circle"></i>
+                            Concluída
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Mensagem quando não há tarefas concluídas -->
+                <div class="no-tasks" *ngIf="getCompletedTasks().length === 0">
+                    <i class="fas fa-check-circle"></i>
+                    <h4>Nenhuma tarefa concluída</h4>
+                    <p>As tarefas concluídas aparecerão aqui</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!--Conteúdo de Tarefas Pontuais - Kanban Board-->
+<div class="task" *ngIf="isTabActive.pontuais">
+    <div class="task-desc">
+        <div class="desc">
+            <div class="desc-text">
+                <h1>Tarefas Pontuais</h1>
+                <p>Suas tarefas pessoais - visíveis apenas para você</p>
+            </div>
+
+            <button class="create-task" (click)="openCreatePunctualTaskModal()">
+                <i class="fas fa-plus"></i> 
+                Criar Tarefa Pontual
+            </button>
+        </div>
+    </div>
+
+    <!-- Quadro Kanban com dois colunas para tarefas pontuais -->
+    <div class="kanban-board">
+        <!-- Coluna de Tarefas Pontuais Atribuídas -->
+        <div class="kanban-column">
+            <div class="column-header">
+                <h3>
+                    Tarefas Atribuídas
+                </h3>
+                <span class="task-count">{{ getAssignedPunctualTasks().length }}</span>
+            </div>
+
+            <div class="column-content">
+                <div class="task-card assigned" *ngFor="let task of getAssignedPunctualTasks()">
+                    <div class="task-info">
+                        <div class="responsible">
+                            <input 
+                                type="checkbox" 
+                                class="check-response"
+                                [checked]="false"
+                                [disabled]="!canEditTask(task) || task._loading"
+                                (change)="onTaskComplete(task)"
+                                [title]="!canEditTask(task) ? 'Apenas o responsável pode marcar esta tarefa como concluída' : ''"
+                            >
+                            <span class="fas fa-trash" (click)="onDeleteTask(task)"></span>
+                        </div>
+                        <h2>{{ task.title }}</h2>
+                        <p>{{ task.description || 'Sem descrição' }}</p>
+                        <small class="task-member">Data: {{ formatScheduledDate(task.date_end || '') }}</small>
+                    </div>
+
+                    <div class="task-atribute">
+                        <span class="task-priority" [ngClass]="'priority-' + task.priority.toLowerCase()">
+                            <i class="fas fa-flag"></i>
+                            {{ getPriorityLabel(task.priority) }}
+                        </span>
+                        <span class="task-status status-pendente">
+                            <i class="fas fa-clock"></i>
+                            Pendente
+                        </span>
+                    </div>
+                </div>
+
+                <div class="no-tasks" *ngIf="getAssignedPunctualTasks().length === 0">
+                    <i class="fas fa-tasks"></i>
+                    <h4>Nenhuma tarefa pontual pendente</h4>
+                    <p>Crie uma nova tarefa clicando no botão acima</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna de Tarefas Pontuais Concluídas -->
+        <div class="kanban-column">
+            <div class="column-header completed">
+                <h3>
+                    Tarefas Concluídas
+                </h3>
+                <span class="task-count completed">{{ getCompletedPunctualTasks().length }}</span>
+            </div>
+
+            <div class="column-content">
+                <div class="task-card completed" *ngFor="let task of getCompletedPunctualTasks()">
+                    <div class="task-info">
+                        <div class="responsible">
+                            <input 
+                                type="checkbox" 
+                                class="check-response"
+                                [checked]="true"
+                                [disabled]="!canEditTask(task) || task._loading"
+                                (change)="onTaskUncomplete(task)"
+                                [title]="!canEditTask(task) ? 'Apenas o responsável pode desmarcar esta tarefa' : ''"
+                            >
+                            <span class="fas fa-trash" (click)="onDeleteTask(task)"></span>
+                        </div>
+                        <h2>{{ task.title }}</h2>
+                        <p>{{ task.description || 'Sem descrição' }}</p>
+                        <small class="task-member">Data: {{ formatScheduledDate(task.date_end || '') }}</small>
+                        <small class="completion-time" *ngIf="task.completed_at">
+                            <i class="fas fa-calendar-check"></i>
+                            Concluída em: {{ formatDate(task.completed_at) }}
+                        </small>
+                    </div>
+
+                    <div class="task-atribute">
+                        <span class="task-priority completed" [ngClass]="'priority-' + task.priority.toLowerCase()">
+                            <i class="fas fa-flag"></i>
+                            {{ getPriorityLabel(task.priority) }}
+                        </span>
+                        <span class="task-status status-concluida">
+                            <i class="fas fa-check-circle"></i>
+                            Concluída
+                        </span>
+                    </div>
+                </div>
+
+                <div class="no-tasks" *ngIf="getCompletedPunctualTasks().length === 0">
+                    <i class="fas fa-check-circle"></i>
+                    <h4>Nenhuma tarefa concluída</h4>
+                    <p>As tarefas concluídas aparecerão aqui</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" *ngIf="isLoading">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Carregando tarefas...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para criar tarefa diária -->
+<div class="modal-overlay" *ngIf="showCreateTaskModal" (click)="closeCreateTaskModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>
+                <i class="fas fa-plus-circle"></i>
+                Criar Nova Tarefa Diária
+            </h2>
+            <button class="close-btn" (click)="closeCreateTaskModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form [formGroup]="taskForm" (ngSubmit)="onSubmitTask()" class="task-form">
+            <!-- Seção de Tarefas Pré-definidas -->
+            <div class="predefined-tasks-section">
+                <label class="section-label">
+                    Tarefas Comuns - Clique para usar
+                </label>
+                <div class="predefined-tasks-grid">
+                    <button type="button" class="predefined-task-btn" (click)="selectPredefinedTask('Lavar a louça', 'Lavar pratos, copos, panelas e utensílios da cozinha')">
+                        <i class="fas fa-sink"></i>
+                        <span>Lavar a louça</span>
+                    </button>
+                    <button type="button" class="predefined-task-btn" (click)="selectPredefinedTask('Varrer a casa', 'Varrer todos os cômodos da casa')">
+                        <i class="fas fa-broom"></i>
+                        <span>Varrer a casa</span>
+                    </button>
+                    <button type="button" class="predefined-task-btn" (click)="selectPredefinedTask('Passar pano no chão', 'Passar pano úmido em todos os cômodos')">
+                        <i class="fas fa-spray-can"></i>
+                        <span>Passar pano</span>
+                    </button>
+                    <button type="button" class="predefined-task-btn" (click)="selectPredefinedTask('Tirar o lixo', 'Recolher o lixo de todos os cômodos e colocar na rua')">
+                        <i class="fas fa-trash"></i>
+                        <span>Tirar o lixo</span>
+                    </button>
+                    <button type="button" class="predefined-task-btn" (click)="selectPredefinedTask('Lavar roupas', 'Separar, lavar e estender as roupas')">
+                        <i class="fas fa-tshirt"></i>
+                        <span>Lavar roupas</span>
+                    </button>
+                    <button type="button" class="predefined-task-btn" (click)="selectPredefinedTask('Fazer o almoço', 'Preparar a refeição do almoço para a família')">
+                        <i class="fas fa-utensils"></i>
+                        <span>Fazer o almoço</span>
+                    </button>
+                    <button type="button" class="predefined-task-btn" (click)="selectPredefinedTask('Organizar a sala', 'Arrumar móveis, almofadas e limpar a sala')">
+                        <i class="fas fa-couch"></i>
+                        <span>Organizar sala</span>
+                    </button>
+                    <button type="button" class="predefined-task-btn" (click)="selectPredefinedTask('Limpar banheiro', 'Limpar vaso, pia, espelho e chão do banheiro')">
+                        <i class="fas fa-toilet"></i>
+                        <span>Limpar banheiro</span>
+                    </button>
+                    <button type="button" class="predefined-task-btn" (click)="selectPredefinedTask('Organizar o quarto', 'Arrumar móveis, almofadas e limpar o quarto')">
+                        <i class="fas fa-bed"></i>
+                        <span>Organizar quarto</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">Nome da Tarefa</label>
+                    <input 
+                        type="text" 
+                        id="name" 
+                        formControlName="name"
+                        placeholder="Ex: Lavar a louça"
+                        [class.error]="taskForm.get('name')?.invalid && taskForm.get('name')?.touched"
+                    >
+                    <div class="error-message" *ngIf="taskForm.get('name')?.invalid && taskForm.get('name')?.touched">
+                        <span *ngIf="taskForm.get('name')?.errors?.['required']">Nome é obrigatório</span>
+                        <span *ngIf="taskForm.get('name')?.errors?.['minlength']">Nome deve ter pelo menos 3 caracteres</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="member">Pessoa Responsável</label>
+                    <select 
+                        id="member" 
+                        formControlName="member"
+                    >
+                        <option value="">Selecione um membro</option>
+                        <option *ngFor="let member of familyMembers" [value]="member.id">
+                            {{ member.name }} ({{ member.role === 'ADMIN' ? 'Admin' : 'Membro' }})
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Descrição</label>
+                <textarea 
+                    id="description" 
+                    formControlName="description"
+                    placeholder="Descreva detalhadamente a tarefa..."
+                    rows="3"
+                ></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="priority">Nível de Prioridade</label>
+                <select id="priority" formControlName="priority">
+                    <option value="BAIXA">Baixa</option>
+                    <option value="MEDIA">Média</option>
+                    <option value="ALTA">Alta</option>
+                </select>
+            </div>
+
+            <div class="form-info-note">
+                <div class="info-card">
+                    <i class="fas fa-info-circle"></i>
+                    <div class="info-text">
+                        <strong>Status Automático</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" (click)="closeCreateTaskModal()">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn-submit" [disabled]="isLoading">
+                    <i class="fas fa-spinner fa-spin" *ngIf="isLoading"></i>
+                    <i class="fas fa-check" *ngIf="!isLoading"></i>
+                    {{ isLoading ? 'Criando...' : 'Criar Tarefa' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal para criar tarefa pontual -->
+<div class="modal-overlay" *ngIf="showCreatePunctualTaskModal" (click)="closeCreatePunctualTaskModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>
+                <i class="fas fa-plus-circle"></i>
+                Criar Nova Tarefa Pontual
+            </h2>
+            <button class="close-btn" (click)="closeCreatePunctualTaskModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form [formGroup]="punctualTaskForm" (ngSubmit)="onSubmitPunctualTask()" class="task-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="punctual-name">Nome da Tarefa</label>
+                    <input 
+                        type="text" 
+                        id="punctual-name" 
+                        formControlName="name"
+                        placeholder="Ex: Renovar CNH"
+                        [class.error]="punctualTaskForm.get('name')?.invalid && punctualTaskForm.get('name')?.touched"
+                    >
+                    <div class="error-message" *ngIf="punctualTaskForm.get('name')?.invalid && punctualTaskForm.get('name')?.touched">
+                        <span *ngIf="punctualTaskForm.get('name')?.errors?.['required']">Nome é obrigatório</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="scheduled-date">Data para Fazer</label>
+                    <input 
+                        type="date" 
+                        id="scheduled-date" 
+                        formControlName="scheduled_date"
+                        [class.error]="punctualTaskForm.get('scheduled_date')?.invalid && punctualTaskForm.get('scheduled_date')?.touched"
+                    >
+                    <div class="error-message" *ngIf="punctualTaskForm.get('scheduled_date')?.invalid && punctualTaskForm.get('scheduled_date')?.touched">
+                        <span *ngIf="punctualTaskForm.get('scheduled_date')?.errors?.['required']">Data é obrigatória</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="punctual-description">Descrição</label>
+                <textarea 
+                    id="punctual-description" 
+                    formControlName="description"
+                    placeholder="Descreva detalhadamente a tarefa..."
+                    rows="3"
+                ></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="punctual-priority">Nível de Prioridade</label>
+                <select id="punctual-priority" formControlName="priority">
+                    <option value="BAIXA">Baixa</option>
+                    <option value="MEDIA">Média</option>
+                    <option value="ALTA">Alta</option>
+                </select>
+            </div>
+
+            <div class="form-info-note">
+                <div class="info-card">
+                    <i class="fas fa-info-circle"></i>
+                    <div class="info-text">
+                        <strong>Tarefa Pessoal</strong>
+                        <p>Esta tarefa será visível apenas para você</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" (click)="closeCreatePunctualTaskModal()">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn-submit" [disabled]="isLoading">
+                    <i class="fas fa-spinner fa-spin" *ngIf="isLoading"></i>
+                    <i class="fas fa-check" *ngIf="!isLoading"></i>
+                    {{ isLoading ? 'Criando...' : 'Criar Tarefa' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!--Conteúdo de Gráfico de Tarefas-->
+<div class="task-chart" *ngIf="isTabActive.grafico">
+    <div class="task-desc">
+        <div class="desc">
+            <div class="desc-text">
+                <h1>Estatísticas das Tarefas Diárias</h1>
+                <p>Visualização das tarefas concluídas por membro da família</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <div class="chart-wrapper">
+            <div class="chart-content">
+                <div class="chart-info" *ngIf="dailyTasks.length === 0">
+                    <div class="no-data-message">
+                        <i class="fas fa-chart-pie"></i>
+                        <h3>Nenhuma tarefa encontrada</h3>
+                        <p>Crie algumas tarefas diárias para visualizar as estatísticas</p>
+                    </div>
+                </div>
+                <canvas #taskChart id="taskChart" width="400" height="400"></canvas>
+            </div>
+        </div>
+        <div class="chart-legend">
+            <h3>Legenda</h3>
+            <div class="legend-items">
+                <div class="legend-item" *ngFor="let member of familyMembers; let i = index">
+                    <span class="legend-color" [style.background-color]="getChartColor(i)"></span>
+                    <span class="legend-label">{{ member.name }}</span>
+                    <span class="legend-count">{{ getCompletedTasksCount(member.id) }} tarefas</span>
+                </div>
+            </div>
+            <div class="chart-stats">
+                <div class="stat-item">
+                    <strong>Total de tarefas:</strong>
+                    <span>{{ dailyTasks.length }}</span>
+                </div>
+                <div class="stat-item">
+                    <strong>Tarefas concluídas:</strong>
+                    <span>{{ getCompletedDailyTasks().length }}</span>
+                </div>
+                <div class="stat-item">
+                    <strong>Taxa de conclusão:</strong>
+                    <span>{{ getCompletionRate() }}%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+</div>

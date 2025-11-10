@@ -33,8 +33,7 @@ export class AuthService {
   public loading$ = this.loadingSubject.asObservable();
 
   constructor(private http: HttpClient) {
-    // Verificar se usuário está autenticado ao inicializar
-    this.loadUserInfo();
+    // O guard será responsável por verificar a autenticação quando necessário
   }
 
   /**
@@ -42,8 +41,7 @@ export class AuthService {
    */
   login(credentials: LoginRequest): Observable<LoginResponse> {
     this.loadingSubject.next(true);
-    console.log('AuthService: 🔐 Fazendo login para:', credentials.email);
-    console.log('AuthService: URL completa:', `${this.API_URL}${this.endpoints.login}`);
+
     
     return this.http.post<LoginResponse>(
       `${this.API_URL}${this.endpoints.login}`, 
@@ -55,9 +53,8 @@ export class AuthService {
         }
       }
     ).pipe(
-      timeout(10000), // 10 segundos de timeout
+      timeout(10000),
       map(response => {
-        console.log('AuthService: ✅ Login realizado com sucesso:', response);
         if (response.user) {
           // Converter para o formato User completo
           const user: User = {
@@ -74,7 +71,6 @@ export class AuthService {
           // Buscar dados completos do usuário após login bem-sucedido
           this.getCurrentUserFromServer().subscribe({
             next: (fullUserData) => {
-              console.log('AuthService: Dados completos do usuário carregados após login:', fullUserData);
               if (fullUserData.usuarioAtual) {
                 const completeUser: User = {
                   id: fullUserData.usuarioAtual.id,
@@ -89,7 +85,6 @@ export class AuthService {
               }
             },
             error: (error) => {
-              console.warn('AuthService: Erro ao carregar dados completos após login:', error);
             }
           });
         }
@@ -122,21 +117,52 @@ export class AuthService {
    * Buscar dados completos do usuário atual (baseado na sua rota POST /users/me)
    */
   getCurrentUserFromServer(): Observable<UserMeResponse> {
+    console.log('📡 AuthService: Fazendo requisição para verificar usuário no servidor...');
+    console.log('📡 AuthService: URL:', `${this.API_URL}${this.endpoints.userMe}`);
+    console.log('📡 AuthService: Cookies disponíveis:', document.cookie);
+    
+    // Verificar se há cookie tokenAuth
+    const cookies = document.cookie.split(';');
+    const tokenAuth = cookies.find(cookie => cookie.trim().startsWith('tokenAuth='));
+    console.log('📡 AuthService: Token encontrado:', tokenAuth ? 'SIM' : 'NÃO');
+    
     this.loadingSubject.next(true);
     
     return this.http.post<UserMeResponse>(
       `${this.API_URL}${this.endpoints.userMe}`,
       {}, // Body vazio, dados vêm do token/cookie
-      { withCredentials: true }
+      { 
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        observe: 'response' // Para ver headers da resposta
+      }
     ).pipe(
-      map(response => {
-        if (response.usuarioAtual) {
+      map(fullResponse => {
+        const response = fullResponse.body as UserMeResponse;
+        console.log('✅ AuthService: Status da resposta:', fullResponse.status);
+        console.log('✅ AuthService: Headers da resposta:', fullResponse.headers);
+        console.log('✅ AuthService: Corpo da resposta:', response);
+        
+        if (response && response.usuarioAtual) {
+          console.log('✅ AuthService: Usuário encontrado, atualizando cache:', response.usuarioAtual);
           this.currentUserSubject.next(response.usuarioAtual);
+        } else {
+          console.log('⚠️ AuthService: Resposta não contém usuarioAtual');
         }
+        
         this.loadingSubject.next(false);
         return response;
       }),
-      catchError(this.handleError.bind(this))
+      catchError((error) => {
+        console.error('❌ AuthService: Erro na verificação do usuário:', error);
+        console.error('❌ AuthService: Status do erro:', error.status);
+        console.error('❌ AuthService: Corpo do erro:', error.error);
+        console.error('❌ AuthService: URL do erro:', error.url);
+        this.loadingSubject.next(false);
+        return this.handleError(error);
+      })
     );
   }
 
@@ -150,11 +176,60 @@ export class AuthService {
       { withCredentials: true }
     ).pipe(
       map(response => {
+        // Limpar estado do usuário após logout
         this.currentUserSubject.next(null);
+        this.clearLocalState();
+        return response;
+      }),
+      catchError(error => {
+        // Mesmo com erro no logout, limpar estado local
+        this.currentUserSubject.next(null);
+        this.clearLocalState();
+        return this.handleError(error);
+      })
+    );
+  }
+
+  /**
+   * Apagar conta do usuário permanentemente
+   */
+  deleteAccount(): Observable<any> {
+    return this.http.delete(
+      `${this.API_URL}${this.endpoints.deleteAccount}`,
+      { withCredentials: true }
+    ).pipe(
+      map(response => {
+        // Limpar estado do usuário após apagar conta
+        this.currentUserSubject.next(null);
+        this.clearLocalState();
         return response;
       }),
       catchError(this.handleError.bind(this))
     );
+  }
+
+  /**
+   * Limpar estado local de autenticação (para resolver estados inconsistentes)
+   */
+  clearLocalState(): void {
+    console.log('🧹 Limpando estado local de autenticação');
+    this.currentUserSubject.next(null);
+    
+    // Limpar possíveis dados no localStorage
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userToken');
+    }
+    
+    // Limpar possíveis dados no sessionStorage
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem('currentUser');
+      sessionStorage.removeItem('authToken');
+      sessionStorage.removeItem('userToken');
+    }
+    
+    console.log('🧹 Estado local completamente limpo');
   }
 
   /**
@@ -175,10 +250,10 @@ export class AuthService {
    * Carregar informações do usuário atual
    */
   loadUserInfo(): void {
-    console.log('AuthService: 👤 Carregando informações do usuário...');
+    console.log('AuthService: Carregando informações do usuário...');
     this.getCurrentUserFromServer().subscribe({
       next: (response) => {
-        console.log('AuthService: ✅ Informações do usuário carregadas:', response);
+        console.log('AuthService: Informações do usuário carregadas:', response);
         if (response.usuarioAtual) {
           const user: User = {
             id: response.usuarioAtual.id,
@@ -190,11 +265,10 @@ export class AuthService {
             created_at: response.usuarioAtual.created_at
           };
           this.currentUserSubject.next(user);
-          console.log('AuthService: 👤 Usuário atualizado no subject:', user);
+          console.log('AuthService: Usuário atualizado no subject:', user);
         }
       },
-      error: (error) => {
-        console.error('AuthService: ❌ Erro ao carregar informações do usuário:', error);
+      error: z => {
         this.currentUserSubject.next(null);
       }
     });
@@ -222,9 +296,9 @@ export class AuthService {
    */
   createFamily(familyData: CreateFamilyRequest): Observable<CreateFamilyResponse> {
     this.loadingSubject.next(true);
-    console.log('AuthService: 🏠 Iniciando criação de família:', familyData);
-    console.log('AuthService: 🔗 URL:', `${this.API_URL}${this.endpoints.createFamily}`);
-    console.log('AuthService: 🍪 Cookies disponíveis:', document.cookie);
+    console.log('AuthService:  Iniciando criação de família:', familyData);
+    console.log('AuthService:  URL:', `${this.API_URL}${this.endpoints.createFamily}`);
+    console.log('AuthService:  Cookies disponíveis:', document.cookie);
     
     return this.http.post<CreateFamilyResponse>(
       `${this.API_URL}${this.endpoints.createFamily}`,
@@ -238,25 +312,25 @@ export class AuthService {
       }
     ).pipe(
       map(fullResponse => {
-        console.log('AuthService: 📥 Resposta completa da criação de família:', fullResponse);
+        console.log('AuthService:  Resposta completa da criação de família:', fullResponse);
         const response = fullResponse.body as CreateFamilyResponse;
-        console.log('AuthService: ✅ Família criada com sucesso:', response);
+        console.log('AuthService:  Família criada com sucesso:', response);
         this.loadingSubject.next(false);
         return response;
       }),
       catchError((error) => {
-        console.error('AuthService: ❌ ERRO DETALHADO na criação de família:');
-        console.error('AuthService: 🔍 Erro completo:', error);
-        console.error('AuthService: 📊 Status HTTP:', error.status);
-        console.error('AuthService: 📝 Corpo do erro:', error.error);
-        console.error('AuthService: 🌐 URL da requisição:', error.url);
-        console.error('AuthService: � Headers da resposta:', error.headers);
+        console.error('AuthService:  ERRO DETALHADO na criação de família:');
+        console.error('AuthService:  Erro completo:', error);
+        console.error('AuthService:  Status HTTP:', error.status);
+        console.error('AuthService:  Corpo do erro:', error.error);
+        console.error('AuthService:  URL da requisição:', error.url);
+        console.error('AuthService:  Headers da resposta:', error.headers);
         
         if (error.status === 401) {
-          console.error('AuthService: 🚫 ERRO 401 - Não autenticado!');
-          console.error('AuthService: 🍪 Cookies no momento do erro:', document.cookie);
+          console.error('AuthService:  ERRO 401 - Não autenticado!');
+          console.error('AuthService:  Cookies no momento do erro:', document.cookie);
         } else if (error.status === 0) {
-          console.error('AuthService: 🔗 ERRO 0 - Problema de conexão/CORS!');
+          console.error('AuthService:  ERRO 0 - Problema de conexão/CORS!');
         }
         
         return this.handleError(error);
@@ -288,7 +362,7 @@ export class AuthService {
    * Método de teste para verificar se o usuário está autenticado
    */
   testAuthenticationStatus(): Observable<any> {
-    console.log('AuthService: 🔍 Testando status de autenticação...');
+    console.log('AuthService:  Testando status de autenticação...');
     return this.http.post(`${this.API_URL}${this.endpoints.userMe}`, {}, { 
       withCredentials: true,
       headers: {
@@ -296,49 +370,24 @@ export class AuthService {
       }
     }).pipe(
       map(response => {
-        console.log('AuthService: ✅ Usuário autenticado:', response);
+        console.log('AuthService:  Usuário autenticado:', response);
         return response;
       }),
       catchError(error => {
-        console.error('AuthService: ❌ Usuário não autenticado:', error);
+        console.error('AuthService:  Usuário não autenticado:', error);
         return throwError(() => error);
       })
     );
   }
 
-  /**
-   * Método de teste para verificar se a autenticação está funcionando
-   */
-  testAuth(): Observable<any> {
-    console.log('AuthService: 🧪 TESTE DE AUTENTICAÇÃO');
-    console.log('AuthService: 🍪 Cookies disponíveis:', document.cookie);
-    
-    return this.http.get(
-      `${this.API_URL}/family/test-auth`,
-      { 
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    ).pipe(
-      map(response => {
-        console.log('AuthService: ✅ TESTE AUTH - Usuário autenticado:', response);
-        return response;
-      }),
-      catchError(error => {
-        console.error('AuthService: ❌ TESTE AUTH - Falha na autenticação:', error);
-        return throwError(() => error);
-      })
-    );
-  }
+
 
   /**
    * Método de teste público para debugar criação de família
    */
   testCreateFamilyDirect(familyName: string): Observable<any> {
-    console.log('AuthService: 🧪 TESTE DIRETO - Criando família:', familyName);
-    console.log('AuthService: 🍪 Cookies disponíveis:', document.cookie);
+    console.log('AuthService:  TESTE DIRETO - Criando família:', familyName);
+    console.log('AuthService:  Cookies disponíveis:', document.cookie);
     
     return this.http.post(
       `${this.API_URL}${this.endpoints.createFamily}`,
@@ -352,11 +401,11 @@ export class AuthService {
       }
     ).pipe(
       map(response => {
-        console.log('AuthService: ✅ TESTE - Família criada:', response);
+        console.log('AuthService:  TESTE - Família criada:', response);
         return response;
       }),
       catchError(error => {
-        console.error('AuthService: ❌ TESTE - Erro:', error);
+        console.error('AuthService:  TESTE - Erro:', error);
         return throwError(() => error);
       })
     );
@@ -381,7 +430,6 @@ export class AuthService {
 
   /**
    * Validar código de família (baseado na rota POST /family/enter)
-   * @deprecated Use enterFamily() instead - este método faz a mesma coisa
    */
   validateFamilyCode(codeData: EnterFamilyRequest): Observable<EnterFamilyResponse> {
     return this.enterFamily(codeData);
@@ -406,8 +454,8 @@ export class AuthService {
 
     return this.register(registerData).pipe(
       switchMap(registerResponse => {
-        console.log('AuthService: ✅ Registro concluído com sucesso:', registerResponse);
-        console.log('AuthService: 🔄 Iniciando login automático...');
+        console.log('AuthService:  Registro concluído com sucesso:', registerResponse);
+        console.log('AuthService:  Iniciando login automático...');
         
         // Após registrar, faz login automático para obter autenticação
         const loginData: LoginRequest = {
@@ -417,11 +465,11 @@ export class AuthService {
 
         return this.login(loginData).pipe(
           switchMap(loginResponse => {
-            console.log('AuthService: ✅ Login concluído com sucesso:', loginResponse);
-            console.log('AuthService: � Testando autenticação antes de criar família...');
+            console.log('AuthService:  Login concluído com sucesso:', loginResponse);
+            console.log('AuthService:  Testando autenticação antes de criar família...');
             
             // Aguardar um pouco para garantir que o cookie seja definido
-            console.log('AuthService: ⏱️ Aguardando cookie ser definido...');
+            console.log('AuthService: Aguardando cookie ser definido...');
             return new Observable(observer => {
               setTimeout(() => {
                 observer.next(loginResponse);
@@ -429,36 +477,34 @@ export class AuthService {
               }, 1000); // Aguardar 1 segundo
             }).pipe(
               switchMap(() => {
-                console.log('AuthService: 🔍 Testando autenticação após delay...');
+                console.log('AuthService:  Testando autenticação após delay...');
                 return this.testAuthenticationStatus();
               }),
               switchMap(authTest => {
-                console.log('AuthService: ✅ Autenticação confirmada:', authTest);
-                console.log('AuthService: �🔄 Processando família...');
+                console.log('AuthService:  Autenticação confirmada:', authTest);
+                console.log('AuthService:  Processando família...');
                 
                 // Após confirmar autenticação, cria ou entra na família
                 if (userData.family_option === 'create' && userData.family_name) {
-                  console.log('AuthService: 🏠 Criando família:', userData.family_name);
+                  console.log('AuthService:  Criando família:', userData.family_name);
                   return this.createFamily({ nome_familia: userData.family_name }).pipe(
                     map(familyResponse => {
-                      console.log('AuthService: ✅ Família criada com sucesso:', familyResponse);
+                      console.log('AuthService:  Família criada com sucesso:', familyResponse);
                       return registerResponse; // Retorna a resposta original do registro
                     })
                   );
                 } else if (userData.family_option === 'join' && userData.family_code) {
-                  console.log('AuthService: 🔗 Entrando na família com código:', userData.family_code);
+                  console.log('AuthService:  Entrando na família com código:', userData.family_code);
                   return this.enterFamily({ codigo_familia_input: userData.family_code }).pipe(
                     map(familyResponse => {
-                      console.log('AuthService: ✅ Entrada na família realizada:', familyResponse);
+                      console.log('AuthService:  Entrada na família realizada:', familyResponse);
                       return registerResponse; // Retorna a resposta original do registro
                     })
                   );
                 }
-                console.error('AuthService: ❌ Opção de família inválida:', userData.family_option);
                 return throwError(() => ({ mensagem: 'Opção de família inválida' }));
               }),
               catchError(authError => {
-                console.error('AuthService: ❌ Falha na autenticação após login:', authError);
                 return throwError(() => ({ mensagem: 'Falha na autenticação. Tente fazer login novamente.' }));
               })
             );
@@ -466,23 +512,16 @@ export class AuthService {
         );
       }),
       finalize(() => {
-        console.log('AuthService: 🏁 Finalizando processo de registro completo');
         this.loadingSubject.next(false);
       }),
       catchError((error) => {
-        console.error('AuthService: ❌ Erro no registro completo:', error);
         return this.handleError(error);
       })
     );
   }
 
-  /**
-   * Registro completo otimizado - foco na criação correta do usuário e família
-   */  
   completeRegistrationWithFamilySimple(userData: CompleteRegisterRequest): Observable<RegisterResponse> {
     this.loadingSubject.next(true);
-    
-    console.log('AuthService: 🚀 INICIANDO PROCESSO COMPLETO:', userData);
 
     // 1. Registrar usuário
     const registerData: RegisterRequest = {
@@ -493,7 +532,6 @@ export class AuthService {
 
     return this.register(registerData).pipe(
       switchMap(registerResponse => {
-        console.log('AuthService: ✅ USUÁRIO CRIADO NO BANCO:', registerResponse);
         
         // 2. Fazer login para obter autenticação
         const loginData: LoginRequest = {
@@ -503,25 +541,11 @@ export class AuthService {
 
         return this.login(loginData).pipe(
           switchMap(loginResponse => {
-            console.log('AuthService: ✅ LOGIN REALIZADO:', loginResponse);
-            console.log('AuthService: 🍪 Cookies definidos:', document.cookie);
             
             // 3. Se deve criar família, fazer isso agora que está autenticado
             if (userData.family_option === 'create' && userData.family_name) {
-              console.log('AuthService: 🏗️ CRIANDO FAMÍLIA:', userData.family_name);
               
-              // Primeiro, testar se a autenticação está funcionando
-              return this.testAuth().pipe(
-                switchMap(authTest => {
-                  console.log('AuthService: ✅ TESTE DE AUTH PASSOU:', authTest);
-                  
-                  // Agora criar a família com dados confirmados
-                  console.log('AuthService: 🔧 FAZENDO REQUISIÇÃO PARA CRIAR FAMÍLIA...');
-                  console.log('AuthService: 🔗 URL:', `${this.API_URL}${this.endpoints.createFamily}`);
-                  console.log('AuthService: 📤 Dados enviados:', { nome_familia: userData.family_name });
-                  console.log('AuthService: 🍪 Cookies atuais:', document.cookie);
-              
-                  return this.http.post<CreateFamilyResponse>(
+              return this.http.post<CreateFamilyResponse>(
                 `${this.API_URL}${this.endpoints.createFamily}`,
                 { nome_familia: userData.family_name },
                 { 
@@ -534,42 +558,22 @@ export class AuthService {
                 }
               ).pipe(
                 map(fullResponse => {
-                  console.log('AuthService: 📥 RESPOSTA COMPLETA DO BACKEND:', fullResponse);
+                  console.log('AuthService: RESPOSTA COMPLETA DO BACKEND:', fullResponse);
                   const familyResponse = fullResponse.body as CreateFamilyResponse;
-                  console.log('AuthService: ✅ FAMÍLIA CRIADA E USUÁRIO ADICIONADO COMO ADMIN:', familyResponse);
+                  console.log('AuthService: FAMÍLIA CRIADA E USUÁRIO ADICIONADO COMO ADMIN:', familyResponse);
                   return registerResponse;
                 }),
                 catchError(familyError => {
-                  console.error('AuthService: ❌ ERRO DETALHADO NA CRIAÇÃO DE FAMÍLIA:');
-                  console.error('AuthService: 🔍 Erro completo:', familyError);
-                  console.error('AuthService: 📊 Status HTTP:', familyError.status);
-                  console.error('AuthService: 📝 Corpo da resposta:', familyError.error);
-                  console.error('AuthService: 🌐 URL que falhou:', familyError.url);
-                  console.error('AuthService: 📋 Headers de resposta:', familyError.headers);
-                  console.error('AuthService: 💬 Mensagem:', familyError.message);
-                  
-                  // Log específico para erro 500
-                  if (familyError.status === 500) {
-                    console.error('AuthService: 🚨 ERRO 500 - ERRO INTERNO DO SERVIDOR NO BACKEND!');
-                    console.error('AuthService: 🔍 Possíveis causas:');
-                    console.error('AuthService: - Erro no banco de dados');
-                    console.error('AuthService: - Erro na transação do Prisma');
-                    console.error('AuthService: - Erro na validação do middleware authToken');
-                    console.error('AuthService: - req.usuario pode estar undefined');
-                  }
                   
                   // Usuário foi criado com sucesso, família falhou
-                  console.warn('AuthService: ⚠️ USUÁRIO CRIADO, MAS FAMÍLIA FALHOU');
+                  console.warn('AuthService:  USUÁRIO CRIADO, MAS FAMÍLIA FALHOU');
                   return throwError(() => ({
                     mensagem: `Usuário criado, mas erro na família: ${familyError.error?.mensagem || 'Erro interno do servidor'}`
                   }));
                 })
               );
-                })
-              );
               
             } else if (userData.family_option === 'join' && userData.family_code) {
-              console.log('AuthService: 🔗 ENTRANDO NA FAMÍLIA:', userData.family_code);
               
               return this.http.post<EnterFamilyResponse>(
                 `${this.API_URL}${this.endpoints.enterFamily}`,
@@ -583,11 +587,11 @@ export class AuthService {
                 }
               ).pipe(
                 map(familyResponse => {
-                  console.log('AuthService: ✅ ENTROU NA FAMÍLIA:', familyResponse);
+                  console.log('AuthService:  ENTROU NA FAMÍLIA:', familyResponse);
                   return registerResponse;
                 }),
                 catchError(familyError => {
-                  console.error('AuthService: ❌ ERRO AO ENTRAR NA FAMÍLIA:', familyError);
+                  console.error('AuthService:  ERRO AO ENTRAR NA FAMÍLIA:', familyError);
                   return throwError(() => ({
                     mensagem: `Usuário criado, mas erro ao entrar na família: ${familyError.error?.mensagem || 'Erro desconhecido'}`
                   }));
@@ -595,14 +599,14 @@ export class AuthService {
               );
               
             } else {
-              console.log('AuthService: ✅ REGISTRO CONCLUÍDO SEM FAMÍLIA');
+              console.log('AuthService:  REGISTRO CONCLUÍDO SEM FAMÍLIA');
               return of(registerResponse);
             }
           })
         );
       }),
       finalize(() => {
-        console.log('AuthService: 🏁 PROCESSO FINALIZADO');
+        console.log('AuthService:  PROCESSO FINALIZADO');
         this.loadingSubject.next(false);
       }),
       catchError(this.handleError.bind(this))
@@ -613,7 +617,7 @@ export class AuthService {
    * Obter informações da família do usuário atual
    */
   getUserFamily(): Observable<{familia: {id: number, nome: string, codigo: string, role: string}}> {
-    console.log('AuthService: 📱 Buscando informações da família do usuário...');
+    console.log('AuthService:  Buscando informações da família do usuário...');
     
     return this.http.get<{familia: {id: number, nome: string, codigo: string, role: string}}>(
       `${this.API_URL}/family/info`,
@@ -657,6 +661,30 @@ export class AuthService {
         console.log('AuthService: Erro do backend');
         if (error.error && error.error.mensagem) {
           errorMessage = error.error.mensagem;
+          
+          // Tratar tipos específicos de erro
+          if (error.error.erro_tipo) {
+            switch (error.error.erro_tipo) {
+              case 'USUARIO_NAO_EXISTE':
+                errorMessage = 'Usuário não encontrado. Verifique seu email.';
+                break;
+              case 'SENHA_INCORRETA':
+                errorMessage = 'Senha incorreta. Tente novamente.';
+                break;
+              case 'USUARIO_INATIVO':
+                errorMessage = 'Sua conta foi desativada. Entre em contato com o suporte.';
+                break;
+              case 'CAMPOS_OBRIGATORIOS':
+                errorMessage = 'Todos os campos são obrigatórios.';
+                break;
+              case 'EMAIL_FORMATO_INVALIDO':
+                errorMessage = 'Formato de email inválido.';
+                break;
+              case 'SENHA_MUITO_CURTA':
+                errorMessage = 'Senha deve ter pelo menos 8 caracteres.';
+                break;
+            }
+          }
         } else {
           switch (error.status) {
             case 0:
@@ -666,7 +694,13 @@ export class AuthService {
               errorMessage = 'Dados inválidos ou incompletos';
               break;
             case 401:
-              errorMessage = 'Email ou senha inválidos';
+              errorMessage = 'Credenciais inválidas';
+              break;
+            case 403:
+              errorMessage = 'Acesso negado';
+              break;
+            case 404:
+              errorMessage = 'Usuário não encontrado';
               break;
             case 409:
               errorMessage = 'Email já cadastrado';
@@ -696,10 +730,31 @@ export class AuthService {
     
     console.log('AuthService: Mensagem de erro final:', errorMessage);
     
-    const errorResponse: ErrorResponse = {
+    // Se o erro original tem erro_tipo, preservar essa informação
+    let errorResponse: ErrorResponse = {
       mensagem: errorMessage
     };
     
+    if (error instanceof HttpErrorResponse && error.error && error.error.erro_tipo) {
+      errorResponse.erro_tipo = error.error.erro_tipo;
+    }
+    
     return throwError(() => errorResponse);
+  }
+
+  /**
+   * Verificar se o usuário tem família
+   */
+  checkUserHasFamily(): Observable<boolean> {
+    return this.getCurrentUserFromServer().pipe(
+      map(response => {
+        // Se user_active_system existe e não contém mensagem de erro, usuário tem família
+        return !!(response.user_active_system && response.user_active_system.family_id);
+      }),
+      catchError(() => {
+        // Em caso de erro, assumir que não tem família
+        return of(false);
+      })
+    );
   }
 }

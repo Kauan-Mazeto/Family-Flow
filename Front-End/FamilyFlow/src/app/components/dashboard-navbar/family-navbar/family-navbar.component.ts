@@ -1,5 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
+
+interface FamilyMember {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  is_admin: boolean;
+}
 
 @Component({
   selector: 'app-family-navbar',
@@ -9,22 +19,43 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./family-navbar.component.scss']
 })
 
-export class FamilyNavbarComponent {
-  
-  activeTab: string = 'diarias'; // Por padrão, "Tarefas Diárias" está ativa
+export class FamilyNavbarComponent implements OnInit {
 
-  constructor() { }
+  familyMembers: FamilyMember[] = [];
+  totalMembers: number = 0;
+  isLoading: boolean = true;
 
-  onTabClick(tabType: string) {
-    this.activeTab = tabType;
-    console.log(`🔄 Aba ativa: ${tabType}`);
+  constructor(
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
+  ) { }
+
+  ngOnInit() {
+    this.loadFamilyMembers();
   }
 
-  get isTabActive() {
-    return {
-      diarias: this.activeTab === 'diarias',
-      pontuais: this.activeTab === 'pontuais'
-    };
+  loadFamilyMembers() {
+    this.http.get<{membros: FamilyMember[]}>(`${environment.apiUrl}/family/members`, {
+      withCredentials: true
+    }).subscribe({
+      next: (response) => {
+        this.familyMembers = response.membros;
+        this.totalMembers = this.familyMembers.length;
+        this.isLoading = false;
+        
+        // Força a detecção de mudanças
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('❌ Erro ao carregar membros da família:', error);
+        this.isLoading = false;
+        this.familyMembers = [];
+        this.totalMembers = 0;
+        
+        // Força a detecção de mudanças mesmo em caso de erro
+        this.cdr.detectChanges();
+      }
+    });
   }
 
 }

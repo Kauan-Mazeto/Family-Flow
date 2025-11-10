@@ -7,7 +7,9 @@
     {{ error_message }}
   </div>
   
-  <div *ngIf="email_error" class="field-error">
+  <div *ngIf="email_error" 
+       class="field-error" 
+       [class.field-error]="email_error.includes('Usuário não encontrado')">
     {{ email_error }}
   </div>
 

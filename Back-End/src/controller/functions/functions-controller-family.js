@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 export async function family_id_task(idUsuario) {
     
     try {
-        const info_family = await prisma.FamilyMember.findFirst({
+        const info_family = await prisma.familyMember.findFirst({
             where: {
                 user_id: idUsuario
             },
