@@ -71,30 +71,27 @@ export async function login_usuario(req, res) {
     const { email, password } = req.body;
     // pegando do body as informacoes: email e senha do usuario
 
-
     if (!email || !password) {
         return res.status(400).json({
             mensagem: "Email e senha são obrigatórios.",
             erro_tipo: "CAMPOS_OBRIGATORIOS"
         });
-    }
+    };
 
-    // Validação de formato de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         return res.status(400).json({
             mensagem: "Formato de email inválido.",
             erro_tipo: "EMAIL_FORMATO_INVALIDO"
         });
-    }
+    };
 
-    // Validação de tamanho mínimo da senha
     if (password.length < 8) {
         return res.status(400).json({
             mensagem: "Senha deve ter pelo menos 8 caracteres.",
             erro_tipo: "SENHA_MUITO_CURTA"
         });
-    }
+    };
 
     try {
         const usuario_temporario_retornar = await prisma.user.findUnique({
@@ -111,28 +108,25 @@ export async function login_usuario(req, res) {
             }
         });
 
-        // Verificar se o usuário existe
         if (!usuario_temporario_retornar) {
             return res.status(404).json({
                 mensagem: "Usuário não encontrado.", 
                 erro_tipo: "USUARIO_NAO_EXISTE"
             });
-        }
+        };
 
-        // Verificar se o usuário está ativo
         if (!usuario_temporario_retornar.is_active) {
             return res.status(403).json({
                 mensagem: "Conta desativada. Entre em contato com o suporte.", 
                 erro_tipo: "USUARIO_INATIVO"
             });
-        }
+        };
 
         const validar_senha = await argon2.verify(
             usuario_temporario_retornar.password_hash, 
             password
         );
 
-        // Verificar se a senha está correta
         if (!validar_senha) {
             return res.status(401).json({
                 mensagem: "Senha incorreta.", 
