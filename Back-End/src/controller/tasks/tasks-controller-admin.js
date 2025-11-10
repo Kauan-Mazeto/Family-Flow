@@ -221,7 +221,10 @@ export async function patch_task_adm(req, res) {
 export async function create_daily_task_admin(req, res) {
     const { desc_task, name_task, member_task, priority_task, status_task = 'PENDENTE', type_task = 'diaria' } = req.body;
 
+    console.log('🔔 [create_daily_task_admin] Body recebido:', req.body);
+
     if (!name_task || !member_task || !priority_task) {
+        console.log('❌ [create_daily_task_admin] Campos obrigatórios faltando:', { name_task, member_task, priority_task });
         return res.status(400).json({ mensagem: "Informações obrigatórias: name_task, member_task, priority_task." });
     }
 
@@ -231,7 +234,10 @@ export async function create_daily_task_admin(req, res) {
             where: { user_id: req.usuario.id }
         });
 
+        console.log('🔔 [create_daily_task_admin] adminFamilyMember:', adminFamilyMember);
+
         if (!adminFamilyMember) {
+            console.log('❌ [create_daily_task_admin] Admin não está em nenhuma família.');
             return res.status(400).json({ mensagem: "Admin não está em nenhuma família." });
         }
 
@@ -248,10 +254,14 @@ export async function create_daily_task_admin(req, res) {
             }
         });
 
+        console.log('🔔 [create_daily_task_admin] targetMember:', targetMember);
+
         if (!targetMember) {
+            console.log(`❌ [create_daily_task_admin] Membro '${member_task}' não encontrado na família.`);
             return res.status(400).json({ mensagem: `Membro '${member_task}' não encontrado na família.` });
         }
 
+        const now = new Date();
         const task_info = await prisma.task.create({
             data: {
                 description: desc_task || 'Sem descrição',
@@ -261,10 +271,13 @@ export async function create_daily_task_admin(req, res) {
                 priority: priority_task.toUpperCase(),
                 status: status_task.toUpperCase(),
                 type_task: type_task,
-                family_id: adminFamilyMember.family_id
+                family_id: adminFamilyMember.family_id,
+                date_end: now,
+                days: 1
             }
         });
 
+        console.log('✅ [create_daily_task_admin] Tarefa criada:', task_info);
         return res.status(201).json({
             mensagem: "Tarefa diária criada com sucesso!",
             task: {
@@ -520,7 +533,8 @@ export async function create_punctual_task_controller(req, res) {
                 family_id: familyMember.family_id,
                 priority: priority_task || 'MEDIA',
                 status: 'PENDENTE',
-                scheduled_date: new Date(scheduled_date)
+                date_end: new Date(scheduled_date),
+                days: 1
             }
         });
 
@@ -557,7 +571,7 @@ export async function get_user_punctual_tasks_controller(req, res) {
                 is_active: true
             },
             orderBy: [
-                { scheduled_date: 'asc' },
+                { date_end: 'asc' },
                 { priority: 'desc' }
             ]
         });

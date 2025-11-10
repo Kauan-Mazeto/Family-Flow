@@ -191,7 +191,7 @@
                         </div>
                         <h2>{{ task.title }}</h2>
                         <p>{{ task.description || 'Sem descrição' }}</p>
-                        <small class="task-member">Data: {{ formatScheduledDate(task.scheduled_date || '') }}</small>
+                        <small class="task-member">Data: {{ formatScheduledDate(task.date_end || '') }}</small>
                     </div>
 
                     <div class="task-atribute">
@@ -239,7 +239,7 @@
                         </div>
                         <h2>{{ task.title }}</h2>
                         <p>{{ task.description || 'Sem descrição' }}</p>
-                        <small class="task-member">Data: {{ formatScheduledDate(task.scheduled_date || '') }}</small>
+                        <small class="task-member">Data: {{ formatScheduledDate(task.date_end || '') }}</small>
                         <small class="completion-time" *ngIf="task.completed_at">
                             <i class="fas fa-calendar-check"></i>
                             Concluída em: {{ formatDate(task.completed_at) }}
@@ -495,10 +495,12 @@
 
 <!--Conteúdo de Gráfico de Tarefas-->
 <div class="task-chart" *ngIf="isTabActive.grafico">
-    <div class="chart-header">
-        <div class="chart-title">
-            <h1>Estatísticas das Tarefas Diárias</h1>
-            <p>Visualização das tarefas concluídas por membro da família</p>
+    <div class="task-desc">
+        <div class="desc">
+            <div class="desc-text">
+                <h1>Estatísticas das Tarefas Diárias</h1>
+                <p>Visualização das tarefas concluídas por membro da família</p>
+            </div>
         </div>
     </div>
 
@@ -515,7 +517,6 @@
                 <canvas #taskChart id="taskChart" width="400" height="400"></canvas>
             </div>
         </div>
-        
         <div class="chart-legend">
             <h3>Legenda</h3>
             <div class="legend-items">
@@ -525,7 +526,6 @@
                     <span class="legend-count">{{ getCompletedTasksCount(member.id) }} tarefas</span>
                 </div>
             </div>
-            
             <div class="chart-stats">
                 <div class="stat-item">
                     <strong>Total de tarefas:</strong>

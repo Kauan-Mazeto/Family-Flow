@@ -887,11 +887,38 @@
     /* Estilos para o Gráfico de Tarefas */
     .task-chart {
         animation: fadeIn 0.3s ease-in-out;
-        padding: 2rem;
+        padding-top: 1rem;
         min-height: 600px;
 
+        
+        .task-desc {
+            display: flex;
+
+            .desc {
+                display: flex;
+                font-family: 'Poppins', sans-serif;
+                color: #555;
+                margin: 1rem 0 0 0;
+                flex-direction: row;
+                justify-content: flex-start;
+                width: 100%;
+                align-items: center;
+                .desc-text {
+                    margin-left: 2rem; // igual aos outros textos
+                    h1 {
+                        font-size: 2rem;
+                        cursor: default;
+                    }
+                    p {
+                        font-size: 1rem;
+                        cursor: default;
+                    }
+                }
+            }
+        }
+
         .chart-header {
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             text-align: center;
 
             .chart-title {
@@ -918,7 +945,7 @@
             gap: 3rem;
             align-items: start;
             max-width: 1200px;
-            margin: 0 auto;
+            margin: 2.5rem auto 0 auto;
 
             .chart-wrapper {
                 background: white;

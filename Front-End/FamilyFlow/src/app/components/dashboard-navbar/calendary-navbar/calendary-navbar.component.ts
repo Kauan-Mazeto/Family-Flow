@@ -19,6 +19,7 @@ interface Task {
   status: 'PENDENTE' | 'EM_ANDAMENTO' | 'CONCLUIDA';
   type_task: string;
   scheduled_date?: string;
+  date_end?: string;
 }
 
 interface CalendarStats {
@@ -163,7 +164,7 @@ export class CalendaryNavbarComponent implements OnInit, AfterViewInit {
     return this.punctualTasks.map(task => ({
       id: task.id.toString(),
       title: `${task.title}`,
-      start: task.scheduled_date,
+      start: task.date_end,
       allDay: true,
       backgroundColor: this.getTaskColor(task),
       borderColor: this.getTaskColor(task),
