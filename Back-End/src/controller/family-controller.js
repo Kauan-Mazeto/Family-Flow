@@ -250,7 +250,7 @@ export async function get_family_members(req, res) {
 export async function leave_family(req, res) {
     if (!req.usuario || !req.usuario.id) {
         return res.status(401).json({mensagem: "Usuário não autenticado."});
-    }
+    };
 
     try {
         // Verificar se o usuário está em uma família
@@ -265,7 +265,7 @@ export async function leave_family(req, res) {
 
         if (!familyMember) {
             return res.status(400).json({mensagem: "Você não está em nenhuma família."});
-        }
+        };
 
         // Verificar se é admin e se há outros membros
         if (familyMember.role === 'ADMIN') {
@@ -280,8 +280,8 @@ export async function leave_family(req, res) {
                 return res.status(400).json({
                     mensagem: "Como administrador, você deve transferir a administração ou excluir a família antes de sair."
                 });
-            }
-        }
+            };
+        };
 
         // Remover o usuário da família
         await prisma.familyMember.delete({
@@ -297,15 +297,15 @@ export async function leave_family(req, res) {
                     id: familyMember.family_id
                 }
             });
-        }
+        };
 
         return res.status(200).json({mensagem: "Você saiu da família com sucesso."});
 
     } catch (err) {
         console.error('Erro ao sair da família:', err);
         return res.status(500).json({mensagem: "Erro interno no servidor."});
-    }
-}
+    };
+};
 
 export async function delete_family(req, res) {
 
@@ -327,11 +327,11 @@ export async function promote_to_admin(req, res) {
 
     if (!req.usuario || !req.usuario.id) {
         return res.status(401).json({mensagem: "Usuário não autenticado."});
-    }
+    };
 
     if (!targetUserId) {
         return res.status(400).json({mensagem: "ID do usuário é obrigatório."});
-    }
+    };
 
     try {
         // Verificar se o usuário atual é admin da família
@@ -346,11 +346,11 @@ export async function promote_to_admin(req, res) {
 
         if (!currentUserFamily) {
             return res.status(404).json({mensagem: "Você não pertence a nenhuma família."});
-        }
+        };
 
         if (currentUserFamily.role !== 'ADMIN') {
             return res.status(403).json({mensagem: "Apenas administradores podem promover outros membros."});
-        }
+        };
 
         // Verificar se o usuário a ser promovido existe e está na mesma família
         const targetMember = await prisma.familyMember.findFirst({
@@ -365,11 +365,11 @@ export async function promote_to_admin(req, res) {
 
         if (!targetMember) {
             return res.status(404).json({mensagem: "Usuário não encontrado na família."});
-        }
+        };
 
         if (targetMember.role === 'ADMIN') {
             return res.status(400).json({mensagem: "Usuário já é administrador."});
-        }
+        };
 
         // Promover o usuário para admin
         await prisma.familyMember.update({
@@ -394,5 +394,5 @@ export async function promote_to_admin(req, res) {
     } catch (err) {
         console.error('Erro ao promover usuário:', err);
         return res.status(500).json({mensagem: "Erro interno no servidor."});
-    }
+    };
 };
