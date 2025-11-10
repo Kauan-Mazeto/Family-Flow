@@ -64,18 +64,11 @@ model Task {
   status          TaskStatus   @default(PENDENTE)
   priority        TaskPriority @default(MEDIA)
   is_active       Boolean      @default(true)
-<<<<<<< HEAD
-  scheduled_date  DateTime?
-
-  // Relações
-  family         Family        @relation(fields: [family_id], references: [id], onDelete: Cascade)
-=======
   date_start      DateTime     @default(now())
   date_end        DateTime
   days            Int
   reward_value    Float?        @default(0.0)
   family          Family        @relation(fields: [family_id], references: [id], onDelete: Cascade)
->>>>>>> main
   @@map("task")
 }
 
