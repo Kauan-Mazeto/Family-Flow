@@ -27,15 +27,6 @@ rotas_tasks.post('/tasks/create/ponctual', authToken, (req, res) => {
     create_task_user(req, res);
 });
 
-// Novas rotas para tarefas pontuais (sistema Kanban)
-rotas_tasks.post('/tasks/create/punctual', authToken, (req, res) => {
-    create_punctual_task_controller(req, res);
-});
-
-rotas_tasks.get('/tasks/punctual/user', authToken, (req, res) => {
-    get_user_punctual_tasks_controller(req, res);
-});
-
 rotas_tasks.get('/tasks/info', authToken, (req, res) => {
     get_task_user(req, res);
 });
@@ -43,15 +34,6 @@ rotas_tasks.get('/tasks/info', authToken, (req, res) => {
 // rota p/ concluir tarefa
 rotas_tasks.patch('/tasks/conclude/:id', authToken, authTaskMember, (req, res) => {
     update_status(req, res)
-});
-
-rotas_tasks.get('/tasks/daily/family', authToken, (req, res) => {
-    get_family_daily_tasks_controller(req, res);
-});
-
-
-rotas_tasks.patch('/tasks/:id/uncomplete', authToken, (req, res) => {
-    uncomplete_task_controller(req, res);
 });
 
 export default rotas_tasks;

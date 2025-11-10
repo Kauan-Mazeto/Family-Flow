@@ -11,7 +11,6 @@ const prisma = new PrismaClient();
 // |---------------------------------------------------------------|
 
 export async function task_adm(req, res) {
-    console.log('🔍 TASK_ADM: Dados recebidos:', JSON.stringify(req.body, null, 2));
 
     const { desc_task, name_task, member_task, priority_task, status_task, type_task, date_start, date_end } = req.body;
     // desc_task: descricao da tarefa
@@ -25,17 +24,16 @@ export async function task_adm(req, res) {
         return res.status(404).json({ mensagem: "Informações obrigatórias." });
     };
 
-    console.log('🔍 TASK_ADM: Buscando ID do membro:', member_task);
+    console.log('TASK_ADM: Buscando ID do membro:', member_task);
     let id_member = await usuario_atual_id(member_task);
-    console.log('🔍 TASK_ADM: ID do membro encontrado:', id_member);
+    console.log('TASK_ADM: ID do membro encontrado:', id_member);
 
     // Se não encontrou o membro pelo nome, usar o usuário logado
     if (!id_member) {
-        console.log('⚠️ TASK_ADM: Membro não encontrado, usando usuário logado:', req.usuario.id);
+        console.log('TASK_ADM: Membro não encontrado, usando usuário logado:', req.usuario.id);
         id_member = req.usuario.id;
     };
 
-    console.log('🔍 TASK_ADM: Buscando ID da família para o membro:', id_member);
     const id_family = await family_id_task(id_member);
     const remaining_days = await verifier_date(date_start, date_end);
 
@@ -64,7 +62,7 @@ export async function task_adm(req, res) {
             }
         });
 
-        console.log('✅ TASK_ADM: Tarefa criada com sucesso:', task_info);
+        console.log('TASK_ADM: Tarefa criada com sucesso:', task_info);
         return res.status(201).json({
                 mensagem: "Task criada.",  
                 task: task_info
@@ -72,7 +70,7 @@ export async function task_adm(req, res) {
         );
 
     } catch (err) {
-        console.error('❌ TASK_ADM: Erro ao criar tarefa:', err);
+        console.error('TASK_ADM: Erro ao criar tarefa:', err);
         res.status(500).json({ mensagem: "Erro interno no servidor." });
     };
 };
@@ -99,7 +97,7 @@ export async function task_users_create(req, res) {
             data: {
                 description: desc_task,
                 title: name_task,
-                member_name: req.usuario.name || 'Usuário',
+                member_name: req.usuario.name,
                 priority: priority_upperCase,
                 status: status_upperCase,
                 type_task: type_task,
@@ -187,9 +185,9 @@ export async function patch_task_adm(req, res) {
             return res.status(404).json({mensagem: "Task não encontrada."})
         };
         
-        let member_id_final = current_task.id;
-        let member_name_final = current_task.name;
-        // evitar erros
+        // let member_id_final = current_task.id;
+        // let member_name_final = current_task.name;
+        // // evitar erros
 
         const update_task = await prisma.task.update({
             where: {
@@ -213,378 +211,3 @@ export async function patch_task_adm(req, res) {
         return console.error(err);
     };
 };
-
-// |---------------------------------------------------------------|
-// | Funções específicas para tarefas diárias da família          |
-// |---------------------------------------------------------------|
-
-export async function create_daily_task_admin(req, res) {
-    const { desc_task, name_task, member_task, priority_task, status_task = 'PENDENTE', type_task = 'diaria' } = req.body;
-
-    console.log('🔔 [create_daily_task_admin] Body recebido:', req.body);
-
-    if (!name_task || !member_task || !priority_task) {
-        console.log('❌ [create_daily_task_admin] Campos obrigatórios faltando:', { name_task, member_task, priority_task });
-        return res.status(400).json({ mensagem: "Informações obrigatórias: name_task, member_task, priority_task." });
-    }
-
-    try {
-        // Buscar a família do usuário logado (admin)
-        const adminFamilyMember = await prisma.familyMember.findFirst({
-            where: { user_id: req.usuario.id }
-        });
-
-        console.log('🔔 [create_daily_task_admin] adminFamilyMember:', adminFamilyMember);
-
-        if (!adminFamilyMember) {
-            console.log('❌ [create_daily_task_admin] Admin não está em nenhuma família.');
-            return res.status(400).json({ mensagem: "Admin não está em nenhuma família." });
-        }
-
-        // Buscar o membro da família pelo nome
-        const targetMember = await prisma.familyMember.findFirst({
-            where: {
-                family_id: adminFamilyMember.family_id,
-                user: {
-                    name: member_task
-                }
-            },
-            include: {
-                user: true
-            }
-        });
-
-        console.log('🔔 [create_daily_task_admin] targetMember:', targetMember);
-
-        if (!targetMember) {
-            console.log(`❌ [create_daily_task_admin] Membro '${member_task}' não encontrado na família.`);
-            return res.status(400).json({ mensagem: `Membro '${member_task}' não encontrado na família.` });
-        }
-
-        const now = new Date();
-        const task_info = await prisma.task.create({
-            data: {
-                description: desc_task || 'Sem descrição',
-                title: name_task,
-                member_name: targetMember.user.name,
-                member_id: targetMember.user_id,
-                priority: priority_task.toUpperCase(),
-                status: status_task.toUpperCase(),
-                type_task: type_task,
-                family_id: adminFamilyMember.family_id,
-                date_end: now,
-                days: 1
-            }
-        });
-
-        console.log('✅ [create_daily_task_admin] Tarefa criada:', task_info);
-        return res.status(201).json({
-            mensagem: "Tarefa diária criada com sucesso!",
-            task: {
-                id: task_info.id,
-                title: task_info.title,
-                description: task_info.description,
-                member_name: task_info.member_name,
-                priority: task_info.priority,
-                status: task_info.status,
-                type_task: task_info.type_task
-            }
-        });
-
-    } catch (err) {
-        console.error('❌ Erro ao criar tarefa diária:', err);
-        return res.status(500).json({ mensagem: "Erro interno no servidor." });
-    }
-}
-
-export async function get_family_daily_tasks_controller(req, res) {
-    try {
-        // Buscar a família do usuário logado
-        const familyMember = await prisma.familyMember.findFirst({
-            where: { user_id: req.usuario.id }
-        });
-
-        if (!familyMember) {
-            return res.status(400).json({ mensagem: "Usuário não está em nenhuma família." });
-        }
-
-        // Buscar todas as tarefas diárias da família
-        const tasks = await prisma.task.findMany({
-            where: {
-                family_id: familyMember.family_id,
-                type_task: 'diaria',
-                is_active: true
-            },
-            orderBy: {
-                id: 'desc'
-            }
-        });
-
-        return res.status(200).json({
-            mensagem: "Tarefas diárias carregadas com sucesso!",
-            tasks: tasks
-        });
-
-    } catch (err) {
-        console.error('❌ Erro ao carregar tarefas diárias:', err);
-        return res.status(500).json({ mensagem: "Erro interno no servidor." });
-    }
-}
-
-// Novos controllers para o sistema Kanban
-export async function complete_task_controller(req, res) {
-    try {
-        const taskId = parseInt(req.params.id);
-        
-        if (!taskId) {
-            return res.status(400).json({ mensagem: "ID da tarefa é obrigatório." });
-        }
-
-        // Verificar se a tarefa existe e se o usuário tem acesso a ela
-        const familyMember = await prisma.familyMember.findFirst({
-            where: { user_id: req.usuario.id }
-        });
-
-        if (!familyMember) {
-            return res.status(400).json({ mensagem: "Usuário não está em nenhuma família." });
-        }
-
-        const task = await prisma.task.findFirst({
-            where: {
-                id: taskId,
-                family_id: familyMember.family_id,
-                is_active: true
-            }
-        });
-
-        if (!task) {
-            return res.status(404).json({ mensagem: "Tarefa não encontrada." });
-        }
-
-        // Verificar se o usuário é o responsável pela tarefa
-        if (task.member_id !== req.usuario.id) {
-            return res.status(403).json({ 
-                mensagem: "Apenas a pessoa responsável pela tarefa pode marcá-la como concluída." 
-            });
-        }
-
-        // Atualizar a tarefa como concluída
-        const updatedTask = await prisma.task.update({
-            where: { id: taskId },
-            data: {
-                status: 'CONCLUIDA'
-            }
-        });
-
-        console.log('✅ Tarefa marcada como concluída:', updatedTask.title);
-
-        return res.status(200).json({
-            mensagem: "Tarefa marcada como concluída!",
-            task: updatedTask
-        });
-
-    } catch (err) {
-        console.error('❌ Erro ao completar tarefa:', err);
-        return res.status(500).json({ mensagem: "Erro interno no servidor." });
-    }
-}
-
-export async function uncomplete_task_controller(req, res) {
-    try {
-        const taskId = parseInt(req.params.id);
-        
-        if (!taskId) {
-            return res.status(400).json({ mensagem: "ID da tarefa é obrigatório." });
-        }
-
-        // Verificar se a tarefa existe e se o usuário tem acesso a ela
-        const familyMember = await prisma.familyMember.findFirst({
-            where: { user_id: req.usuario.id }
-        });
-
-        if (!familyMember) {
-            return res.status(400).json({ mensagem: "Usuário não está em nenhuma família." });
-        }
-
-        const task = await prisma.task.findFirst({
-            where: {
-                id: taskId,
-                family_id: familyMember.family_id,
-                is_active: true
-            }
-        });
-
-        if (!task) {
-            return res.status(404).json({ mensagem: "Tarefa não encontrada." });
-        }
-
-        // Verificar se o usuário é o responsável pela tarefa
-        if (task.member_id !== req.usuario.id) {
-            return res.status(403).json({ 
-                mensagem: "Apenas a pessoa responsável pela tarefa pode desmarcá-la." 
-            });
-        }
-
-        // Atualizar a tarefa como pendente
-        const updatedTask = await prisma.task.update({
-            where: { id: taskId },
-            data: {
-                status: 'PENDENTE'
-            }
-        });
-
-        console.log('🔄 Tarefa desmarcada como concluída:', updatedTask.title);
-
-        return res.status(200).json({
-            mensagem: "Tarefa desmarcada como concluída!",
-            task: updatedTask
-        });
-
-    } catch (err) {
-        console.error('❌ Erro ao desmarcar tarefa:', err);
-        return res.status(500).json({ mensagem: "Erro interno no servidor." });
-    }
-}
-
-export async function delete_task_controller(req, res) {
-    try {
-        const taskId = parseInt(req.params.id);
-        
-        if (!taskId) {
-            return res.status(400).json({ mensagem: "ID da tarefa é obrigatório." });
-        }
-
-        // Verificar se o usuário é admin da família
-        const familyMember = await prisma.familyMember.findFirst({
-            where: { 
-                user_id: req.usuario.id,
-                role: 'ADMIN'
-            }
-        });
-
-        if (!familyMember) {
-            return res.status(403).json({ mensagem: "Apenas administradores podem deletar tarefas." });
-        }
-
-        const task = await prisma.task.findFirst({
-            where: {
-                id: taskId,
-                family_id: familyMember.family_id,
-                is_active: true
-            }
-        });
-
-        if (!task) {
-            return res.status(404).json({ mensagem: "Tarefa não encontrada." });
-        }
-
-        // Soft delete - marcar como inativo
-        const deletedTask = await prisma.task.update({
-            where: { id: taskId },
-            data: {
-                is_active: false
-            }
-        });
-
-        console.log('🗑️ Tarefa deletada (soft delete):', deletedTask.title);
-
-        return res.status(200).json({
-            mensagem: "Tarefa deletada com sucesso!",
-            task: deletedTask
-        });
-
-    } catch (err) {
-        console.error('❌ Erro ao deletar tarefa:', err);
-        return res.status(500).json({ mensagem: "Erro interno no servidor." });
-    }
-}
-
-// Controllers para tarefas pontuais
-export async function create_punctual_task_controller(req, res) {
-    try {
-        const { desc_task, name_task, priority_task, scheduled_date } = req.body;
-
-        if (!name_task || !scheduled_date) {
-            return res.status(400).json({ mensagem: "Nome da tarefa e data de agendamento são obrigatórios." });
-        }
-
-        // Verificar se o usuário está em uma família
-        const familyMember = await prisma.familyMember.findFirst({
-            where: { user_id: req.usuario.id }
-        });
-
-        if (!familyMember) {
-            return res.status(400).json({ mensagem: "Usuário não está em nenhuma família." });
-        }
-
-        // Obter dados do usuário
-        const user = await prisma.user.findUnique({
-            where: { id: req.usuario.id }
-        });
-
-        // Criar a tarefa pontual
-        const newTask = await prisma.task.create({
-            data: {
-                type_task: 'PONTUAL',
-                title: name_task,
-                description: desc_task || null,
-                member_id: req.usuario.id,
-                member_name: user.name,
-                family_id: familyMember.family_id,
-                priority: priority_task || 'MEDIA',
-                status: 'PENDENTE',
-                date_end: new Date(scheduled_date),
-                days: 1
-            }
-        });
-
-        console.log('✅ Tarefa pontual criada:', newTask.title);
-
-        return res.status(201).json({
-            mensagem: "Tarefa pontual criada com sucesso!",
-            task: newTask
-        });
-
-    } catch (err) {
-        console.error('❌ Erro ao criar tarefa pontual:', err);
-        return res.status(500).json({ mensagem: "Erro interno no servidor." });
-    }
-}
-
-export async function get_user_punctual_tasks_controller(req, res) {
-    try {
-        // Verificar se o usuário está em uma família
-        const familyMember = await prisma.familyMember.findFirst({
-            where: { user_id: req.usuario.id }
-        });
-
-        if (!familyMember) {
-            return res.status(400).json({ mensagem: "Usuário não está em nenhuma família." });
-        }
-
-        // Buscar apenas as tarefas pontuais do próprio usuário
-        const tasks = await prisma.task.findMany({
-            where: {
-                family_id: familyMember.family_id,
-                member_id: req.usuario.id, // Apenas tarefas do usuário atual
-                type_task: 'PONTUAL',
-                is_active: true
-            },
-            orderBy: [
-                { date_end: 'asc' },
-                { priority: 'desc' }
-            ]
-        });
-
-        console.log(`📋 Carregadas ${tasks.length} tarefas pontuais para usuário ${req.usuario.id}`);
-
-        return res.status(200).json({
-            mensagem: "Tarefas pontuais carregadas com sucesso!",
-            tasks: tasks
-        });
-
-    } catch (err) {
-        console.error('❌ Erro ao carregar tarefas pontuais:', err);
-        return res.status(500).json({ mensagem: "Erro interno no servidor." });
-    }
-}
