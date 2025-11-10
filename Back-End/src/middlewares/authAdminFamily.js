@@ -1,4 +1,3 @@
-import { usuario_atual } from "../controller/functions/functions-controller-user.js";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -30,7 +29,7 @@ export async function authAdminFamily(req, res, next) {
         });
 
         if (!member_verifier) {
-            return res.status(403).json({ mensagem: "Você não pertence a esta família." });
+            return res.status(403).json({ mensagem: "Você não pertence a essa família." });
         };
 
         if (member_verifier.role === "ADMIN") {
@@ -38,10 +37,10 @@ export async function authAdminFamily(req, res, next) {
             return next();
         };
 
-        return res.status(403).json({ mensagem: "Somente o administrador da família pode realizar esta ação." });
+        return res.status(403).json({ mensagem: "Somente o administrador da família pode realizar essa ação." });
     
     } catch (err) {
-        console.error("Erro no middleware authAdminFamily:", err);
+        console.error(err);
         return res.status(500).json({mensagem: "Erro interno ao verificar permissões.",});
     };
 };

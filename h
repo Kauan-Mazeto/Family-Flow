@@ -1,0 +1,55 @@
+[33m9645838[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mMazeto/Front[m[33m, [m[1;31morigin/Mazeto/Front[m[33m)[m refactor: configurações
+[33m9cd16ab[m refactor: configurações
+[33m4e25049[m feat: calendario
+[33maee384e[m feat: calendario
+[33m0554d7d[m refactor: register
+[33mb170ad1[m feat: grafico de tarefas
+[33m9259cb3[m feat: tarefas pontuais => vinculado com back
+[33mc189275[m refactor: tarefas diarias
+[33mf3e947a[m feat: dashboard => tarefas diarias (kanban)
+[33m4b0cea5[m feat: daily tasks ( implemantada com o back-end)
+[33m1ec4b06[m feat: daily tasks ( implemantada com o back-end)
+[33mdfc78c3[m mege main => front
+[33mbb40cbc[m mege main => front
+[33m60ed7a8[m feat: familia (back integrado), calendario, config (back integrado)
+[33mf4f5080[m verification authAdminFamily in route /family/delete
+[33md8a4de6[m create middleware authAdminFamily (for delete family)
+[33m9e3605b[m add middleware authAdminFamily to route
+[33mc06c2e4[m fix bug logic function delete_family
+[33m87ed8f3[m gest-familiar-db fix bug
+[33meb380d4[m sql test fix
+[33maecd1af[m route /family/delete with authToken and authRole
+[33mab13bf8[m feat function delete_family
+[33m8fb4863[m feat: task /tasks/update/:id => method PATCH
+[33m9924559[m remove route /family/test-auth (debug)
+[33m691c0d4[m add documentation for code
+[33m9376e4f[m fix bug => user in unique family
+[33m830d91c[m configuration private informations
+[33m6550850[m Merge branch 'Luidi/Back' Merge to branch 'main' from 'Luidi/Back'
+[33mdbe3535[m fix bug logic /tasks/info
+[33maa35cba[m fix bug import usuario_atual from controller
+[33m0ab1333[m create paste for functions-user
+[33md83ad6c[m create paste for functions-family
+[33m83deda8[m fix bug import functions(total: 3)
+[33mb7f3e2b[m fix bug import => function usuario_atual
+[33m6669d48[m fix organization code
+[33m3cb4ab7[m fix bug import from controller
+[33m6d559cc[m standardizing name functions => task-controller.js
+[33m6d031e4[m fix bug name function task_user_create()
+[33mf49053a[m cleanCode changes in view code
+[33m038984e[m remove authViewTask.js
+[33m8622457[m commit for merge branch main
+[33m6a0b1e5[m merge main => front
+[33m2bc3c91[m merge from Luidi/Back to main
+[33m0402f44[m modified:   Back-End/prisma/gest-familiar-db
+[33m8e96688[m modified:   Back-End/prisma/gest-familiar-db
+[33mdfacf61[m documentation code(They describe the information that comes from the front-end)
+[33m6151231[m commit calendary, config => navbar
+[33mb37dbe8[m nothing changes
+[33m25def2e[m create route /tasks/create/ponctual
+[33me65b3c9[m fix bug for import function
+[33m503b45c[m logic corrections all routes
+[33ma57a5a0[m paste /functions create
+[33m47d8fba[m change default coments (cleanCode)
+[33md390689[m migration.sql
+[33mf837ff0[m model Task update row member_name => (no required)

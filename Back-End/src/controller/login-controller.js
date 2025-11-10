@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import jwt from "jsonwebtoken";
 import argon2 from "argon2";
-import { usuario_atual } from './functions/functions-controller-user.js';
+import { usuario_atual } from '../controller/functions/functions-controller-user.js';
 
 const prisma = new PrismaClient();
 const JWT_SECRET_KEY = process.env.PASS_HASH;
