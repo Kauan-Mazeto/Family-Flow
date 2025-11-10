@@ -33,11 +33,10 @@ rotas_family.post('/family/promote-admin', authToken, (req, res) => {
     promote_to_admin(req, res);
 });
 
-// Endpoint de teste para verificar autenticação
 // rotas_family.get('/family/test-auth', authToken, (req, res) => {
 //     console.log('TESTE DE AUTH - Usuário:', req.usuario);
 //     res.json({ 
-//         mensagem: 'Autenticação funcionando!', 
+//         mensagem: 'Autenticação funfando', 
 //         usuario: req.usuario 
 //     });
 // });
