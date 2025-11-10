@@ -5,6 +5,7 @@ import { TaskNavbarComponent } from '../dashboard-navbar/task-navbar/task-navbar
 import { FamilyNavbarComponent } from "../dashboard-navbar/family-navbar/family-navbar.component";
 import { CalendaryNavbarComponent } from '../dashboard-navbar/calendary-navbar/calendary-navbar.component';
 import { ConfigNavbarComponent } from '../dashboard-navbar/config-navbar/config-navbar.component';
+import { MesadaNavbarComponent } from "../dashboard-navbar/mesada-navbar/mesada-navbar.component";
 
 export interface NavbarAtalho {
   nome: string;
@@ -16,7 +17,7 @@ export interface NavbarAtalho {
 @Component({
   selector: 'app-navbar-atalhos',
   standalone: true,
-  imports: [CommonModule, RouterModule, TaskNavbarComponent, FamilyNavbarComponent, CalendaryNavbarComponent, ConfigNavbarComponent],
+  imports: [CommonModule, RouterModule, TaskNavbarComponent, FamilyNavbarComponent, CalendaryNavbarComponent, ConfigNavbarComponent, MesadaNavbarComponent],
   templateUrl: './navbar-atalhos.component.html',
   styleUrls: ['./navbar-atalhos.component.scss']
 })
@@ -27,6 +28,7 @@ export class NavbarAtalhosComponent implements OnInit {
   showFamilyNavbar: boolean = false;
   showCalendaryNavbar: boolean = false;
   showConfigNavbar: boolean = false;
+  showMesadaNavbar: boolean = false;
   
   atalhos: NavbarAtalho[] = [
     {
@@ -34,6 +36,11 @@ export class NavbarAtalhosComponent implements OnInit {
       icone: 'fas fa-tasks',
       rota: '',
       ativo: true
+    },{
+      nome: 'Mesada',
+      icone: 'fas fa-coins',
+      rota: '',
+      ativo: false
     },
     {
       nome: 'Família',
@@ -71,6 +78,7 @@ export class NavbarAtalhosComponent implements OnInit {
     this.showFamilyNavbar = false;
     this.showCalendaryNavbar = false;
     this.showConfigNavbar = false;
+    this.showMesadaNavbar = false;
 
     // Controlar exibição baseado no atalho clicado
     if (atalho.nome === 'Tarefas') {
@@ -83,6 +91,8 @@ export class NavbarAtalhosComponent implements OnInit {
       this.showCalendaryNavbar = true;
     } else if (atalho.nome == 'Configurações') {
       this.showConfigNavbar = true;
+    } else if (atalho.nome === 'Mesada') {
+      this.showMesadaNavbar = true;
     } else {
       this.tarefasClicked.emit(false);
     }
