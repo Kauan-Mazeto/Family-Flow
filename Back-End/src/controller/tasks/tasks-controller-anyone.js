@@ -167,7 +167,7 @@ export async function remove_task_user(req, res) {
     };
 
     try {
-        const task_remove = await prisma.task.delete({
+        await prisma.task.delete({
             where: {
                 id: id_task
             }
