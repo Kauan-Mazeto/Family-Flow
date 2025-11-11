@@ -28,7 +28,6 @@ export class EnterFamilyComponent implements OnInit {
   ngOnInit() {
     // Verificar se os dados pessoais foram preenchidos
     if (!this.registrationFlow.hasUserData()) {
-      console.log('Dados pessoais não encontrados, redirecionando para registro...');
       this.navegador.navigate(['/users/register']);
       return;
     }
@@ -76,7 +75,6 @@ export class EnterFamilyComponent implements OnInit {
     // Executar registro completo com entrada na família (método simplificado)
     this.authService.completeRegistrationWithFamilySimple(completeData).subscribe({
       next: (response) => {
-        console.log('Registro e entrada na família realizados com sucesso:', response);
         this.is_loading = false;
         
         // Limpar dados temporários

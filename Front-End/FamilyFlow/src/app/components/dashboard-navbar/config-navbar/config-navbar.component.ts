@@ -106,11 +106,9 @@ export class ConfigNavbarComponent implements OnInit {
       setTimeout(() => {
         // Carregar membros da família se for admin
         if (this.isUserAdmin) {
-          console.log('Usuário é admin, carregando membros da família...');
           this.showMembersSection = true;
           this.loadFamilyMembers();
         } else {
-          console.log('Usuário não é admin, role:', this.familyData?.role);
           this.showMembersSection = false;
         }
         this.cdr.detectChanges();
@@ -176,7 +174,6 @@ export class ConfigNavbarComponent implements OnInit {
     if (this.familyData?.codigo) {
       navigator.clipboard.writeText(this.familyData.codigo).then(() => {
         // Código copiado silenciosamente
-        console.log('Código copiado para a área de transferência');
       }).catch(err => {
         console.error('Erro ao copiar código:', err);
       });
@@ -203,11 +200,9 @@ export class ConfigNavbarComponent implements OnInit {
   // Método para carregar membros da família
   loadFamilyMembers() {
     if (!this.isUserAdmin) {
-      console.log('Não é admin, não carregando membros');
       return;
     }
     
-    console.log('Carregando membros da família...');
     this.isLoadingMembers = true;
     
     this.http.get<{membros: FamilyMember[]} | FamilyMember[]>(`${environment.apiUrl}${environment.endpoints.familyMembers}`, {
@@ -222,16 +217,10 @@ export class ConfigNavbarComponent implements OnInit {
         } else {
           this.familyMembers = [];
         }
-        
-        console.log('Resposta da API:', response);
-        console.log('Membros da família carregados:', this.familyMembers);
-        console.log('Quantidade de membros:', this.familyMembers.length);
         this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Erro ao carregar membros da família:', error);
-        console.error('Status do erro:', error.status);
-        console.error('Corpo do erro:', error.error);
         this.familyMembers = [];
         
         let errorMessage = 'Erro ao carregar membros da família.';

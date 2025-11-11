@@ -20,7 +20,6 @@ export class RegisterFamilyOptionComponent implements OnInit {
   ngOnInit() {
     // Verificar se os dados pessoais foram preenchidos
     if (!this.registrationFlow.hasUserData()) {
-      console.log('Dados pessoais não encontrados, redirecionando para registro...');
       this.navegador.navigate(['/users/register']);
       return;
     }

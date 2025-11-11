@@ -116,7 +116,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
       next: (response: any) => {
         this.isAdmin = response.familia?.role === 'ADMIN';
         this.currentUserId = response.familia?.user_id || 0;
-        console.log('👤 ID do usuário atual:', this.currentUserId);
         this.cdr.detectChanges();
       },
       error: (error) => {
@@ -215,15 +214,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
     }).subscribe({
       next: (response) => {
         this.dailyTasks = response.tasks || [];
-        this.dailyTasks.forEach((task, index) => {
-          console.log(`  ${index + 1}. Tarefa "${task.title}":`, {
-            id: task.id,
-            member_id: task.member_id,
-            member_name: task.member_name,
-            status: task.status,
-            priority: task.priority
-          });
-        });
         this.cdr.detectChanges();
       },
       error: (error) => {
@@ -295,7 +285,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
       
       // Só admin pode criar tarefa diária
       if (!this.isAdmin) {
-        alert('Apenas o administrador pode criar tarefas diárias.');
         return;
       }
       this.http.post<{task: any}>(`${environment.apiUrl}/tasks/create/daily`, taskData, {
@@ -455,7 +444,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
     
     // Verificar se o usuário pode editar esta tarefa
     if (!this.canEditTask(task)) {
-      alert('Apenas o responsável pela tarefa pode marcá-la como concluída.');
       return;
     }
     
@@ -501,8 +489,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
           } else if (error.error?.mensagem) {
             errorMessage = error.error.mensagem;
           }
-          
-          alert(errorMessage);
         }
       });
   }
@@ -511,7 +497,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
     
     // Verificar se o usuário pode editar esta tarefa
     if (!this.canEditTask(task)) {
-      alert('Apenas o responsável pela tarefa pode desmarcá-la.');
       return;
     }
 
@@ -528,7 +513,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
         withCredentials: true
       }).subscribe({
         next: (response) => {
-          console.log('✅ Tarefa desmarcada no backend:', task.id);
           task._loading = false;
           if (response && response.task) {
             const idx = this.dailyTasks.findIndex(t => t.id === task.id);
@@ -553,8 +537,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
           } else if (error.error?.mensagem) {
             errorMessage = error.error.mensagem;
           }
-          
-          alert(errorMessage);
         }
   });
   }
@@ -567,7 +549,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
         deleteRequest = this.http.delete<TaskApiResponse>(`${environment.apiUrl}/tasks/daily/delete/${task.id}`, {
           withCredentials: true
         });
-        console.log('tarefa apagada')
       } else if (task.type_task === 'pontual') {
         // Envia o título da tarefa no corpo do DELETE
         deleteRequest = this.http.request<TaskApiResponse>('delete', `${environment.apiUrl}/tasks/ponctual/delete`, {

@@ -46,7 +46,6 @@ export class FamilyDashboardComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
-    console.log('🏠 Dashboard Component - Iniciando...');
     
     // VERIFICAÇÃO DE SEGURANÇA ADICIONAL NO COMPONENTE
     this.performSecurityCheck();
@@ -82,7 +81,6 @@ export class FamilyDashboardComponent implements OnInit {
       next: (response) => {
         // Verificar se realmente tem dados da família
         if (!response.familia || !response.familia.nome) {
-          console.log('Usuário não possui família válida, redirecionando...');
           this.router.navigate(['/family/option']);
           return;
         }
@@ -99,7 +97,6 @@ export class FamilyDashboardComponent implements OnInit {
         
         // Se erro indica que usuário não tem família, redirecionar
         if (error.mensagem && error.mensagem.includes('não está em uma família')) {
-          console.log('Usuário não está em uma família, redirecionando...');
           this.router.navigate(['/family/option']);
           return;
         }
@@ -112,7 +109,6 @@ export class FamilyDashboardComponent implements OnInit {
   }
 
   loadUserInfo() {
-    console.log('👤 Carregando informações do usuário...');
     // Tentar obter dados do usuário do observable
     this.authService.currentUser$.subscribe({
       next: (user) => {
@@ -137,7 +133,6 @@ export class FamilyDashboardComponent implements OnInit {
     // Verificar se ainda há um usuário logado antes de fazer a chamada
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser) {
-      console.log('👤 Usuário não logado, pulando verificação');
       return;
     }
 
@@ -156,7 +151,6 @@ export class FamilyDashboardComponent implements OnInit {
         
         // Se erro 401, provavelmente usuário não está mais logado
         if (error.status === 401) {
-          console.log('🔐 Token inválido, usuário provavelmente fez logout');
           return;
         }
 
@@ -173,11 +167,9 @@ export class FamilyDashboardComponent implements OnInit {
    * Esta é a última linha de defesa contra acesso não autorizado
    */
   private performSecurityCheck() {
-    console.log('🔒 Dashboard - Verificação de segurança adicional');
     
     // Verificar se usuário está logado
     if (!this.authService.isLoggedIn()) {
-      console.log('❌ Dashboard - Usuário não logado, redirecionando');
       this.router.navigate(['/users/login']);
       return;
     }
@@ -186,14 +178,11 @@ export class FamilyDashboardComponent implements OnInit {
     this.authService.checkUserHasFamily().subscribe({
       next: (hasFamily) => {
         if (!hasFamily) {
-          console.log('❌ Dashboard - Usuário sem família, redirecionando');
           this.router.navigate(['/family/option']);
           return;
         }
-        console.log('✅ Dashboard - Verificação de segurança passou');
       },
       error: (error) => {
-        console.error('❌ Dashboard - Erro na verificação, redirecionando', error);
         this.router.navigate(['/family/option']);
       }
     });

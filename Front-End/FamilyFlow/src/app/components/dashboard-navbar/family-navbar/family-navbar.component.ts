@@ -47,7 +47,7 @@ export class FamilyNavbarComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('❌ Erro ao carregar membros da família:', error);
+        console.error('Erro ao carregar membros da família:', error);
         this.isLoading = false;
         this.familyMembers = [];
         this.totalMembers = 0;

@@ -28,7 +28,6 @@ export class CreateFamilyComponent implements OnInit {
   ngOnInit() {
     // Verificar se os dados pessoais foram preenchidos
     if (!this.registrationFlow.hasUserData()) {
-      console.log('Dados pessoais não encontrados, redirecionando para registro...');
       this.navegador.navigate(['/users/register']);
       return;
     }
@@ -67,12 +66,6 @@ export class CreateFamilyComponent implements OnInit {
       return;
     }
 
-    console.log('CreateFamily: Dados temporários encontrados:', {
-      nome: tempData.nome_usuario,
-      email: tempData.email_usuario,
-      familia: this.family_name.trim()
-    });
-
     // Preparar dados completos para registro com família
     const completeData = {
       email_usuario: tempData.email_usuario,
@@ -100,8 +93,6 @@ export class CreateFamilyComponent implements OnInit {
       },
       error: (error) => {
         console.error('CreateFamily: Erro no registro completo:', error);
-        console.error('CreateFamily: Tipo do erro:', typeof error);
-        console.error('CreateFamily: Propriedades do erro:', Object.keys(error || {}));
         
         this.is_loading = false;
         
@@ -124,7 +115,6 @@ export class CreateFamilyComponent implements OnInit {
         }
         
         this.error_message = errorMessage;
-        console.log('CreateFamily: Mensagem de erro final:', errorMessage);
       }
     });
   }
