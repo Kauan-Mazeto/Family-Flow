@@ -153,7 +153,6 @@ export async function task_users_create(req, res) {
 
 export async function remove_task_adm(req, res) {
     const id_task = parseInt(req.params.id);
-    // isso vem do Front como um checkbox, o que tiver selecionado vem para ca(precisa mandar o titulo da task para o back)
 
     if (!id_task) {
         return res.status(400).json({mensagem: "Informe a tarefa que deseja remover."});
