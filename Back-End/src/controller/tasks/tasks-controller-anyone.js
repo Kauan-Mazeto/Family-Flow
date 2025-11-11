@@ -157,48 +157,11 @@ export async function update_status(req, res) {
             }
         });
 
-        if (status_task !== "CONCLUIDA") {
-            return res.status(200).json({ mensagem: "Status da task atualizado!" });
-        };
+        // if (status_task !== "CONCLUIDA") {
+        //     return res.status(200).json({ mensagem: "Status da task atualizado!" });
+        // };
 
-        let reward_value = 0;
-        if (task.priority === "BAIXA") {
-            reward_value = 0.50
-        } else if (task.priority === "MEDIA") {
-            reward_value = 1.00
-        } else {
-            reward_value = 1.50
-        };
-
-        await prisma.task.update({
-            where: { 
-                id: id_task 
-            },
-            data: { 
-                reward_value: { 
-                    increment: reward_value 
-                }
-            }
-        });
-
-        await prisma.mesada.upsert({
-            where: { 
-                family_member: task.member_id 
-            },
-            update: { 
-                balance: { 
-                    increment: reward_value 
-                } 
-            },
-            create: { 
-                family_member: task.member_id, balance: reward_value 
-            }
-        });
-
-        return res.status(200).json({
-            mensagem: "Task concluída e recompensa adicionada!",
-            recompensa: reward_value
-        });
+        return res.status(200).json({mensagem: `"Task ${id_task} atualizada para ${status_task}."`});
 
     } catch (err) {
         console.error(err);
