@@ -16,8 +16,10 @@ interface CreateTaskRequest {
   name_task: string;
   member_task: string;
   priority_task: string;
-  status_task: string; // Sempre 'PENDENTE' - gerenciado automaticamente pelo backend
+  status_task: string; // Sempre 'PENDENTE'
   type_task: string;
+  date_start: string;
+  date_end: string;
 }
 
 interface TaskApiResponse {
@@ -36,9 +38,11 @@ interface Task {
   type_task: string;
   completed_at?: string;
   scheduled_date?: string;
+  date_start?: string;
   date_end?: string;
   _loading?: boolean;
 }
+
 @Component({
   selector: 'app-task-navbar',
   standalone: true,
@@ -202,18 +206,15 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
   }
 
   loadDailyTasks() {
-    console.log('🔄 Carregando tarefas diárias...');
-    console.log('🔗 Endpoint:', `${environment.apiUrl}/tasks/daily/family`);
     
-    this.http.get<{tasks: Task[]}>(`${environment.apiUrl}/tasks/daily/family`, {
+    const rota = this.isAdmin
+      ? `${environment.apiUrl}/tasks/daily/family`
+      : `${environment.apiUrl}/tasks/daily/user`;
+    this.http.get<{tasks: Task[]}>(rota, {
       withCredentials: true
     }).subscribe({
       next: (response) => {
-        console.log('📋 Resposta do servidor (tarefas diárias):', response);
         this.dailyTasks = response.tasks || [];
-        console.log('📋 Tarefas diárias carregadas:', this.dailyTasks.length);
-        
-        // Log detalhado das tarefas
         this.dailyTasks.forEach((task, index) => {
           console.log(`  ${index + 1}. Tarefa "${task.title}":`, {
             id: task.id,
@@ -223,13 +224,10 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
             priority: task.priority
           });
         });
-        
         this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Erro ao carregar tarefas diárias:', error);
-        
-        // Se for erro 401 (não autenticado), tentar novamente em 1 segundo
         if (error.status === 401) {
           setTimeout(() => {
             this.loadDailyTasks();
@@ -243,16 +241,12 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
   }
 
   loadPunctualTasks() {
-    console.log('🔄 Carregando tarefas pontuais...');
-    console.log('🔗 Endpoint:', `${environment.apiUrl}/tasks/punctual/user`);
     this.isLoading = true;
-    this.http.get<{tasks: Task[]}>(`${environment.apiUrl}/tasks/punctual/user`, {
+  this.http.get<{tasks: Task[]}>(`${environment.apiUrl}/tasks/ponctual/user`, {
       withCredentials: true
     }).subscribe({
       next: (response) => {
-        console.log('📋 Resposta do servidor (tarefas pontuais):', response);
         this.punctualTasks = response.tasks || [];
-        console.log('📋 Tarefas pontuais carregadas:', this.punctualTasks.length);
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -286,16 +280,24 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
         memberToAssign = this.familyMembers[0]; // Usa o primeiro membro da lista
       }
 
-      const taskData: CreateTaskRequest = {
-        desc_task: formData.description || 'Sem descrição',
-        name_task: formData.name,
-        member_task: memberToAssign?.name || 'Admin',
-        priority_task: formData.priority,
-        status_task: 'PENDENTE',
-        type_task: 'diaria'
+        const today = new Date();
+        const dateStr = today.toISOString().split('T')[0];
+        const taskData: CreateTaskRequest = {
+          desc_task: formData.description || 'Sem descrição',
+          name_task: formData.name,
+          member_task: String(memberToAssign?.id || this.currentUserId),
+          priority_task: formData.priority,
+          status_task: 'PENDENTE',
+          type_task: 'diaria',
+          date_start: dateStr,
+          date_end: dateStr
       };
       
-      // Enviar dados para o backend
+      // Só admin pode criar tarefa diária
+      if (!this.isAdmin) {
+        alert('Apenas o administrador pode criar tarefas diárias.');
+        return;
+      }
       this.http.post<{task: any}>(`${environment.apiUrl}/tasks/create/daily`, taskData, {
         withCredentials: true
       }).subscribe({
@@ -309,7 +311,8 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
             member_id: response.task.member_id,
             priority: response.task.priority,
             status: response.task.status,
-            type_task: response.task.type_task
+            type_task: response.task.type_task,
+            date_start: response.task.date_start
           };
           
           this.dailyTasks.push(newTask);
@@ -345,68 +348,64 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
     const nameControl = this.punctualTaskForm.get('name');
     const dateControl = this.punctualTaskForm.get('scheduled_date');
     
-    console.log('🚀 Iniciando criação de tarefa pontual...');
-    console.log('📝 Estado do formulário:', this.punctualTaskForm.value);
-    console.log('✅ Nome válido:', nameControl?.valid);
-    console.log('📅 Data válida:', dateControl?.valid);
-    
     if (nameControl && nameControl.valid && nameControl.value?.trim() && 
         dateControl && dateControl.valid && dateControl.value) {
       this.isLoading = true;
       
       const formData = this.punctualTaskForm.value;
       
+      // Validação de data
+      let scheduledDate = formData.scheduled_date;
+      if (!scheduledDate || isNaN(Date.parse(scheduledDate))) {
+        alert('Selecione uma data válida para a tarefa pontual.');
+        this.isLoading = false;
+        return;
+      }
+      // Garante formato YYYY-MM-DD
+      const dateObj = new Date(scheduledDate);
+      const formattedDate = dateObj.toISOString().slice(0, 10);
       const taskData = {
         desc_task: formData.description || '',
         name_task: formData.name,
         priority_task: formData.priority,
-        scheduled_date: formData.scheduled_date
+        status_task: 'PENDENTE',
+        type_task: 'pontual',
+        date_start: formattedDate,
+        date_end: formattedDate
       };
       
-      console.log('📤 Dados que serão enviados:', taskData);
-      console.log('🔗 Endpoint:', `${environment.apiUrl}/tasks/create/punctual`);
-      
       // Enviar dados para o backend
-      this.http.post<{task: any}>(`${environment.apiUrl}/tasks/create/punctual`, taskData, {
-        withCredentials: true
-      }).subscribe({
-        next: (response) => {
-          console.log('✅ Tarefa pontual criada:', response.task);
-          
-          // Adicionar a nova tarefa à lista
-          const newTask: Task = {
-            id: response.task.id,
-            title: response.task.title,
-            description: response.task.description,
-            member_name: response.task.member_name,
-            member_id: response.task.member_id,
-            priority: response.task.priority,
-            status: response.task.status,
-            type_task: response.task.type_task,
-            scheduled_date: response.task.date_end
-          };
-          
-          this.punctualTasks.push(newTask);
-          
-          // Recarregar a lista de tarefas pontuais
-          this.loadPunctualTasks();
-          
-          // Reset do formulário
-          this.punctualTaskForm.reset({
-            description: '',
-            name: '',
-            priority: 'MEDIA',
-            scheduled_date: ''
-          });
-          
-          this.closeCreatePunctualTaskModal();
-          this.isLoading = false;
-        },
+  this.http.post<{task_info: any}>(`${environment.apiUrl}/tasks/create/ponctual`, taskData, {
+          withCredentials: true
+        }).subscribe({
+          next: (response) => {
+            // Adicionar a nova tarefa à lista
+            const task = response.task_info;
+            const newTask: Task = {
+              id: task.id,
+              title: task.title,
+              description: task.description,
+              member_name: task.member_name,
+              member_id: task.member_id,
+              priority: task.priority,
+              status: task.status,
+              type_task: task.type_task,
+              scheduled_date: task.date_end
+            };
+            this.punctualTasks.push(newTask);
+            // Recarregar a lista de tarefas pontuais
+            this.loadPunctualTasks();
+            // Reset do formulário
+            this.punctualTaskForm.reset({
+              description: '',
+              name: '',
+              priority: 'MEDIA',
+              scheduled_date: ''
+            });
+            this.closeCreatePunctualTaskModal();
+            this.isLoading = false;
+          },
         error: (error) => {
-          console.error('❌ Erro ao criar tarefa pontual:', error);
-          console.error('❌ Status do erro:', error.status);
-          console.error('❌ Mensagem do erro:', error.error);
-          console.error('❌ URL que falhou:', error.url);
           this.isLoading = false;
         }
       });
@@ -418,11 +417,21 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
 
   // Métodos para o sistema Kanban
   getAssignedTasks(): Task[] {
-    return this.dailyTasks.filter(task => {
-      const status = (task.status || '').toUpperCase();
-      const type = (task.type_task || '').toLowerCase();
-      return (status === 'PENDENTE' || status === 'EM_ANDAMENTO') && type === 'diaria';
-    });
+    if (this.isAdmin) {
+      // Admin vê todas as tarefas diárias pendentes/em andamento
+      return this.dailyTasks.filter(task => {
+        const status = (task.status || '').toUpperCase();
+        const type = (task.type_task || '').toLowerCase();
+        return (status === 'PENDENTE' || status === 'EM_ANDAMENTO') && type === 'diaria';
+      });
+    } else {
+      // Membro vê apenas as suas tarefas diárias pendentes/em andamento
+      return this.dailyTasks.filter(task => {
+        const status = (task.status || '').toUpperCase();
+        const type = (task.type_task || '').toLowerCase();
+        return (status === 'PENDENTE' || status === 'EM_ANDAMENTO') && type === 'diaria' && task.member_id === this.currentUserId;
+      });
+    }
   }
 
   getCompletedTasks(): Task[] {
@@ -443,10 +452,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
   }
 
   onTaskComplete(task: Task) {
-  console.log('🎯 Completando tarefa:', task.title);
-  console.log('🎯 ID da tarefa:', task.id);
-  console.log('🎯 Status atual:', task.status);
-  console.log('🎯 URL da requisição:', `${environment.apiUrl}/tasks/conclude/${task.id}`);
     
     // Verificar se o usuário pode editar esta tarefa
     if (!this.canEditTask(task)) {
@@ -454,7 +459,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
       return;
     }
     
-    console.log('🎯 onTaskComplete called for:', task.id, task.title);
 
       // Marcar como loading para bloquear UI
       task._loading = true;
@@ -471,7 +475,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
         withCredentials: true
       }).subscribe({
         next: (response) => {
-          console.log('✅ Tarefa marcada como concluída no backend:', task.id);
           task._loading = false;
           // Atualizar com valores do backend se fornecidos
           if (response && response.task) {
@@ -483,10 +486,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
           this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error('❌ Erro ao completar tarefa:', error);
-          console.error('❌ Status do erro:', error.status);
-          console.error('❌ Mensagem do erro:', error.error);
-          console.error('❌ URL da requisição:', error.url);
           
           // Reverter mudanças locais
           task.status = previousStatus;
@@ -509,15 +508,12 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
   }
 
   onTaskUncomplete(task: Task) {
-    console.log('🔄 Desmarcando tarefa como concluída:', task.title);
     
     // Verificar se o usuário pode editar esta tarefa
     if (!this.canEditTask(task)) {
       alert('Apenas o responsável pela tarefa pode desmarcá-la.');
       return;
     }
-    
-    console.log('🔄 onTaskUncomplete called for:', task.id, task.title);
 
       task._loading = true;
       this.cdr.detectChanges();
@@ -528,7 +524,7 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
       task.completed_at = undefined;
       this.cdr.detectChanges();
 
-      this.http.patch<TaskApiResponse>(`${environment.apiUrl}/tasks/${task.id}/uncomplete`, {}, {
+      this.http.patch<TaskApiResponse>(`${environment.apiUrl}/tasks/conclude/${task.id}`, { status_task: 'PENDENTE' }, {
         withCredentials: true
       }).subscribe({
         next: (response) => {
@@ -543,11 +539,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
           this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error('❌ Erro ao desmarcar tarefa:', error);
-          console.error('❌ Status do erro:', error.status);
-          console.error('❌ Mensagem do erro:', error.error);
-          console.error('❌ URL da requisição:', error.url);
-          
           // Reverter
           task.status = previousStatus;
           task.completed_at = previousCompletedAt;
@@ -565,12 +556,11 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
           
           alert(errorMessage);
         }
-      });
+  });
   }
 
   onDeleteTask(task: Task) {
     if (confirm(`Tem certeza que deseja deletar a tarefa "${task.title}"?`)) {
-      console.log('🗑️ Deletando tarefa:', task.title);
       
       let deleteRequest;
       if (task.type_task === 'diaria') {
@@ -588,7 +578,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
 
       deleteRequest.subscribe({
         next: (response) => {
-          console.log('✅ Tarefa deletada no backend');
           
           // Remover localmente das tarefas diárias
           this.dailyTasks = this.dailyTasks.filter(t => t.id !== task.id);
@@ -599,7 +588,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
           this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error('❌ Erro ao deletar tarefa:', error);
           // Recarregar tarefas em caso de erro
           if (this.isTabActive.diarias) {
             this.loadDailyTasks();
@@ -634,21 +622,8 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
   }
 
   canEditTask(task: Task): boolean {
-    // Usuário pode editar se é o responsável pela tarefa
-    console.log('🔍 Verificando permissão para editar tarefa:');
-    console.log('  - ID da tarefa:', task.id, '- Título:', task.title);
-    console.log('  - member_id da tarefa:', task.member_id);
-    console.log('  - currentUserId:', this.currentUserId);
-    console.log('  - Pode editar:', task.member_id === this.currentUserId);
     
     return task.member_id === this.currentUserId;
-  }
-
-  testClick(task: Task) {
-    console.log('🖱️ TESTE: Click no checkbox da tarefa:', task.id, task.title);
-    console.log('🖱️ TESTE: Pode editar?', this.canEditTask(task));
-    console.log('🖱️ TESTE: Loading?', task._loading);
-    console.log('🖱️ TESTE: Disabled?', !this.canEditTask(task) || task._loading);
   }
 
   formatScheduledDate(dateString: string): string {
@@ -719,7 +694,7 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            display: false // Usaremos nossa própria legenda
+            display: false
           },
           title: {
             display: true,
@@ -770,16 +745,15 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
   }
 
   getChartColor(index: number): string {
-    // Cores do sistema: laranja navbar, azul kanban, verde kanban
     const colors = [
-      '#d36d1a', // Laranja navbar
-      '#007bff', // Azul kanban
-      '#28a745', // Verde kanban
-      '#ffc107', // Amarelo (complementar)
-      '#6f42c1', // Roxo (complementar)
-      '#dc3545', // Vermelho (complementar)
-      '#17a2b8', // Ciano (complementar)
-      '#fd7e14'  // Laranja claro (complementar)
+      '#d36d1a',
+      '#007bff',
+      '#28a745',
+      '#ffc107',
+      '#6f42c1',
+      '#dc3545', 
+      '#17a2b8',
+      '#fd7e14'  
     ];
     return colors[index % colors.length];
   }

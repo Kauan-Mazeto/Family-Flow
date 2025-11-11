@@ -2,7 +2,7 @@ import express from 'express';
 import 'dotenv/config';
 import rotas_usuario from '../src/routes/login-routes.js';
 import rotas_family from './routes/family-routes.js';
-import rotas_tasks from './routes/tasks-routes.js';
+import rotas_tasks from '../src/routes/tasks-routes.js'; // corrigido para garantir o caminho correto
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 

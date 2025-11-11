@@ -24,29 +24,44 @@ export async function task_adm(req, res) {
         return res.status(404).json({ mensagem: "Informações obrigatórias." });
     };
 
-    let id_member = await usuario_atual_id(member_task);
+    // member_task agora é o id do membro escolhido no select do formulário
+    let id_member = Number(member_task);
+    let nome_responsavel = '';
 
-    // Se não encontrou o membro pelo nome, usar o usuário logado
-    if (!id_member) {
+    // Buscar o nome do membro pelo id recebido do frontend
+    if (id_member) {
+        const membroEncontrado = await prisma.familyMember.findFirst({
+            where: { user_id: id_member },
+            select: { user: { select: { name: true } } }
+        });
+        if (membroEncontrado && membroEncontrado.user && membroEncontrado.user.name) {
+            nome_responsavel = membroEncontrado.user.name;
+        } else {
+            // fallback: buscar direto na tabela user
+            const userDirect = await prisma.user.findUnique({ where: { id: id_member }, select: { name: true } });
+            nome_responsavel = userDirect?.name || 'Desconhecido';
+        }
+    } else {
+        // Se não encontrou o membro, usar o usuário logado
         console.log('TASK_ADM: Membro não encontrado, usando usuário logado:', req.usuario.id);
         id_member = req.usuario.id;
-    };
+        nome_responsavel = req.usuario.name;
+    }
 
     const id_family = await family_id_task(id_member);
     const remaining_days = await verifier_date(date_start, date_end);
 
     if (!id_family) {
         return res.status(404).json({ mensagem: "Família não encontrada para o membro informado." });
-    };
+    }
     
     try {
-
         const task_info = await prisma.task.create({
             data: {
                 description: desc_task,
                 title: name_task,
-                member_id: Number(id_member),
-                member_name: member_task,
+                member_id: id_member,
+                member_name: nome_responsavel,
                 priority: priority_task,
                 status: status_task,
                 type_task: type_task,
@@ -72,6 +87,28 @@ export async function task_adm(req, res) {
         res.status(500).json({ mensagem: "Erro interno no servidor." });
     };
 };
+
+// Função para listar todas as tarefas diárias da família do usuário logado
+export async function get_daily_family_tasks(req, res) {
+    try {
+        const id_member = req.usuario.id;
+        const id_family = await family_id_task(id_member);
+        if (!id_family) {
+            return res.status(404).json({ mensagem: "Família não encontrada para o usuário." });
+        }
+        // Busca todas tarefas do tipo 'diaria' da família
+        const dailyTasks = await prisma.task.findMany({
+            where: {
+                family_id: Number(id_family),
+                type_task: 'diaria'
+            }
+        });
+    return res.status(200).json({ tasks: dailyTasks });
+    } catch (err) {
+        console.error('Erro ao buscar tarefas diárias da família:', err);
+        res.status(500).json({ mensagem: "Erro interno ao buscar tarefas diárias da família." });
+    }
+}
 
 export async function task_users_create(req, res) {
     const { desc_task, name_task, priority_task, status_task, type_task } = req.body;
