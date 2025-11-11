@@ -45,7 +45,7 @@ export async function task_adm(req, res) {
             data: {
                 description: desc_task,
                 title: name_task,
-                member_id: id_member,
+                member_id: Number(id_member),
                 member_name: member_task,
                 priority: priority_task,
                 status: status_task,
