@@ -229,6 +229,9 @@ export async function resetar_senha(req, res) {
         const { senha_atual, nova_senha } = req.body;
         // pegando do body as informacoes: senha atual do usuario e a nova senha que ele quer colocar.
 
+        if (!req.usuario || !req.usuario.id) {
+            return res.status(401).json({ error: "Usuário não autenticado" });
+        };
 
         if (!senha_atual || !nova_senha) {
             return res.status(400).json({mensagem: "Senha atual e nova senha são obrigatorias."});
@@ -238,8 +241,8 @@ export async function resetar_senha(req, res) {
             return res.status(400).json({mensagem: "Nova senha deve conter 8 caracteres"});
         };
 
-        if (!req.usuario || !req.usuario.id) {
-            return res.status(401).json({ error: "Usuário não autenticado" });
+        if (senha_atual === nova_senha) {
+            return res.status(400).json({mensagem: "A nova senha deve ser diferente da senha atual."})
         };
 
         const usuario = await prisma.user.findUnique({
