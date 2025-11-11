@@ -151,19 +151,18 @@ export async function task_users_create(req, res) {
     };
 };
 
-// pode ser usada tanto para remover task de usuario quanto admin.
 export async function remove_task_adm(req, res) {
-    const { task_remove } = req.body;
+    const id_task = parseInt(req.params.id);
     // isso vem do Front como um checkbox, o que tiver selecionado vem para ca(precisa mandar o titulo da task para o back)
 
-    if (!task_remove) {
+    if (!id_task) {
         return res.status(400).json({mensagem: "Informe a tarefa que deseja remover."});
     };
 
     try {
-        const verify_task_db = await prisma.task.findFirst({
+        const verify_task_db = await prisma.task.findUnique({
             where: {
-                title: task_remove
+                id: id_task
             },
 
             select: {
