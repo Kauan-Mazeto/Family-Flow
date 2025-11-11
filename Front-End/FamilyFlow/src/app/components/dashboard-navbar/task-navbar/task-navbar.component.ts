@@ -568,7 +568,9 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
           withCredentials: true
         });
       } else if (task.type_task === 'pontual') {
-        deleteRequest = this.http.delete<TaskApiResponse>(`${environment.apiUrl}/tasks/ponctual/delete?id=${task.id}`, {
+        // Envia o título da tarefa no corpo do DELETE, conforme backend espera
+        deleteRequest = this.http.request<TaskApiResponse>('delete', `${environment.apiUrl}/tasks/ponctual/delete`, {
+          body: { task_remove: task.title },
           withCredentials: true
         });
       } else {
