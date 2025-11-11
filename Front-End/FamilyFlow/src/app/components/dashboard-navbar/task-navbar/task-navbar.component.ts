@@ -568,7 +568,7 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
           withCredentials: true
         });
       } else if (task.type_task === 'pontual') {
-        // Envia o título da tarefa no corpo do DELETE, conforme backend espera
+        // Envia o título da tarefa no corpo do DELETE
         deleteRequest = this.http.request<TaskApiResponse>('delete', `${environment.apiUrl}/tasks/ponctual/delete`, {
           body: { task_remove: task.title },
           withCredentials: true
@@ -612,7 +612,8 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
 
   formatDate(dateString: string): string {
     if (!dateString) return '';
-    
+
+    // Converte a string para um objeto Date
     const date = new Date(dateString);
     return date.toLocaleDateString('pt-BR', {
       day: '2-digit',
