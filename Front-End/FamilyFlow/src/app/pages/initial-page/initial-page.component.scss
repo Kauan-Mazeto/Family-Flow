@@ -72,14 +72,6 @@
                 flex-direction: column;
                 line-height: 1;
                 align-items: flex-start;
-
-                .line-1 {
-                    display: block;
-                }
-
-                .line-2 {
-                    display: block;
-                }
             }
 
             .description {
@@ -89,7 +81,7 @@
                 text-align: left;
                 padding: 0;
                 position: absolute;
-                top: 60%;
+                top: 55%;
                 left: 150px;
                 max-width: 700px;
                 font-family: 'Poppins', sans-serif;
@@ -106,7 +98,7 @@
                 color: rgb(0, 0, 0);
                 text-decoration: none;
                 position: absolute;
-                top: 75%;
+                top: 70%;
                 left: 150px;
                 padding: 15px 30px;
                 border: none;
