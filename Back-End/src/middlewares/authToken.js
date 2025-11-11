@@ -21,6 +21,7 @@ export function authToken(req, res, next) {
         
         req.usuario = decodedToken; // anexo de dados do usuário à requisição;
         // console.log('AUTH: Usuário anexado à requisição:', req.usuario);
+        // console.log(req.usuario.email);
         
         next();
 
