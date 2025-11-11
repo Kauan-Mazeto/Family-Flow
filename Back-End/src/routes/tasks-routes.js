@@ -3,7 +3,8 @@ import { authRole } from '../middlewares/authRole.js';
 import { authToken } from '../middlewares/authToken.js';
 import { authTaskMember } from '../middlewares/authTaskMember.js';
 import { task_adm, remove_task_adm, patch_task_adm } from '../controller/tasks/tasks-controller-admin.js';
-import { create_task_user, get_task_user, update_status } from '../controller/tasks/tasks-controller-anyone.js';
+import { create_task_user, get_task_user, update_status, get_daily_user_tasks, get_punctual_user_tasks, remove_task_user } from '../controller/tasks/tasks-controller-anyone.js';
+import { get_daily_family_tasks } from '../controller/tasks/tasks-controller-admin.js';
 
 const rotas_tasks = express();
 
@@ -31,9 +32,24 @@ rotas_tasks.get('/tasks/info', authToken, (req, res) => {
     get_task_user(req, res);
 });
 
+// rota para buscar tarefas diárias atribuídas ao usuário logado
+rotas_tasks.get('/tasks/daily/user', authToken, (req, res) => {
+    get_daily_user_tasks(req, res);
+});
+
 // rota p/ concluir tarefa
 rotas_tasks.patch('/tasks/conclude/:id', authToken, authTaskMember, (req, res) => {
     update_status(req, res)
+});
+
+// rota para buscar tarefas diárias da família
+rotas_tasks.get('/tasks/daily/family', authToken, authRole, (req, res) => {
+    get_daily_family_tasks(req, res);
+});
+
+// rota para buscar tarefas pontuais criadas pelo usuário logado
+rotas_tasks.get('/tasks/ponctual/user', authToken, (req, res) => {
+    get_punctual_user_tasks(req, res);
 });
 
 export default rotas_tasks;
