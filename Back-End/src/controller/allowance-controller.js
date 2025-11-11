@@ -4,10 +4,15 @@ const prisma = new PrismaClient();
 
 export async function values_allowance(req, res) {
     const id_task = parseInt(req.params.id);
+    const { priority_low_value, priority_medium_value, priority_high_value } = req.body;
     let reward_value = 0;
     
     if (!id_task) {
         return res.status(404).json({ mensagem: "Informação(id) obrigatório." });
+    };
+
+    if (!priority_low_value || !priority_medium_value || !priority_high_value) {
+        return res.status(404).json({ mensagem: "Informações dos valores é obrigatório." });
     };
 
     const task_info = await prisma.task.findUnique({
@@ -26,8 +31,46 @@ export async function values_allowance(req, res) {
     };
 
     if (task_info.priority === "ALTA") {
-        reward_value = 
+        reward_value = priority_high_value;
+    } else if (task_info.priority === "MEDIA") {
+        reward_value = priority_medium_value;
+    } else {
+        reward_value = priority_low_value;
     };
+
+
+    await prisma.task.update({
+        where: {
+            id: id_task,
+        },
+
+        data: {
+            reward_value: {
+                increment: reward_value
+            }
+        }
+    });
+
+    await prisma.mesada.upsert({
+        where: { 
+            family_member: task.member_id 
+        },
+
+        update: { 
+            balance: { 
+                increment: reward_value 
+            } 
+        },
+
+        create: { 
+            family_member: task.member_id, balance: reward_value 
+        }
+    });
+    
+    return res.status(200).json({
+        mensagem: "Task concluída e recompensa adicionada!",
+        recompensa: reward_value
+    });
 
 
 };
