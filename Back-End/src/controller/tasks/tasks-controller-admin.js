@@ -24,9 +24,7 @@ export async function task_adm(req, res) {
         return res.status(404).json({ mensagem: "Informações obrigatórias." });
     };
 
-    console.log('TASK_ADM: Buscando ID do membro:', member_task);
     let id_member = await usuario_atual_id(member_task);
-    console.log('TASK_ADM: ID do membro encontrado:', id_member);
 
     // Se não encontrou o membro pelo nome, usar o usuário logado
     if (!id_member) {
@@ -47,12 +45,13 @@ export async function task_adm(req, res) {
             data: {
                 description: desc_task,
                 title: name_task,
+                member_id: id_member,
                 member_name: member_task,
                 priority: priority_task,
                 status: status_task,
                 type_task: type_task,
-                date_start: date_start,
-                date_end: date_end,
+                date_start: new Date(date_start + "T00:00:00Z"),
+                date_end: new Date(date_end + "T00:00:00Z"),
                 days: remaining_days,
                 family: {
                     connect: { 
@@ -62,7 +61,6 @@ export async function task_adm(req, res) {
             }
         });
 
-        console.log('TASK_ADM: Tarefa criada com sucesso:', task_info);
         return res.status(201).json({
                 mensagem: "Task criada.",  
                 task: task_info
