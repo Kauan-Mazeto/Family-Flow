@@ -564,9 +564,11 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
       
       let deleteRequest;
       if (task.type_task === 'diaria') {
-        deleteRequest = this.http.delete<TaskApiResponse>(`${environment.apiUrl}/tasks/diaries/delete/${task.id}`, {
+        console.log('recebendo tarefa diaria')
+        deleteRequest = this.http.delete<TaskApiResponse>(`${environment.apiUrl}/tasks/daily/delete/${task.id}`, {
           withCredentials: true
         });
+        console.log('tarefa apagada')
       } else if (task.type_task === 'pontual') {
         // Envia o título da tarefa no corpo do DELETE
         deleteRequest = this.http.request<TaskApiResponse>('delete', `${environment.apiUrl}/tasks/ponctual/delete`, {
