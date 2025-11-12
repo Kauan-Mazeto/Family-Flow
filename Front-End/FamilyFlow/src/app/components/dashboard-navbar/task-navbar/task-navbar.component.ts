@@ -3,6 +3,11 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+declare global {
+  interface Window {
+    mesadaNavbarComponent: any;
+  }
+}
 
 interface FamilyMember {
   id: number;
@@ -285,6 +290,7 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
       
       // Só admin pode criar tarefa diária
       if (!this.isAdmin) {
+        alert('Apenas o administrador pode criar tarefas diárias.');
         return;
       }
       this.http.post<{task: any}>(`${environment.apiUrl}/tasks/create/daily`, taskData, {
@@ -444,6 +450,7 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
     
     // Verificar se o usuário pode editar esta tarefa
     if (!this.canEditTask(task)) {
+      alert('Apenas o responsável pela tarefa pode marcá-la como concluída.');
       return;
     }
     
@@ -463,6 +470,27 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
         withCredentials: true
       }).subscribe({
         next: (response) => {
+          // Após concluir, chamar /allowance/prioridades para pegar os valores
+          this.http.get<any>(`${environment.apiUrl}/allowance/prioridades`, { withCredentials: true }).subscribe({
+            next: (prioridadesRes) => {
+              const prioridade = (task.priority || '').toUpperCase();
+              const valores = prioridadesRes.prioridades;
+              // Chamar /allowance/reward para somar ao saldo
+              this.http.patch<any>(`${environment.apiUrl}/allowance/reward/${task.id}`, {
+                priority_low_value: valores.valor_baixa ?? valores.BAIXA ?? 1,
+                priority_medium_value: valores.valor_media ?? valores.MEDIA ?? 2,
+                priority_high_value: valores.valor_alta ?? valores.ALTA ?? 3
+              }, { withCredentials: true }).subscribe({
+                next: () => {
+                  // Atualizar saldo e histórico
+                  if (window['mesadaNavbarComponent']) {
+                    window['mesadaNavbarComponent'].carregarPrioridades();
+                    window['mesadaNavbarComponent'].carregarHistorico();
+                  }
+                }
+              });
+            }
+          });
           task._loading = false;
           // Atualizar com valores do backend se fornecidos
           if (response && response.task) {
@@ -474,13 +502,11 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
           this.cdr.detectChanges();
         },
         error: (error) => {
-          
           // Reverter mudanças locais
           task.status = previousStatus;
           task.completed_at = previousCompletedAt;
           task._loading = false;
           this.cdr.detectChanges();
-          
           let errorMessage = 'Erro ao marcar tarefa como concluída. Tente novamente.';
           if (error.status === 0) {
             errorMessage = 'Servidor não está respondendo. Verifique se o backend está rodando.';
@@ -489,6 +515,7 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
           } else if (error.error?.mensagem) {
             errorMessage = error.error.mensagem;
           }
+          alert(errorMessage);
         }
       });
   }
@@ -497,6 +524,7 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
     
     // Verificar se o usuário pode editar esta tarefa
     if (!this.canEditTask(task)) {
+      alert('Apenas o responsável pela tarefa pode desmarcá-la.');
       return;
     }
 
@@ -537,6 +565,8 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
           } else if (error.error?.mensagem) {
             errorMessage = error.error.mensagem;
           }
+          
+          alert(errorMessage);
         }
   });
   }
@@ -546,7 +576,7 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
       
       let deleteRequest;
       if (task.type_task === 'diaria') {
-        deleteRequest = this.http.delete<TaskApiResponse>(`${environment.apiUrl}/tasks/daily/delete/${task.id}`, {
+        deleteRequest = this.http.delete<TaskApiResponse>(`${environment.apiUrl}/tasks/diaries/delete/${task.id}`, {
           withCredentials: true
         });
       } else if (task.type_task === 'pontual') {

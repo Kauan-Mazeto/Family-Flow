@@ -117,14 +117,10 @@ export class AuthService {
    * Buscar dados completos do usuário atual (baseado na sua rota POST /users/me)
    */
   getCurrentUserFromServer(): Observable<UserMeResponse> {
-    console.log('📡 AuthService: Fazendo requisição para verificar usuário no servidor...');
-    console.log('📡 AuthService: URL:', `${this.API_URL}${this.endpoints.userMe}`);
-    console.log('📡 AuthService: Cookies disponíveis:', document.cookie);
     
     // Verificar se há cookie tokenAuth
     const cookies = document.cookie.split(';');
     const tokenAuth = cookies.find(cookie => cookie.trim().startsWith('tokenAuth='));
-    console.log('📡 AuthService: Token encontrado:', tokenAuth ? 'SIM' : 'NÃO');
     
     this.loadingSubject.next(true);
     
@@ -141,25 +137,16 @@ export class AuthService {
     ).pipe(
       map(fullResponse => {
         const response = fullResponse.body as UserMeResponse;
-        console.log('✅ AuthService: Status da resposta:', fullResponse.status);
-        console.log('✅ AuthService: Headers da resposta:', fullResponse.headers);
-        console.log('✅ AuthService: Corpo da resposta:', response);
         
         if (response && response.usuarioAtual) {
-          console.log('✅ AuthService: Usuário encontrado, atualizando cache:', response.usuarioAtual);
           this.currentUserSubject.next(response.usuarioAtual);
-        } else {
-          console.log('⚠️ AuthService: Resposta não contém usuarioAtual');
         }
         
         this.loadingSubject.next(false);
         return response;
       }),
       catchError((error) => {
-        console.error('❌ AuthService: Erro na verificação do usuário:', error);
-        console.error('❌ AuthService: Status do erro:', error.status);
-        console.error('❌ AuthService: Corpo do erro:', error.error);
-        console.error('❌ AuthService: URL do erro:', error.url);
+        console.error('AuthService: Erro na verificação do usuário:', error);
         this.loadingSubject.next(false);
         return this.handleError(error);
       })
@@ -212,7 +199,6 @@ export class AuthService {
    * Limpar estado local de autenticação (para resolver estados inconsistentes)
    */
   clearLocalState(): void {
-    console.log('🧹 Limpando estado local de autenticação');
     this.currentUserSubject.next(null);
     
     // Limpar possíveis dados no localStorage
@@ -229,7 +215,6 @@ export class AuthService {
       sessionStorage.removeItem('userToken');
     }
     
-    console.log('🧹 Estado local completamente limpo');
   }
 
   /**
@@ -250,10 +235,8 @@ export class AuthService {
    * Carregar informações do usuário atual
    */
   loadUserInfo(): void {
-    console.log('AuthService: Carregando informações do usuário...');
     this.getCurrentUserFromServer().subscribe({
       next: (response) => {
-        console.log('AuthService: Informações do usuário carregadas:', response);
         if (response.usuarioAtual) {
           const user: User = {
             id: response.usuarioAtual.id,
@@ -265,7 +248,6 @@ export class AuthService {
             created_at: response.usuarioAtual.created_at
           };
           this.currentUserSubject.next(user);
-          console.log('AuthService: Usuário atualizado no subject:', user);
         }
       },
       error: z => {
@@ -279,13 +261,7 @@ export class AuthService {
    */
   private checkCurrentUser(): void {
     this.getCurrentUserFromServer().subscribe({
-      next: (response) => {
-        // Usuário está autenticado
-        console.log('Usuário já autenticado:', response.usuarioAtual);
-      },
       error: (error) => {
-        // Usuário não está autenticado ou token expirou
-        console.log('Usuário não autenticado');
         this.currentUserSubject.next(null);
       }
     });
@@ -296,9 +272,6 @@ export class AuthService {
    */
   createFamily(familyData: CreateFamilyRequest): Observable<CreateFamilyResponse> {
     this.loadingSubject.next(true);
-    console.log('AuthService:  Iniciando criação de família:', familyData);
-    console.log('AuthService:  URL:', `${this.API_URL}${this.endpoints.createFamily}`);
-    console.log('AuthService:  Cookies disponíveis:', document.cookie);
     
     return this.http.post<CreateFamilyResponse>(
       `${this.API_URL}${this.endpoints.createFamily}`,
@@ -312,9 +285,7 @@ export class AuthService {
       }
     ).pipe(
       map(fullResponse => {
-        console.log('AuthService:  Resposta completa da criação de família:', fullResponse);
         const response = fullResponse.body as CreateFamilyResponse;
-        console.log('AuthService:  Família criada com sucesso:', response);
         this.loadingSubject.next(false);
         return response;
       }),
@@ -362,7 +333,6 @@ export class AuthService {
    * Método de teste para verificar se o usuário está autenticado
    */
   testAuthenticationStatus(): Observable<any> {
-    console.log('AuthService:  Testando status de autenticação...');
     return this.http.post(`${this.API_URL}${this.endpoints.userMe}`, {}, { 
       withCredentials: true,
       headers: {
@@ -370,7 +340,6 @@ export class AuthService {
       }
     }).pipe(
       map(response => {
-        console.log('AuthService:  Usuário autenticado:', response);
         return response;
       }),
       catchError(error => {
@@ -386,8 +355,6 @@ export class AuthService {
    * Método de teste público para debugar criação de família
    */
   testCreateFamilyDirect(familyName: string): Observable<any> {
-    console.log('AuthService:  TESTE DIRETO - Criando família:', familyName);
-    console.log('AuthService:  Cookies disponíveis:', document.cookie);
     
     return this.http.post(
       `${this.API_URL}${this.endpoints.createFamily}`,
@@ -401,7 +368,6 @@ export class AuthService {
       }
     ).pipe(
       map(response => {
-        console.log('AuthService:  TESTE - Família criada:', response);
         return response;
       }),
       catchError(error => {
@@ -415,10 +381,8 @@ export class AuthService {
    * Método de teste para verificar conectividade com o backend
    */
   testBackendConnection(): Observable<any> {
-    console.log('AuthService: Testando conexão com backend...');
     return this.http.get(`${this.API_URL}/users/register`, { observe: 'response' }).pipe(
       map(response => {
-        console.log('AuthService: Backend respondeu:', response.status);
         return { status: 'ok', message: 'Backend conectado' };
       }),
       catchError(error => {
@@ -441,7 +405,6 @@ export class AuthService {
   completeRegistrationWithFamily(userData: CompleteRegisterRequest): Observable<RegisterResponse> {
     this.loadingSubject.next(true);
     
-    console.log('AuthService: Iniciando registro completo com família:', userData);
 
     // Desabilitado modo de desenvolvimento para usar backend real
 
@@ -454,8 +417,6 @@ export class AuthService {
 
     return this.register(registerData).pipe(
       switchMap(registerResponse => {
-        console.log('AuthService:  Registro concluído com sucesso:', registerResponse);
-        console.log('AuthService:  Iniciando login automático...');
         
         // Após registrar, faz login automático para obter autenticação
         const loginData: LoginRequest = {
@@ -465,11 +426,7 @@ export class AuthService {
 
         return this.login(loginData).pipe(
           switchMap(loginResponse => {
-            console.log('AuthService:  Login concluído com sucesso:', loginResponse);
-            console.log('AuthService:  Testando autenticação antes de criar família...');
             
-            // Aguardar um pouco para garantir que o cookie seja definido
-            console.log('AuthService: Aguardando cookie ser definido...');
             return new Observable(observer => {
               setTimeout(() => {
                 observer.next(loginResponse);
@@ -477,27 +434,20 @@ export class AuthService {
               }, 1000); // Aguardar 1 segundo
             }).pipe(
               switchMap(() => {
-                console.log('AuthService:  Testando autenticação após delay...');
                 return this.testAuthenticationStatus();
               }),
               switchMap(authTest => {
-                console.log('AuthService:  Autenticação confirmada:', authTest);
-                console.log('AuthService:  Processando família...');
                 
                 // Após confirmar autenticação, cria ou entra na família
                 if (userData.family_option === 'create' && userData.family_name) {
-                  console.log('AuthService:  Criando família:', userData.family_name);
                   return this.createFamily({ nome_familia: userData.family_name }).pipe(
                     map(familyResponse => {
-                      console.log('AuthService:  Família criada com sucesso:', familyResponse);
                       return registerResponse; // Retorna a resposta original do registro
                     })
                   );
                 } else if (userData.family_option === 'join' && userData.family_code) {
-                  console.log('AuthService:  Entrando na família com código:', userData.family_code);
                   return this.enterFamily({ codigo_familia_input: userData.family_code }).pipe(
                     map(familyResponse => {
-                      console.log('AuthService:  Entrada na família realizada:', familyResponse);
                       return registerResponse; // Retorna a resposta original do registro
                     })
                   );
@@ -558,9 +508,7 @@ export class AuthService {
                 }
               ).pipe(
                 map(fullResponse => {
-                  console.log('AuthService: RESPOSTA COMPLETA DO BACKEND:', fullResponse);
                   const familyResponse = fullResponse.body as CreateFamilyResponse;
-                  console.log('AuthService: FAMÍLIA CRIADA E USUÁRIO ADICIONADO COMO ADMIN:', familyResponse);
                   return registerResponse;
                 }),
                 catchError(familyError => {
@@ -587,11 +535,9 @@ export class AuthService {
                 }
               ).pipe(
                 map(familyResponse => {
-                  console.log('AuthService:  ENTROU NA FAMÍLIA:', familyResponse);
                   return registerResponse;
                 }),
                 catchError(familyError => {
-                  console.error('AuthService:  ERRO AO ENTRAR NA FAMÍLIA:', familyError);
                   return throwError(() => ({
                     mensagem: `Usuário criado, mas erro ao entrar na família: ${familyError.error?.mensagem || 'Erro desconhecido'}`
                   }));
@@ -599,14 +545,12 @@ export class AuthService {
               );
               
             } else {
-              console.log('AuthService:  REGISTRO CONCLUÍDO SEM FAMÍLIA');
               return of(registerResponse);
             }
           })
         );
       }),
       finalize(() => {
-        console.log('AuthService:  PROCESSO FINALIZADO');
         this.loadingSubject.next(false);
       }),
       catchError(this.handleError.bind(this))
@@ -617,7 +561,6 @@ export class AuthService {
    * Obter informações da família do usuário atual
    */
   getUserFamily(): Observable<{familia: {id: number, nome: string, codigo: string, role: string}}> {
-    console.log('AuthService:  Buscando informações da família do usuário...');
     
     return this.http.get<{familia: {id: number, nome: string, codigo: string, role: string}}>(
       `${this.API_URL}/family/info`,
@@ -648,17 +591,11 @@ export class AuthService {
       console.error('AuthService: HttpErrorResponse - Message:', error.message);
       console.error('AuthService: HttpErrorResponse - Body:', error.error);
       
-      if (error.error instanceof ErrorEvent) {
-        // Erro do lado cliente
-        console.log('AuthService: Erro do lado cliente');
-        errorMessage = `Erro de rede: ${error.error.message || 'Problema de conexão'}`;
-      } else if (error.message?.includes('Timeout')) {
+      if (error.message?.includes('Timeout')) {
         // Erro de timeout
-        console.log('AuthService: Timeout - possível problema de CORS');
         errorMessage = 'Timeout: Verifique se o backend está rodando na porta 8080';
       } else {
         // Erro do backend
-        console.log('AuthService: Erro do backend');
         if (error.error && error.error.mensagem) {
           errorMessage = error.error.mensagem;
           
@@ -714,8 +651,6 @@ export class AuthService {
         }
       }
     } else {
-      // Erro não-HTTP (pode ser um objeto de erro personalizado)
-      console.log('AuthService: Erro não-HTTP:', typeof error, error);
       
       if (typeof error === 'string') {
         errorMessage = error;
@@ -728,7 +663,6 @@ export class AuthService {
       }
     }
     
-    console.log('AuthService: Mensagem de erro final:', errorMessage);
     
     // Se o erro original tem erro_tipo, preservar essa informação
     let errorResponse: ErrorResponse = {

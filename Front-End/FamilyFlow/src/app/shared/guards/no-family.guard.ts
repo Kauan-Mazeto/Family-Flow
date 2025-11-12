@@ -10,7 +10,6 @@ export const noFamilyGuard: CanActivateFn = (route, state) => {
 
   // Verificar se o usuário está logado
   if (!authService.isLoggedIn()) {
-    console.log('Usuário não está logado, redirecionando para login');
     router.navigate(['/users/login']);
     return false;
   }
@@ -19,10 +18,8 @@ export const noFamilyGuard: CanActivateFn = (route, state) => {
   return authService.checkUserHasFamily().pipe(
     map(hasFamily => {
       if (!hasFamily) {
-        console.log('Usuário não tem família, permitindo acesso à página de escolha/criação');
         return true;
       } else {
-        console.log('Usuário já tem família, redirecionando para dashboard');
         router.navigate(['/family/dashboard']);
         return false;
       }

@@ -35,6 +35,8 @@ model Family {
   createdBy   User     @relation("UserCreatedFamilies", fields: [created_by], references: [id], onDelete: Cascade)
   members     FamilyMember[]
   tasks       Task[]
+  mesadaConfig MesadaConfig?
+
   @@map("family")
 }
 
@@ -82,6 +84,17 @@ model Mesada {
   member  FamilyMember @relation(fields: [family_member], references: [id], onDelete: Cascade)
 
   @@map("mesada")
+}
+
+model MesadaConfig {
+  id           Int    @id @default(autoincrement())
+  family_id    Int    @unique
+  valor_baixa  Float  @default(1.0)
+  valor_media  Float  @default(2.0)
+  valor_alta   Float  @default(3.0)
+  family       Family @relation(fields: [family_id], references: [id], onDelete: Cascade)
+
+  @@map("mesada_config")
 }
 
 enum Role {

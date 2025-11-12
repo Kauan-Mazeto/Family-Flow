@@ -9,10 +9,8 @@ export const registrationFlowGuard: CanActivateFn = (route, state) => {
 
   // Verificar se os dados pessoais foram preenchidos (primeira etapa do registro)
   if (registrationFlow.hasUserData()) {
-    console.log('Dados pessoais encontrados, permitindo acesso à página de opção de família');
     return true;
   } else {
-    console.log('Dados pessoais não encontrados, redirecionando para registro');
     router.navigate(['/users/register']);
     return false;
   }

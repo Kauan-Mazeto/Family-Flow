@@ -43,7 +43,6 @@ export async function task_adm(req, res) {
         }
     } else {
         // Se não encontrou o membro, usar o usuário logado
-        console.log('TASK_ADM: Membro não encontrado, usando usuário logado:', req.usuario.id);
         id_member = req.usuario.id;
         nome_responsavel = req.usuario.name;
     }

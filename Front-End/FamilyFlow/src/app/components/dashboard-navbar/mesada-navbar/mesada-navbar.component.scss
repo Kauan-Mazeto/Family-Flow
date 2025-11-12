@@ -1,89 +1,216 @@
 :host {
-
-    .text {
-        animation: fadeIn 0.3s ease-in-out;
+  .mesada-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    font-family: 'Poppins', sans-serif;
+    color: #444;
+  }
+  .header {
+    text-align: left;
+    margin-bottom: 2rem;
+    h1 {
+      font-size: 2.2rem;
+      color: #c19856;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+    p {
+      font-size: 1.1rem;
+      color: #666;
+    }
+  }
+  .saldo-card {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    box-shadow: 0 4px 16px rgba(193,152,86,0.08);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    gap: 1.5rem;
+    .fa-wallet {
+      font-size: 2.5rem;
+      color: #c19856;
+      margin-right: 1rem;
+    }
+    .saldo-info {
+      p {
+        font-size: 1rem;
+        color: #888;
+        margin-bottom: 0.2rem;
+      }
+      h2 {
+        font-size: 2.1rem;
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 0.2rem;
+      }
+      small {
+        color: #c19856;
+        font-size: 0.95rem;
+      }
+    }
+  }
+  .mesada-content {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .historico-card {
+    flex: 2;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(193,152,86,0.08);
+    padding: 2rem 1.5rem;
+    min-width: 340px;
+    h2 {
+      font-size: 1.3rem;
+      color: #c19856;
+      margin-bottom: 1.2rem;
+      font-weight: 600;
+    }
+    .task-list {
+  max-height: 18rem; /* altura aumentada para melhor visualização */
+      overflow-y: auto;
+      .task-item {
         display: flex;
-        font-family: 'Poppins', sans-serif;
-        color: #555;
-        align-items: left;
-        flex-direction: column;
+        align-items: center;
         justify-content: space-between;
-        margin-top: 5rem;
-        padding-left: 2rem;
-
-        h1 {
-            font-size: 2rem;
-            cursor: default;
+        background: #f9f6f2;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        padding: 1rem 1.2rem;
+        box-shadow: 0 2px 8px rgba(193,152,86,0.06);
+        .task-info {
+          display: flex;
+          flex-direction: column;
+          gap: 0.2rem;
+          h3 {
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: 500;
+          }
+          .valor {
+            color: #28a745;
+            font-weight: 600;
+            font-size: 1rem;
+          }
+          .data {
+            color: #888;
+            font-size: 0.95rem;
+          }
         }
+        .fa-check {
+          color: #28a745;
+          font-size: 1.3rem;
+        }
+      }
     }
-
-    .saldo-atual {
-        
-        .flex-saldo {
-            animation: fadeIn 0.3s ease-in-out;
-            display: flex;
-            flex-direction: row;
-            background-color: white;
-            width: 350px;
-            height: 80px;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            padding: 0 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin: 2rem auto;
-            transition: all 0.3s ease;
-            border: 2px solid rgba(193, 152, 86, 0.1);
-
-            span {
-                font-size: 1.5rem;
-            }
-
-            &:hover {
-                box-shadow: 0 6px 15px rgba(193, 152, 86, 0.2);
-                border-color: rgba(193, 152, 86, 0.3);
-            }
-        }
+    .no-tasks {
+      color: #aaa;
+      text-align: center;
+      font-size: 1rem;
+      margin-top: 2rem;
     }
-
-    .task-tabela {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-evenly;
-
-        .task-historic {
-            animation: fadeIn 0.3s ease-in-out;
-            display: flex;
-            flex-direction: column;
-            border-radius: 15px;
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-
-            h2 {
-                display: flex;
-                justify-content: center;
-                padding: 2rem;
-                font-family: 'Poppins', sans-serif;
-                color: #333;
-            }
-
-        }
-
-        .tabela-preco {
-            background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
+  }
+  .tabela-card {
+    flex: 1;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(193,152,86,0.08);
+    padding: 2rem 1.5rem;
+    min-width: 260px;
+    h2 {
+      font-size: 1.2rem;
+      color: #c19856;
+      margin-bottom: 1rem;
+      font-weight: 600;
     }
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .tabela-recompensa {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+      th, td {
+        padding: 0.6rem 0.4rem;
+        text-align: left;
+        font-size: 1rem;
+      }
+      th {
+        color: #c19856;
+        font-weight: 600;
+        border-bottom: 2px solid #f7e7c1;
+      }
+      td {
+        color: #333;
+        border-bottom: 1px solid #f7e7c1;
+      }
+      input {
+        width: 70px;
+        padding: 0.2rem 0.4rem;
+        border-radius: 6px;
+        border: 1px solid #c19856;
+        font-size: 1rem;
+        background: #f9f6f2;
+      }
     }
+    .btn-salvar {
+      background: #c19856;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 1.2rem;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: background 0.2s;
+      &:hover {
+        background: #a67c3c;
+      }
+    }
+  }
+  .ajuste-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(193,152,86,0.08);
+    padding: 2rem 1.5rem;
+    margin-top: 2rem;
+    min-width: 340px;
+    h2 {
+      font-size: 1.1rem;
+      color: #c19856;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    select, input {
+      margin-right: 0.7rem;
+      padding: 0.4rem 0.7rem;
+      border-radius: 6px;
+      border: 1px solid #c19856;
+      font-size: 1rem;
+      background: #f9f6f2;
+    }
+    .btn-ajustar {
+      background: #28a745;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 1.2rem;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      &:hover {
+        background: #218838;
+      }
+    }
+  }
+}
+@media (max-width: 900px) {
+  .mesada-content {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
 }

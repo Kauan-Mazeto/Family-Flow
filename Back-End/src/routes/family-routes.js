@@ -37,6 +37,8 @@ rotas_family.post('/family/promote-admin', authToken, (req, res) => {
 //     console.log('TESTE DE AUTH - Usuário:', req.usuario);
 //     res.json({ 
 //         mensagem: 'Autenticação funfando', 
+
+//         mensagem: 'Autenticação funcionando!', 
 //         usuario: req.usuario 
 //     });
 // });

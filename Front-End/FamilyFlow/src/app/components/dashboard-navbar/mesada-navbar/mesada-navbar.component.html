@@ -1,36 +1,53 @@
-<div class="text">
-  <h1>Mesada</h1>
-  <p>Aumente seu saldo concluido tarefas</p>
-</div>
+<div class="mesada-container">
+  <div class="header">
+    <h1>Mesada</h1>
+    <p>Ganhe recompensas ao concluir tarefas diárias!</p>
+  </div>
 
-<div class="saldo-atual">
-  <div class="flex-saldo">
+  <div class="saldo-card">
     <span class="fas fa-wallet"></span>
-    <div class="info-saldo">
+    <div class="saldo-info">
       <p>Saldo Atual</p>
-      <h2>R$ 0,00</h2>
-  </div>
-</div>
-
-<div class="task-tabela">
-  <div class="task-historic">
-    <h2>Histórico de tarefas concluidas</h2>
-
-    <div class="no-tasks">
-      <span class="fas fa-inbox"></span>
-      <p>Você ainda não concluiu nenhuma tarefa para ganhar mesada.</p>
+      <h2>{{ saldoAtual | currency:'BRL':'symbol':'1.2-2' }}</h2>
+      <small *ngIf="ultimaTarefa">Última tarefa: <strong>{{ ultimaTarefa.titulo }}</strong> (+{{ ultimaTarefa.valor | currency:'BRL':'symbol':'1.2-2' }})</small>
     </div>
+  </div>
 
-    <div class="task-list">
-      <div class="task-item">
-        <h3>Tarefa 1</h3>
-        <p class="saldo-tarefa">R$ 0,00</p>
-        <span class="fas fa-check"></span>
+  <div class="mesada-content">
+    <div class="historico-card">
+      <h2>Histórico de tarefas concluídas</h2>
+      <div class="task-list" *ngIf="historico && historico.length; else semHistorico">
+        <div class="task-item" *ngFor="let t of historico">
+          <div class="task-info">
+            <h3>{{ t.titulo }}</h3>
+            <span class="valor">+{{ t.valor | currency:'BRL':'symbol':'1.2-2' }}</span>
+            <span class="data">{{ t.data | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <span class="fas fa-check"></span>
+        </div>
       </div>
+      <ng-template #semHistorico>
+        <p class="no-tasks">Nenhuma tarefa concluída ainda.</p>
+      </ng-template>
+    </div>
+
+    <div class="tabela-card">
+      <h2>Tabela de Recompensas</h2>
+      <table class="tabela-recompensa">
+        <tr>
+          <th>Prioridade</th>
+          <th>Valor</th>
+        </tr>
+        <tr *ngFor="let p of prioridades">
+          <td>{{ p.nome }}</td>
+          <td>
+            <span *ngIf="!isAdmin">{{ p.valor | currency:'BRL':'symbol':'1.2-2' }}</span>
+            <input *ngIf="isAdmin" type="number" [(ngModel)]="p.valor" min="0" step="0.01" />
+          </td>
+        </tr>
+      </table>
+      <button *ngIf="isAdmin" class="btn-salvar" style="margin-top: 1rem;" (click)="salvarTabela()">Salvar Tabela</button>
     </div>
   </div>
 
-  <div class="tabela-preco">
-    <p>wddwdw</p>
-  </div>
 </div>
