@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 // códigos em memória: { userId: { codigo, expiraEm } }
-const codigosRecuperacao = new Map();
+export const codigosRecuperacao = new Map();
 
 function gerarCodigoVerificacao() {
     return Math.floor(100000 + Math.random() * 900000).toString();
