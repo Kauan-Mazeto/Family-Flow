@@ -4,6 +4,7 @@ import rotas_usuario from '../src/routes/login-routes.js';
 import rotas_family from './routes/family-routes.js';
 import rotas_tasks from '../src/routes/tasks-routes.js';
 import rotas_allowance from './routes/allowance-routes.js';
+import googleRouter from "./controller/google-controller.js";
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 
@@ -20,6 +21,8 @@ api_gestao_familiar.use('/', rotas_usuario);
 api_gestao_familiar.use('/', rotas_family);
 api_gestao_familiar.use('/', rotas_tasks);
 api_gestao_familiar.use('/', rotas_allowance)
+api_gestao_familiar.use("/", googleRouter);
+
 
 
 api_gestao_familiar.listen(porta_api_gestao_familiar, () => {
