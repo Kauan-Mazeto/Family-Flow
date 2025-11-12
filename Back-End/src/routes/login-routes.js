@@ -1,6 +1,8 @@
 import express from 'express';
 import { cadastrar_usuario, logout_usuario, resetar_senha, login_usuario, retornar_usuario_atual } from '../controller/login-controller.js';
 import { authToken } from '../middlewares/authToken.js'; // já está correto, mas verifique se a pasta é 'Back-End'
+import { enviar_codigo_recuperacao } from '../controller/functions/functions-controller-email.js';
+import { authCodeEmail } from "../middlewares/authCodeEmail.js"
 
 const rotas_usuario = express();
 
@@ -16,8 +18,12 @@ rotas_usuario.post('/users/me' ,authToken, (req, res) => {
     retornar_usuario_atual(req, res);
 });
 
-rotas_usuario.patch('/users/changePassword' ,authToken, (req, res) => {
+rotas_usuario.patch('/users/changePassword' ,authToken, authCodeEmail, (req, res) => {
     resetar_senha(req, res);
+});
+
+rotas_usuario.post('/users/sendCode', authToken, (req, res) => {
+    enviar_codigo_recuperacao(req, res);
 });
 
 rotas_usuario.post('/users/logout', authToken, (req, res) => {

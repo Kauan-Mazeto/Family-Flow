@@ -1,7 +1,7 @@
 import express from 'express';
-import { authToken } from '../middlewares/authToken';
-import { values_allowance } from '../controller/allowance-controller';
-import { authTaskMember } from '../middlewares/authTaskMember';
+import { authToken } from '../middlewares/authToken.js';
+import { values_allowance } from '../controller/allowance-controller.js';
+import { authTaskMember } from '../middlewares/authTaskMember.js';
 
 const rotas_allowance = express();
 
