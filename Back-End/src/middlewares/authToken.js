@@ -16,5 +16,5 @@ export function authToken(req, res, next) {
         next();
     } catch (err) {
         return res.status(401).json({ mensagem: "Token inválido ou expirado" });
-    }
-}
+    };
+};

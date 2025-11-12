@@ -12,11 +12,11 @@ rotas_tasks.post('/tasks/create/daily', authToken, authRole, (req, res) => {
     task_adm(req, res)
 });
 
-rotas_tasks.delete('/tasks/ponctual/delete/:id', authToken, authRole, (req, res) => {
+rotas_tasks.delete('/tasks/diaries/delete/:id', authToken, authRole, (req, res) => {
     remove_task_adm(req, res);
 });
 
-rotas_tasks.delete('/tasks/diaries/delete/:id', authToken, authTaskMember, (req, res) => {
+rotas_tasks.delete('/tasks/ponctual/delete/:id', authToken, authTaskMember, (req, res) => {
     remove_task_user(req, res);
 });
     

@@ -1,35 +1,3 @@
-export async function updateAllowancePrioridades(req, res) {
-  try {
-    const userId = req.usuario.id;
-    const membro = await prisma.familyMember.findFirst({ where: { user_id: userId } });
-    const familyId = membro ? membro.family_id : null;
-    if (!familyId) {
-      return res.status(400).json({ mensagem: 'Família não encontrada para o usuário.' });
-    }
-    const { prioridades } = req.body;
-    if (!prioridades || !Array.isArray(prioridades) || prioridades.length !== 3) {
-      return res.status(400).json({ mensagem: 'Prioridades inválidas.' });
-    }
-    const [baixa, media, alta] = prioridades;
-    const tabela = await prisma.mesadaConfig.upsert({
-      where: { family_id: familyId },
-      update: {
-        valor_baixa: baixa.valor,
-        valor_media: media.valor,
-        valor_alta: alta.valor
-      },
-      create: {
-        family_id: familyId,
-        valor_baixa: baixa.valor,
-        valor_media: media.valor,
-        valor_alta: alta.valor
-      }
-    });
-    return res.status(200).json({ prioridades: tabela });
-  } catch (err) {
-    return res.status(500).json({ mensagem: 'Erro ao atualizar prioridades.', erro: err.message });
-  }
-}
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -111,60 +79,98 @@ export async function getAllowanceSaldo(req, res) {
     const userId = req.usuario.id;
     const mesada = await prisma.mesada.findUnique({ where: { family_member: userId } });
     const lastTask = await prisma.task.findFirst({
-      where: { member_id: userId, type_task: 'diaria', status: 'CONCLUIDA' },
-      orderBy: { completed_at: 'desc' },
-      select: { title: true, reward_value: true }
+      where: { 
+        member_id: userId, 
+        type_task: 'diaria', 
+        status: 'CONCLUIDA' 
+      },
+
+      orderBy: { 
+        completed_at: 
+        'desc' 
+      },
+
+      select: { 
+        title: true, 
+        reward_value: true 
+      }
     });
     res.json({ saldo: mesada?.balance || 0, ultima: lastTask ? { titulo: lastTask.title, valor: lastTask.reward_value } : null });
   } catch (err) {
     res.json({ saldo: 0, ultima: null });
-  }
-}
+  };
+};
 
 export async function getAllowanceHistorico(req, res) {
   try {
     const userId = req.usuario.id;
-  const membro = await prisma.familyMember.findFirst({ where: { user_id: userId } });
-  const familyId = membro ? membro.family_id : null;
+    const membro = await prisma.familyMember.findFirst({ 
+      where: { 
+        user_id: userId 
+      } 
+    });
+
+    const familyId = membro ? membro.family_id : null;
     if (!familyId) {
       return res.json({ historico: [] });
-    }
+    };
+
     const filtro = {
       family_id: familyId,
       member_id: membro.id,
       status: 'CONCLUIDA'
     };
+
     const historico = await prisma.task.findMany({
       where: filtro,
-      orderBy: { date_end: 'desc' },
-      select: { title: true, reward_value: true, date_end: true }
+
+      orderBy: { 
+        date_end: 'desc' 
+      },
+
+      select: { 
+        title: true, 
+        reward_value: true, 
+        date_end: true 
+      }
     });
+
   return res.json({ historico: historico || [] });
+
   } catch (err) {
     res.json({ historico: [] });
-  }
+  };
+
   try {
+
     const userId = req.usuario.id;
     const membro = await prisma.familyMember.findFirst({ where: { user_id: userId } });
     const familyId = membro ? membro.family_id : null;
+
     if (!familyId) {
       return res.json({ historico: [] });
-    }
+    };
+
     const filtro = {
       family_id: familyId,
-      type_task: { in: ['diaria', 'diária', 'DAILY', 'Diaria', 'Diária'] },
+      type_task: { in: 
+        ['diaria', 'diária', 'DAILY', 'Diaria', 'Diária'] 
+      },
       status: { in: ['CONCLUIDA', 'CONCLUÍDA', 'CONCLUIDO', 'COMPLETED', 'Concluida', 'Concluído'] }
     };
+
     const historico = await prisma.task.findMany({
       where: filtro,
       orderBy: { date_end: 'desc' },
       select: { title: true, reward_value: true, date_end: true }
     });
+
     res.json({ historico: historico || [] });
+
   } catch (err) {
     res.json({ historico: [] });
-  }
-}
+  };
+};
 
 export async function getAllowancePrioridades(req, res) {
   try {
@@ -175,17 +181,31 @@ export async function getAllowancePrioridades(req, res) {
 
     if (!familyId) {
       return res.status(400).json({ mensagem: 'Família não encontrada para o usuário.' });
-    }
+    };
+
     let familia;
+
     try {
-      familia = await prisma.family.findUnique({ where: { id: familyId } });
+      familia = await prisma.family.findUnique({ 
+        where: { 
+          id: familyId 
+        } 
+      });
+
     } catch (err) {
       return res.status(500).json({ mensagem: 'Erro ao consultar modelo family.', erro: err.message });
-    }
+    };
+
     if (!familia) {
       return res.status(404).json({ mensagem: 'Família não existe no banco.' });
-    }
-    let tabela = await prisma.mesadaConfig.findUnique({ where: { family_id: familyId } });
+    };
+
+    let tabela = await prisma.mesadaConfig.findUnique({ 
+      where: { 
+        family_id: familyId 
+      } 
+    });
+
     if (!tabela) {
       tabela = await prisma.mesadaConfig.create({
         data: {
@@ -195,26 +215,96 @@ export async function getAllowancePrioridades(req, res) {
           valor_alta: 3
         }
       });
-    }
-    // Buscar saldo do membro
+    };
+
+    // buscando o saldo do membro
     let saldo = 0;
+    
     try {
-      const mesada = await prisma.mesada.findUnique({ where: { family_member: membro.id } });
+      const mesada = await prisma.mesada.findUnique({ 
+        where: { 
+          family_member: membro.id 
+        } 
+      });
+      
       saldo = mesada ? mesada.balance : 0;
     } catch (err) {
-    }
+        return console.log(err)
+    };
+
     res.json({ prioridades: tabela, saldo });
+
   } catch (err) {
     res.status(500).json({ mensagem: 'Erro ao consultar prioridades.', erro: err.message });
-  }
-}
+  };
+};
 
 export async function getAllowanceMembros(req, res) {
   try {
-  const familyId = req.usuario.family_id;
-  const membros = await prisma.familyMember.findMany({ where: { family_id: familyId }, select: { id: true, nome: true, role: true } });
-  res.json({ membros: membros || [] });
+    const familyId = req.usuario.family_id;
+    const membros = await prisma.familyMember.findMany({ 
+      where: { 
+        amily_id: familyId 
+      }, 
+      
+      select: { 
+        id: true, 
+        nome: true, 
+        role: true 
+      } 
+
+    });
+
+    res.json({ membros: membros || [] });
   } catch (err) {
     res.json({ membros: [] });
-  }
-}
+  };
+};
+
+export async function updateAllowancePrioridades(req, res) {
+  try {
+    const userId = req.usuario.id;
+    const membro = await prisma.familyMember.findFirst({
+      where: {
+        user_id: userId
+      }
+    });
+
+    const familyId = membro ? membro.family_id : null;
+
+    if (!familyId) {
+      return res.status(400).json({ mensagem: 'Família não encontrada para o usuário.' });
+    };
+
+    const { prioridades } = req.body;
+
+    if (!prioridades || !Array.isArray(prioridades) || prioridades.length !== 3) {
+      return res.status(400).json({ mensagem: 'Prioridades inválidas.' });
+    };
+
+    const [baixa, media, alta] = prioridades;
+    const tabela = await prisma.mesadaConfig.upsert({
+      where: {
+        family_id: familyId
+      },
+
+      update: {
+        valor_baixa: baixa.valor,
+        valor_media: media.valor,
+        valor_alta: alta.valor
+      },
+
+      create: {
+        family_id: familyId,
+        valor_baixa: baixa.valor,
+        valor_media: media.valor,
+        valor_alta: alta.valor
+      }
+    });
+
+    return res.status(200).json({ prioridades: tabela });
+
+  } catch (err) {
+    return res.status(500).json({ mensagem: 'Erro ao atualizar prioridades.', erro: err.message });
+  };
+};
