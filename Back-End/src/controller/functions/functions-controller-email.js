@@ -3,13 +3,8 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-<<<<<<< HEAD
 // Armazena códigos em memória: { userId: { codigo, expiraEm, timeoutId } }
 const codigosRecuperacao = new Map();
-=======
-// códigos em memória: { userId: { codigo, expiraEm } }
-export const codigosRecuperacao = new Map();
->>>>>>> 51c63e367b1ab82eda7c1676d8096da5c59f8e53
 
 function gerarCodigoVerificacao() {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -30,10 +25,7 @@ export async function enviar_codigo_recuperacao(req, res) {
         });
 
         if (!usuario) {
-<<<<<<< HEAD
-            return res.status(200).json({
-                mensagem: "Se o email existir, um código foi enviado."
-            });
+            return res.status(200).json({mensagem: "Se o email existir, um código foi enviado."});
         };
 
         if (codigosRecuperacao.has(usuario.id)) {
@@ -50,67 +42,11 @@ export async function enviar_codigo_recuperacao(req, res) {
 
         codigosRecuperacao.set(usuario.id, { codigo, expiraEm, timeoutId });
 
-=======
-            return res.status(200).json({ 
-                mensagem: "Se o email existir, um código foi enviado." 
-            });
-        };
-
-        const codigo = gerarCodigoVerificacao();
-        
-        // salvando em memória com expiração de 10 min
-        const expiraEm = Date.now() + 10 * 60 * 1000;
-        codigosRecuperacao.set(usuario.id, { codigo, expiraEm });
-
-        // remocao automatica após 10 min
-        setTimeout(() => {
-            codigosRecuperacao.delete(usuario.id);
-        }, 10 * 60 * 1000);
-
-        // Enviando email via transporter e sendMail
->>>>>>> 51c63e367b1ab82eda7c1676d8096da5c59f8e53
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: email,
             subject: 'Recuperação de Senha - Family Flow',
             html: `
-<<<<<<< HEAD
-                <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f8; padding: 40px; display: flex; justify-content: center;">
-                    <div style="background-color: #ffffff; padding: 30px; border-radius: 12px; max-width: 500px; width: 100%; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                        <h2 style="color: #333333; text-align: center;">Recuperação de Senha</h2>
-                        <p style="color: #555555; font-size: 16px;">Olá, <strong>${usuario.name}</strong>!</p>
-                        <p style="color: #555555; font-size: 16px;">Você solicitou a recuperação de senha para sua conta no Family Flow.</p>
-                        <p style="color: #555555; font-size: 16px; margin-top: 20px;">Use o código abaixo para redefinir sua senha:</p>
-                        
-                        <div style="text-align: center; margin: 30px 0;">
-                            <span style="display: inline-block; padding: 15px 25px; font-size: 28px; font-weight: bold; color: #ffffff; background-color: #4CAF50; border-radius: 8px; letter-spacing: 5px;">
-                                ${codigo}
-                            </span>
-                        </div>
-                        
-                        <p style="color: #777777; font-size: 14px;">Este código expira em <strong>10 minutos</strong>.</p>
-                        <p style="color: #777777; font-size: 14px;">Se você não solicitou essa recuperação, apenas ignore este email.</p>
-                        
-                        <hr style="border: none; border-top: 1px solid #eeeeee; margin: 30px 0;">
-                        <p style="color: #aaaaaa; font-size: 12px; text-align: center;">Family Flow &copy; ${new Date().getFullYear()}. Todos os direitos reservados.</p>
-                    </div>
-=======
-                <div style="
-                    font-family: Arial, sans-serif; 
-                    max-width: 500px; 
-                    margin: 0 auto; 
-                    padding: 24px; 
-                    border: 1px solid #e0e0e0; 
-                    border-radius: 12px; 
-                    background-color: #f9fafb;
-                    color: #333;
-                ">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <h2 style="color: #2e7d32; margin-bottom: 8px;">Recuperação de Senha</h2>
-                    <p style="font-size: 14px; color: #666;">Family Flow</p>
->>>>>>> 51c63e367b1ab82eda7c1676d8096da5c59f8e53
-                </div>
-
                 <p>Olá, <strong>${usuario.name}</strong>,</p>
                 <p>Recebemos uma solicitação para redefinir sua senha.</p>
                 <p>Use o código abaixo para continuar o processo de recuperação:</p>
