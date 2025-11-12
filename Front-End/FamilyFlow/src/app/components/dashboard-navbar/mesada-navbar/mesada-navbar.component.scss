@@ -1,0 +1,89 @@
+:host {
+
+    .text {
+        animation: fadeIn 0.3s ease-in-out;
+        display: flex;
+        font-family: 'Poppins', sans-serif;
+        color: #555;
+        align-items: left;
+        flex-direction: column;
+        justify-content: space-between;
+        margin-top: 5rem;
+        padding-left: 2rem;
+
+        h1 {
+            font-size: 2rem;
+            cursor: default;
+        }
+    }
+
+    .saldo-atual {
+        
+        .flex-saldo {
+            animation: fadeIn 0.3s ease-in-out;
+            display: flex;
+            flex-direction: row;
+            background-color: white;
+            width: 350px;
+            height: 80px;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 0 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 2rem auto;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(193, 152, 86, 0.1);
+
+            span {
+                font-size: 1.5rem;
+            }
+
+            &:hover {
+                box-shadow: 0 6px 15px rgba(193, 152, 86, 0.2);
+                border-color: rgba(193, 152, 86, 0.3);
+            }
+        }
+    }
+
+    .task-tabela {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+
+        .task-historic {
+            animation: fadeIn 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            border-radius: 15px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+            h2 {
+                display: flex;
+                justify-content: center;
+                padding: 2rem;
+                font-family: 'Poppins', sans-serif;
+                color: #333;
+            }
+
+        }
+
+        .tabela-preco {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    }
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}

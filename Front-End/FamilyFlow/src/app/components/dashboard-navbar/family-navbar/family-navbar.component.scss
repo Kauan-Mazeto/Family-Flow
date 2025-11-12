@@ -4,18 +4,19 @@
         animation: fadeIn 0.3s ease-in-out;
 
         .family-desc {
-            margin-top: 1rem;
+            margin-top:1.5rem;
             display: flex;
 
             .desc {
+                animation: fadeIn 0.3s ease-in-out;
                 display: flex;
                 font-family: 'Poppins', sans-serif;
                 color: #555;
-                margin: 1rem 0 0 2rem;
-                flex-direction: row;
+                align-items: left;
+                flex-direction: column;
                 justify-content: space-between;
-                width: 100%;
-                align-items: center;
+                margin-top: 5rem;
+                padding-left: 2rem;
 
                 .desc-text {
                     h1 {
