@@ -290,7 +290,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
       
       // Só admin pode criar tarefa diária
       if (!this.isAdmin) {
-        alert('Apenas o administrador pode criar tarefas diárias.');
         return;
       }
       this.http.post<{task: any}>(`${environment.apiUrl}/tasks/create/daily`, taskData, {
@@ -352,7 +351,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
       // Validação de data
       let scheduledDate = formData.scheduled_date;
       if (!scheduledDate || isNaN(Date.parse(scheduledDate))) {
-        alert('Selecione uma data válida para a tarefa pontual.');
         this.isLoading = false;
         return;
       }
@@ -450,7 +448,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
     
     // Verificar se o usuário pode editar esta tarefa
     if (!this.canEditTask(task)) {
-      alert('Apenas o responsável pela tarefa pode marcá-la como concluída.');
       return;
     }
     
@@ -524,7 +521,6 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
     
     // Verificar se o usuário pode editar esta tarefa
     if (!this.canEditTask(task)) {
-      alert('Apenas o responsável pela tarefa pode desmarcá-la.');
       return;
     }
 
@@ -581,7 +577,7 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
         });
       } else if (task.type_task === 'pontual') {
         // Envia o título da tarefa no corpo do DELETE
-        deleteRequest = this.http.request<TaskApiResponse>('delete', `${environment.apiUrl}/tasks/ponctual/delete`, {
+        deleteRequest = this.http.request<TaskApiResponse>('delete', `${environment.apiUrl}/tasks/ponctual/delete/${task.id}`, {
           body: { task_remove: task.title },
           withCredentials: true
         });
