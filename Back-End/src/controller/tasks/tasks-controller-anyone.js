@@ -1,3 +1,32 @@
+// Retorna tarefas pontuais criadas pelo usuário logado
+export async function get_punctual_user_tasks(req, res) {
+    try {
+        const userId = Number(req.usuario.id);
+        const tasks = await prisma.task.findMany({
+            where: {
+                member_id: userId,
+                type_task: 'pontual',
+                is_active: true
+            },
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                member_name: true,
+                member_id: true,
+                priority: true,
+                status: true,
+                type_task: true,
+                date_start: true,
+                date_end: true
+            }
+        });
+        return res.status(200).json({ tasks });
+    } catch (err) {
+        console.error('Erro ao buscar tarefas pontuais do usuário:', err);
+        return res.status(500).json({ mensagem: 'Erro interno ao buscar tarefas pontuais do usuário.' });
+    }
+}
 import { PrismaClient } from '@prisma/client';
 import { family_id_task } from '../functions/functions-controller-family.js';
 import { usuario_atual_nome } from '../functions/functions-controller-user.js';
@@ -98,6 +127,36 @@ export async function get_task_user(req, res) {
     };
 };
 
+export async function get_daily_user_tasks(req, res) {
+    try {
+        const userId = Number(req.usuario.id);
+        const tasks = await prisma.task.findMany({
+            where: {
+                member_id: userId,
+                type_task: 'diaria',
+                is_active: true
+            },
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                member_name: true,
+                member_id: true,
+                priority: true,
+                status: true,
+                type_task: true,
+                date_start: true,
+                date_end: true
+            }
+        });
+
+        return res.status(200).json({ tasks });
+    } catch (err) {
+        console.error('Erro ao buscar tarefas diárias do usuário:', err);
+        return res.status(500).json({ mensagem: 'Erro interno ao buscar tarefas diárias do usuário.' });
+    }
+}
+
 
 export async function remove_task_user(req, res) {
 
@@ -108,7 +167,7 @@ export async function remove_task_user(req, res) {
     };
 
     try {
-        const task_remove = await prisma.task.delete({
+        await prisma.task.delete({
             where: {
                 id: id_task
             }
@@ -157,48 +216,11 @@ export async function update_status(req, res) {
             }
         });
 
-        if (status_task !== "CONCLUIDA") {
-            return res.status(200).json({ mensagem: "Status da task atualizado!" });
-        };
+        // if (status_task !== "CONCLUIDA") {
+        //     return res.status(200).json({ mensagem: "Status da task atualizado!" });
+        // };
 
-        let reward_value = 0;
-        if (task.priority === "BAIXA") {
-            reward_value = 0.50
-        } else if (task.priority === "MEDIA") {
-            reward_value = 1.00
-        } else {
-            reward_value = 1.50
-        };
-
-        await prisma.task.update({
-            where: { 
-                id: id_task 
-            },
-            data: { 
-                reward_value: { 
-                    increment: reward_value 
-                }
-            }
-        });
-
-        await prisma.mesada.upsert({
-            where: { 
-                family_member: task.member_id 
-            },
-            update: { 
-                balance: { 
-                    increment: reward_value 
-                } 
-            },
-            create: { 
-                family_member: task.member_id, balance: reward_value 
-            }
-        });
-
-        return res.status(200).json({
-            mensagem: "Task concluída e recompensa adicionada!",
-            recompensa: reward_value
-        });
+        return res.status(200).json({mensagem: `"Task ${id_task} atualizada para ${status_task}."`});
 
     } catch (err) {
         console.error(err);

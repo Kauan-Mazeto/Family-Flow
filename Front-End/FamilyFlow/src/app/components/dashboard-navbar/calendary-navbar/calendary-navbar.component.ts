@@ -136,7 +136,7 @@ export class CalendaryNavbarComponent implements OnInit, AfterViewInit {
   loadPunctualTasks() {
     this.isLoading = true;
     
-    this.http.get<{ tasks: Task[] }>(`${environment.apiUrl}/tasks/punctual/user`, {
+  this.http.get<{ tasks: Task[] }>(`${environment.apiUrl}/tasks/ponctual/user`, {
       withCredentials: true
     }).subscribe({
       next: (response) => {

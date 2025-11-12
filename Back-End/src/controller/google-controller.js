@@ -1,20 +1,21 @@
 import express from "express";
 import session from "express-session";
 import passport from "passport";
-import GoogleStrategy from "passport-google-oauth20";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
-const app = express();
+const router = express.Router();
 
-app.use(session({
+// Configuração da sessão (necessária pro Passport)
+router.use(session({
     secret: process.env.SECRET_PASS,
     resave: false,
     saveUninitialized: false
 }));
 
-app.use(passport.initialize());
-app.use(passport.session());
+router.use(passport.initialize());
+router.use(passport.session());
 
 // Serializa o usuário para a sessão
 passport.serializeUser((user, done) => {
@@ -24,7 +25,9 @@ passport.serializeUser((user, done) => {
 // Desserializa o usuário da sessão
 passport.deserializeUser(async (id, done) => {
     const user = await prisma.user.findUnique({
-        where: { id: id }
+        where: { 
+            id: id 
+        }
     });
     done(null, user);
 });
@@ -49,7 +52,8 @@ passport.use(new GoogleStrategy({
                     name: profile.displayName,
                     email: profile.emails[0].value,
                     avatar_url: profile.photos[0].value,
-                    is_active: true
+                    is_active: true,
+                    password_hash: "google_oauth_user"
                 }
             });
         }
@@ -59,13 +63,42 @@ passport.use(new GoogleStrategy({
 ));
 
 // Rota pra iniciar login
-app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+router.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
 // Rota pra receber callback do Google
-app.get("/auth/google/callback",
-    passport.authenticate("google", { failureRedirect: "/login" }),
-    (req, res) => {
-        // Login bem-sucedido, usuário disponível em req.user
-        res.redirect("/dashboard");
-    }
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/login" }),
+  (req, res) => {
+    const user = req.user;
+
+    const redirectUrl = `http://localhost:4200/family/option?name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}&avatar=${encodeURIComponent(user.avatar_url)}`;
+
+    res.redirect(redirectUrl);
+  }
 );
+
+
+
+// Rota protegida para testar login
+router.get("/dashboard", (req, res) => {
+    if (!req.isAuthenticated || !req.isAuthenticated()) {
+        return res.status(401).json({ mensagem: "Usuário não autenticado!" });
+    };
+
+    res.json({
+        mensagem: "Login bem-sucedido com Google!",
+        usuario: req.user
+    });
+});
+
+// Rota de logout
+router.get("/logout", (req, res, next) => {
+    req.logout(err => {
+        if (err) return next(err);
+        res.redirect("/");
+    });
+});
+
+export default router;
+// development: http://localhost:8080/auth/google

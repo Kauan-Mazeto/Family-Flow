@@ -60,14 +60,13 @@
                                 [checked]="false"
                                 [disabled]="!canEditTask(task) || task._loading"
                                 (change)="onTaskComplete(task)"
-                                (click)="testClick(task)"
                                 [title]="!canEditTask(task) ? 'Apenas o responsável pode marcar esta tarefa como concluída' : 'Clique para marcar como concluída'"
                             >
                             <span class="fas fa-trash" (click)="onDeleteTask(task)" *ngIf="isAdmin"></span>
                         </div>
                         <h2>{{ task.title }}</h2>
                         <p>{{ task.description || 'Sem descrição' }}</p>
-                        <small class="task-member">Responsável: {{ task.member_name }}</small>
+                            <small class="task-member">Responsável: {{ task.member_name }}</small>
                     </div>
 
                     <div class="task-atribute">
@@ -358,9 +357,9 @@
                         formControlName="member"
                     >
                         <option value="">Selecione um membro</option>
-                        <option *ngFor="let member of familyMembers" [value]="member.id">
-                            {{ member.name }} ({{ member.role === 'ADMIN' ? 'Admin' : 'Membro' }})
-                        </option>
+                        <ng-container *ngFor="let member of familyMembers">
+                            <option [value]="member.id">{{ member.name }}</option>
+                        </ng-container>
                     </select>
                 </div>
             </div>
