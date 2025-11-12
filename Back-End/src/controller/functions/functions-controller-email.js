@@ -108,7 +108,6 @@ export async function enviar_codigo_recuperacao(req, res) {
                             Este e-mail faz parte do sistema automático de recuperação de conta.
                             </p>
 
-                            <!-- Quebra o padrão e impede truncagem -->
                             <div style="display:none!important;opacity:0;height:0;width:0;">
                             ref:familyflow-${Math.random().toString(36).substring(2, 8)}
                         </div>
