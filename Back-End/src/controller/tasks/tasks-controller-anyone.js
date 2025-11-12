@@ -47,7 +47,7 @@ export async function create_task_user(req, res) {
     // status_task: status da tarefa
     // type_task: tipo da tarefa(diaria/pontual)
 
-    if (!desc_task || !name_task || !priority_task || !status_task || !type_task || !date_start || !date_end) {
+    if (!name_task || !priority_task || !status_task || !type_task || !date_start || !date_end) {
         return res.status(404).json({ mensagem: "Informações obrigatórias." });
     };
 
@@ -77,7 +77,6 @@ export async function create_task_user(req, res) {
                 }
             }
         });
-
         return res.status(200).json({
             message: "Task exclusiva criada.",
             task_info
