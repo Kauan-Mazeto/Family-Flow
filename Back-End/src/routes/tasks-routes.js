@@ -12,7 +12,7 @@ rotas_tasks.post('/tasks/create/daily', authToken, authRole, (req, res) => {
     task_adm(req, res)
 });
 
-rotas_tasks.delete('/tasks/diaries/delete', authToken, authRole, (req, res) => {
+rotas_tasks.delete('/tasks/diaries/delete/:id', authToken, authRole, (req, res) => {
     remove_task_adm(req, res);
 });
 
