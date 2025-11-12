@@ -6,7 +6,6 @@ const prisma = new PrismaClient();
 // Armazena códigos em memória: { userId: { codigo, expiraEm } }
 const codigosRecuperacao = new Map();
 
-// Gera código de 6 dígitos
 function gerarCodigoVerificacao() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 };
@@ -20,31 +19,30 @@ export async function enviar_codigo_recuperacao(req, res) {
     };
 
     try {
-        // Verifica se o email existe
         const usuario = await prisma.user.findUnique({
-            where: { email }
+            where: { 
+                email 
+            }
         });
 
         if (!usuario) {
-            // Por segurança, não revelar se o email existe
             return res.status(200).json({ 
                 mensagem: "Se o email existir, um código foi enviado." 
             });
         };
 
-        // Gera código de 6 dígitos
         const codigo = gerarCodigoVerificacao();
         
-        // Salva em memória com expiração de 10 minutos
+        // salvando em memória com expiração de 10 min
         const expiraEm = Date.now() + 10 * 60 * 1000;
         codigosRecuperacao.set(usuario.id, { codigo, expiraEm });
 
-        // Remove automaticamente após 10 minutos
+        // remocao automatica após 10 min
         setTimeout(() => {
             codigosRecuperacao.delete(usuario.id);
         }, 10 * 60 * 1000);
 
-        // Envia o email
+        // Enviando email via transporter e sendMail
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: email,
