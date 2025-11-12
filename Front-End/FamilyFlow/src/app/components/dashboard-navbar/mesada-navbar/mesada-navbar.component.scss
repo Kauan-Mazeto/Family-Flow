@@ -1,4 +1,5 @@
 :host {
+
   .mesada-container {
     max-width: 1100px;
     margin: 0 auto;
@@ -7,11 +8,12 @@
     color: #444;
   }
   .header {
+    animation: fadeIn 0.3s ease-in-out;
     text-align: left;
     margin-bottom: 2rem;
     h1 {
       font-size: 2.2rem;
-      color: #c19856;
+      color: #333;
       margin-bottom: 0.5rem;
       font-weight: 700;
     }
@@ -21,6 +23,7 @@
     }
   }
   .saldo-card {
+    animation: fadeIn 0.3s ease-in-out;
     display: flex;
     align-items: center;
     background-color: white;
@@ -53,12 +56,14 @@
     }
   }
   .mesada-content {
+    animation: fadeIn 0.3s ease-in-out;
     display: flex;
     gap: 2rem;
     flex-wrap: wrap;
     justify-content: space-between;
   }
   .historico-card {
+    animation: fadeIn 0.3s ease-in-out;
     flex: 2;
     background: #fff;
     border-radius: 16px;
@@ -207,6 +212,17 @@
       }
     }
   }
+
+  @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+  }
 }
 @media (max-width: 900px) {
   .mesada-content {
@@ -214,3 +230,4 @@
     gap: 1.5rem;
   }
 }
+
