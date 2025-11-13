@@ -64,7 +64,7 @@ export async function task_adm(req, res) {
                 priority: priority_task,
                 status: status_task,
                 type_task: type_task,
-                date_start: new Date(date_start + "T00:00:00Z"),
+                date_start: new Date(date_start),
                 date_end: new Date(date_end + "T00:00:00Z"),
                 days: remaining_days,
                 family: {
