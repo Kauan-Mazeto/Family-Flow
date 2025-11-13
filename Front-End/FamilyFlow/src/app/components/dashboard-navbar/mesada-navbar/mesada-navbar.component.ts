@@ -46,7 +46,7 @@ export class MesadaNavbarComponent implements OnInit {
   }
 
   carregarSaldo() {
-    this.http.get<any>(`${environment.apiUrl}/allowance/saldo`, { withCredentials: true }).subscribe({
+    this.http.get<any>(`${environment.apiUrl}/allowance/saldo/${this.membroSelecionado}`, { withCredentials: true }).subscribe({
       next: (res) => {
         this.saldoAtual = res.saldo || 0;
         // Backend retorna 'ultima', não 'ultimaTarefa'
@@ -87,7 +87,7 @@ export class MesadaNavbarComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error('[FRONT DEBUG] erro /allowance/prioridades:', err);
+        console.error('Erro /allowance/prioridades:', err);
       }
     });
   }
@@ -116,4 +116,4 @@ export class MesadaNavbarComponent implements OnInit {
       this.carregarSaldo();
     });
   }
-}
+} 
