@@ -55,12 +55,13 @@
                     <div class="task-info">
                         <div class="responsible">
                             <input 
+                                *ngIf="canEditTask(task)"
                                 type="checkbox" 
                                 class="check-response"
                                 [checked]="false"
-                                [disabled]="!canEditTask(task) || task._loading"
+                                [disabled]="task._loading"
                                 (change)="onTaskComplete(task)"
-                                [title]="!canEditTask(task) ? 'Apenas o responsável pode marcar esta tarefa como concluída' : 'Clique para marcar como concluída'"
+                                title="Clique para marcar como concluída"
                             >
                             <span class="fas fa-trash" (click)="onDeleteTask(task)" *ngIf="isAdmin"></span>
                         </div>
@@ -104,12 +105,13 @@
                     <div class="task-info">
                         <div class="responsible">
                             <input 
+                                *ngIf="canEditTask(task)"
                                 type="checkbox" 
                                 class="check-response"
                                 [checked]="true"
-                                [disabled]="!canEditTask(task) || task._loading"
+                                [disabled]="task._loading"
                                 (change)="onTaskUncomplete(task)"
-                                [title]="!canEditTask(task) ? 'Apenas o responsável pode desmarcar esta tarefa' : ''"
+                                title="Clique para desmarcar esta tarefa"
                             >
                             <span class="fas fa-trash" (click)="onDeleteTask(task)" *ngIf="isAdmin"></span>
                         </div>

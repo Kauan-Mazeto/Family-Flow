@@ -1,3 +1,22 @@
+// Atualiza o status de uma tarefa (diária ou pontual)
+export async function update_status(req, res) {
+    const id_task = parseInt(req.params.id);
+    const { status_task } = req.body;
+
+    if (!id_task || !status_task) {
+        return res.status(400).json({ mensagem: "ID da tarefa ou status não informado." });
+    }
+
+    try {
+        const updatedTask = await prisma.task.update({
+            where: { id: id_task },
+            data: { status: status_task.toUpperCase() }
+        });
+        return res.status(200).json({ mensagem: "Status atualizado com sucesso.", task: updatedTask });
+    } catch (err) {
+        return res.status(500).json({ mensagem: "Erro ao atualizar status da tarefa.", erro: err.message });
+    }
+}
 
 import { PrismaClient } from '@prisma/client';
 import { family_id_task } from '../functions/functions-controller-family.js';
@@ -39,8 +58,8 @@ export async function create_task_user(req, res) {
                 priority: priority_upperCase,
                 status: status_upperCase,
                 type_task: type_task,
-                date_start: new Date(date_start + "T00:00:00Z"),
-                date_end: new Date(date_end + "T00:00:00Z"),
+                date_start: new Date(date_start + "T00:00:00"),
+                date_end: new Date(date_end + "T00:00:00"),
                 days: remaining_days,
                 family: {
                     connect: { 

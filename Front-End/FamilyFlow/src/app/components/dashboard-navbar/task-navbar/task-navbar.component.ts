@@ -211,26 +211,60 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
 
   loadDailyTasks() {
     
-    const rota = this.isAdmin
-      ? `${environment.apiUrl}/tasks/daily/family`
-      : `${environment.apiUrl}/tasks/daily/user`;
-    this.http.get<{tasks: Task[]}>(rota, {
+    // Atualiza status das tarefas diárias pendentes para atrasado
+    this.http.patch(`${environment.apiUrl}/tasks/automaticUpdate`, {}, {
       withCredentials: true
     }).subscribe({
-      next: (response) => {
-        this.dailyTasks = response.tasks || [];
-        this.cdr.detectChanges();
+      next: () => {
+        // Após atualizar, carrega as tarefas normalmente
+        const rota = this.isAdmin
+          ? `${environment.apiUrl}/tasks/daily/family`
+          : `${environment.apiUrl}/tasks/daily/user`;
+        this.http.get<{tasks: Task[]}>(rota, {
+          withCredentials: true
+        }).subscribe({
+          next: (response) => {
+            this.dailyTasks = response.tasks || [];
+            this.cdr.detectChanges();
+          },
+          error: (error) => {
+            console.error('Erro ao carregar tarefas diárias:', error);
+            if (error.status === 401) {
+              setTimeout(() => {
+                this.loadDailyTasks();
+              }, 1000);
+            } else {
+              this.dailyTasks = [];
+              this.cdr.detectChanges();
+            }
+          }
+        });
       },
       error: (error) => {
-        console.error('Erro ao carregar tarefas diárias:', error);
-        if (error.status === 401) {
-          setTimeout(() => {
-            this.loadDailyTasks();
-          }, 1000);
-        } else {
-          this.dailyTasks = [];
-          this.cdr.detectChanges();
-        }
+        console.error('Erro ao atualizar status das tarefas diárias:', error);
+        // Mesmo se falhar, tenta carregar as tarefas
+        const rota = this.isAdmin
+          ? `${environment.apiUrl}/tasks/daily/family`
+          : `${environment.apiUrl}/tasks/daily/user`;
+        this.http.get<{tasks: Task[]}>(rota, {
+          withCredentials: true
+        }).subscribe({
+          next: (response) => {
+            this.dailyTasks = response.tasks || [];
+            this.cdr.detectChanges();
+          },
+          error: (error) => {
+            console.error('Erro ao carregar tarefas diárias:', error);
+            if (error.status === 401) {
+              setTimeout(() => {
+                this.loadDailyTasks();
+              }, 1000);
+            } else {
+              this.dailyTasks = [];
+              this.cdr.detectChanges();
+            }
+          }
+        });
       }
     });
   }
@@ -354,9 +388,8 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
         this.isLoading = false;
         return;
       }
-      // Garante formato YYYY-MM-DD
-      const dateObj = new Date(scheduledDate);
-      const formattedDate = dateObj.toISOString().slice(0, 10);
+      // Usa a data do input diretamente para evitar problemas de fuso
+      const formattedDate = scheduledDate;
       const taskData = {
         desc_task: formData.description || '',
         name_task: formData.name,
