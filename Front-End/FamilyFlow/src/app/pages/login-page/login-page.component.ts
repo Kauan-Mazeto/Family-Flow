@@ -184,6 +184,7 @@ export class LoginPageComponent implements OnInit, OnDestroy {
 
   navigate_to_googleLogin() {
     window.location.href = 'http://localhost:8080/auth/google';
+    
   }
 
 }
