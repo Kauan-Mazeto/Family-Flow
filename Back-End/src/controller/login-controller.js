@@ -132,7 +132,7 @@ export async function login_usuario(req, res) {
                 mensagem: "Senha incorreta.", 
                 erro_tipo: "SENHA_INCORRETA"
             });
-        }
+        };
 
         const token_jwt = jwt.sign({
             id: usuario_temporario_retornar.id, 
@@ -192,7 +192,7 @@ export async function retornar_usuario_atual(req, res) {
 
         if (!usuarioAtual) {
             return res.status(404).json({ mensagem: "Usuário não encontrado." });
-        }
+        };
 
         // Buscar informações da família (pode ser null se não estiver em família)
         const user_active_system = await usuario_atual(req.usuario.id);
