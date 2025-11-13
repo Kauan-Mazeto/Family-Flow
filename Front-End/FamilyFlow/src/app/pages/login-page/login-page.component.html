@@ -50,7 +50,12 @@
 
     <p>Você não tem uma conta? <a (click)="navigate_to_register()">Registrar-se</a></p>
 
-    <button class="enter-google"> Entrar com Google</button>
+    <button class="google-btn" (click)="navigate_to_googleLogin()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo" class="google-icon" />
+      <span class="google-text">Entrar com Google</span>
+    </button>
+
+
   </form>
 </div>
 

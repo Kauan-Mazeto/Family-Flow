@@ -182,4 +182,8 @@ export class LoginPageComponent implements OnInit, OnDestroy {
     this.navegador.navigate(['/users/register']);
   }
 
+  navigate_to_googleLogin() {
+    window.location.href = 'http://localhost:8080/auth/google';
+  }
+
 }
