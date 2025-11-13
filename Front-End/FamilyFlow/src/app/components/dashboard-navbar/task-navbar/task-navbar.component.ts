@@ -21,7 +21,7 @@ interface CreateTaskRequest {
   name_task: string;
   member_task: string;
   priority_task: string;
-  status_task: string; // Sempre 'PENDENTE'
+  status_task: string;
   type_task: string;
   date_start: string;
   date_end: string;
