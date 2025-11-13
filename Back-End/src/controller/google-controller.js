@@ -56,7 +56,7 @@ passport.use(new GoogleStrategy({
                     password_hash: "google_oauth_user"
                 }
             });
-        }
+        };
 
         return done(null, user);
     }
