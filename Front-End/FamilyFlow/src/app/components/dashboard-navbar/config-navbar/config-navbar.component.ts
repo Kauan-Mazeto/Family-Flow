@@ -313,25 +313,10 @@ export class ConfigNavbarComponent implements OnInit {
       '• Todos os seus dados serão permanentemente excluídos\n' +
       '• Você será removido da sua família\n' +
       '• Suas tarefas serão perdidas\n' +
-      '• Não será possível recuperar essas informações\n\n' +
-      'Tem CERTEZA ABSOLUTA que deseja apagar sua conta?'
+      '• Não será possível recuperar essas informações\n\n'
     );
 
     if (!confirmDelete) return;
-
-    // Segunda confirmação para operação crítica
-    const finalConfirm = confirm(
-      'ÚLTIMA CONFIRMAÇÃO!\n\n' +
-      'Digite "APAGAR" (em maiúsculas) na próxima mensagem para confirmar que deseja apagar permanentemente sua conta.'
-    );
-
-    if (!finalConfirm) return;
-
-    const userInput = prompt('Digite "APAGAR" para confirmar:');
-    if (userInput !== 'APAGAR') {
-      // Operação cancelada silenciosamente
-      return;
-    }
 
     this.isDeletingAccount = true;
 

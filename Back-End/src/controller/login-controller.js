@@ -1,3 +1,14 @@
+export async function deletar_usuario(req, res) {
+    try {
+        await prisma.user.delete({
+            where: { id: req.usuario.id }
+        });
+        res.clearCookie('tokenAuth');
+        return res.status(200).json({ mensagem: "Conta apagada com sucesso." });
+    } catch (err) {
+        res.status(500).json({ mensagem: "Erro ao apagar conta." });
+    }
+}
 import { PrismaClient } from '@prisma/client';
 import jwt from "jsonwebtoken";
 import argon2 from "argon2";

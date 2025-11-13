@@ -1,10 +1,15 @@
+
 import express from 'express';
-import { cadastrar_usuario, logout_usuario, resetar_senha, login_usuario, retornar_usuario_atual } from '../controller/login-controller.js';
+import { cadastrar_usuario, logout_usuario, resetar_senha, login_usuario, retornar_usuario_atual, deletar_usuario } from '../controller/login-controller.js';
 import { authToken } from '../middlewares/authToken.js';
 import { enviar_codigo_recuperacao } from '../controller/functions/functions-controller-email.js';
 import { authCodeEmail } from "../middlewares/authCodeEmail.js"
 
 const rotas_usuario = express();
+
+rotas_usuario.delete('/users/delete', authToken, (req, res) => {
+    deletar_usuario(req, res);
+});
 
 rotas_usuario.post('/users/register', (req, res) => {
     cadastrar_usuario(req, res);
