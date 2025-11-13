@@ -152,54 +152,6 @@ export async function remove_task_user(req, res) {
     }
 };
 
-export async function update_status(req, res) {
-    const { status_task } = req.body;
-    const id_task = parseInt(req.params.id);
-
-    if (!status_task) {
-        return res.status(400).json({ mensagem: "Status da task não foi informado." });
-    }
-    if (!id_task) {
-        return res.status(400).json({ mensagem: "ID da task não foi informado." });
-    }
-
-    try {
-        const task = await prisma.task.findUnique({
-            where: { 
-                id: id_task 
-            }
-        });
-
-        if (!task) {
-            return res.status(400).json({ mensagem: "Task inexistente ou inválida." });
-        };
-
-        if (task.status === "CONCLUIDA" && status_task === "CONCLUIDA") {
-            return res.status(400).json({ mensagem: "Essa task já foi concluída antes." });
-        };
-
-        await prisma.task.update({
-            where: { 
-                id: id_task 
-            },
-            data: { 
-                status: status_task 
-            }
-        });
-
-        // if (status_task !== "CONCLUIDA") {
-        //     return res.status(200).json({ mensagem: "Status da task atualizado!" });
-        // };
-
-        return res.status(200).json({mensagem: `"Task ${id_task} atualizada para ${status_task}."`});
-
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ mensagem: "Erro interno no servidor." });
-    };
-};
-
-
 // Retorna tarefas pontuais criadas pelo usuário logado
 export async function get_punctual_user_tasks(req, res) {
     try {
@@ -230,3 +182,36 @@ export async function get_punctual_user_tasks(req, res) {
         return res.status(500).json({ mensagem: 'Erro interno ao buscar tarefas pontuais do usuário.' });
     };
 };
+
+export async function update_verifier_days(req, res) {
+    const id_task = parseInt(req.params.id);
+
+    if (!id_task) {
+        return res.status(400).json({ mensagem: "ID da task não foi informado." })
+    };
+
+    const task_info = await prisma.task.findUnique({
+        where: {
+            id: id_task
+        }
+    });
+
+    const return_verifier_date = await verifier_date(task_info.date_start, task_info.date_end);
+
+    if (!return_verifier_date) {
+        return res.status(404).json({ mensagem: "Algo deu errado." })
+    };
+
+    if (return_verifier_date < 0) {
+        await prisma.task.update({
+            where: {
+                id: id_task
+            },
+
+            data: {
+                status: "ATRASADO"
+            }
+        })
+    };
+};
+

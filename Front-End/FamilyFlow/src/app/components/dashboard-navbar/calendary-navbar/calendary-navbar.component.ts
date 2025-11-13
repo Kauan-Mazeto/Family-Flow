@@ -76,11 +76,12 @@ export class CalendaryNavbarComponent implements OnInit, AfterViewInit {
       script.src = 'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js';
       script.async = true;
       script.onload = () => {
+        console.log('📅 FullCalendar carregado com sucesso');
         this.initCalendar();
         this.isLoading = false;
       };
       script.onerror = () => {
-        console.error('Erro ao carregar FullCalendar');
+        console.error('❌ Erro ao carregar FullCalendar');
         this.isLoading = false;
       };
       document.head.appendChild(script);
@@ -128,6 +129,7 @@ export class CalendaryNavbarComponent implements OnInit, AfterViewInit {
 
     this.calendar.render();
     this.currentTitle = this.calendar.view.title;
+    console.log('📅 Calendário inicializado com sucesso');
   }
 
   // Carregar tarefas pontuais
@@ -148,9 +150,10 @@ export class CalendaryNavbarComponent implements OnInit, AfterViewInit {
         }
         
         this.isLoading = false;
+        console.log(`📋 Carregadas ${this.punctualTasks.length} tarefas pontuais`);
       },
       error: (error) => {
-        console.error('Erro ao carregar tarefas pontuais:', error);
+        console.error('❌ Erro ao carregar tarefas pontuais:', error);
         this.isLoading = false;
       }
     });
@@ -264,7 +267,7 @@ export class CalendaryNavbarComponent implements OnInit, AfterViewInit {
 
   // Completar tarefa
   completeTask(task: Task) {
-    this.http.put(`${environment.apiUrl}/tasks/concluide/${task.id}`, {}, {
+    this.http.put(`${environment.apiUrl}/tasks/${task.id}/complete`, {}, {
       withCredentials: true
     }).subscribe({
       next: (response) => {
@@ -279,8 +282,10 @@ export class CalendaryNavbarComponent implements OnInit, AfterViewInit {
         this.updateCalendarEvents();
         this.calculateStats();
         
+        console.log('✅ Tarefa marcada como concluída');
       },
       error: (error) => {
+        console.error('❌ Erro ao completar tarefa:', error);
         alert('Erro ao marcar tarefa como concluída');
       }
     });
@@ -288,7 +293,7 @@ export class CalendaryNavbarComponent implements OnInit, AfterViewInit {
 
   // Desmarcar tarefa como concluída
   uncompleteTask(task: Task) {
-    this.http.put(`${environment.apiUrl}/tasks/ponctual/delete/${task.id}`, {}, {
+    this.http.put(`${environment.apiUrl}/tasks/${task.id}/uncomplete`, {}, {
       withCredentials: true
     }).subscribe({
       next: (response) => {
@@ -302,8 +307,11 @@ export class CalendaryNavbarComponent implements OnInit, AfterViewInit {
         // Atualizar calendário e estatísticas
         this.updateCalendarEvents();
         this.calculateStats();
+        
+        console.log('🔄 Tarefa desmarcada como concluída');
       },
       error: (error) => {
+        console.error('❌ Erro ao desmarcar tarefa:', error);
         alert('Erro ao desmarcar tarefa');
       }
     });
