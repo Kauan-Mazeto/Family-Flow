@@ -44,7 +44,7 @@ rotas_tasks.patch('/tasks/conclude/:id', authToken, authTaskMember, (req, res) =
 });
 
 // rota para buscar tarefas diárias da família
-rotas_tasks.get('/tasks/daily/family', authToken, authRole, (req, res) => {
+rotas_tasks.get('/tasks/daily/family', authToken, (req, res) => {
     get_daily_family_tasks(req, res);
 });
 

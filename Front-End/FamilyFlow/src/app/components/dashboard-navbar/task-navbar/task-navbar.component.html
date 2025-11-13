@@ -28,10 +28,12 @@
                 <p>Tarefas criadas pelo Administrador - visíveis para toda a família</p>
             </div>
 
+            <!-- Botão de criar tarefa diária só para admin -->
             <button class="create-task" (click)="openCreateTaskModal()" *ngIf="isAdmin">
                 <i class="fas fa-plus"></i> 
                 Criar Tarefa Diária
             </button>
+            <!-- Mensagem de restrição só para admin -->
             <div class="admin-only-message" *ngIf="!isAdmin">
                 <i class="fas fa-lock"></i>
                 <span>Apenas administradores podem criar tarefas diárias</span>

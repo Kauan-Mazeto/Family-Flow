@@ -216,10 +216,8 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
       withCredentials: true
     }).subscribe({
       next: () => {
-        // Após atualizar, carrega as tarefas normalmente
-        const rota = this.isAdmin
-          ? `${environment.apiUrl}/tasks/daily/family`
-          : `${environment.apiUrl}/tasks/daily/user`;
+        // Sempre busca tarefas de todos os membros da família
+        const rota = `${environment.apiUrl}/tasks/daily/family`;
         this.http.get<{tasks: Task[]}>(rota, {
           withCredentials: true
         }).subscribe({
@@ -242,10 +240,8 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
       },
       error: (error) => {
         console.error('Erro ao atualizar status das tarefas diárias:', error);
-        // Mesmo se falhar, tenta carregar as tarefas
-        const rota = this.isAdmin
-          ? `${environment.apiUrl}/tasks/daily/family`
-          : `${environment.apiUrl}/tasks/daily/user`;
+        // Mesmo se falhar, tenta carregar as tarefas de todos os membros
+        const rota = `${environment.apiUrl}/tasks/daily/family`;
         this.http.get<{tasks: Task[]}>(rota, {
           withCredentials: true
         }).subscribe({
@@ -461,11 +457,7 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
   }
 
   getCompletedTasks(): Task[] {
-    return this.dailyTasks.filter(task => {
-      const status = (task.status || '').toUpperCase();
-      const type = (task.type_task || '').toLowerCase();
-      return status === 'CONCLUIDA' && type === 'diaria';
-    });
+    return this.dailyTasks.filter(task => task.status === 'CONCLUIDA' && task.member_id === this.currentUserId);
   }
 
   // Métodos para tarefas pontuais
