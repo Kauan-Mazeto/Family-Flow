@@ -73,14 +73,21 @@
                     </div>
 
                     <div class="task-atribute">
-                        <span class="task-priority" [ngClass]="'priority-' + task.priority.toLowerCase()">
-                            <i class="fas fa-flag"></i>
-                            {{ getPriorityLabel(task.priority) }}
-                        </span>
-                        <span class="task-status status-pendente">
-                            <i class="fas fa-clock"></i>
-                            Pendente
-                        </span>
+                                                <span class="task-priority" [ngClass]="'priority-' + task.priority.toLowerCase()">
+                                                        <i class="fas fa-flag"></i>
+                                                        {{ getPriorityLabel(task.priority) }}
+                                                </span>
+                                                <span 
+                                                    class="task-status"
+                                                    [ngClass]="{
+                                                        'status-pendente': (task.status || '').toUpperCase() === 'PENDENTE',
+                                                        'status-progresso': (task.status || '').toUpperCase() === 'PROGRESSO' || (task.status || '').toUpperCase() === 'EM_ANDAMENTO',
+                                                        'status-atrasado': (task.status || '').toUpperCase() === 'ATRASADO',
+                                                        'status-concluida': (task.status || '').toUpperCase() === 'CONCLUIDA'
+                                                    }"
+                                                >
+                                                    {{ (task.status || '').toUpperCase() === 'ATRASADO' ? 'Atrasada' : (task.status || '').toUpperCase() === 'PENDENTE' ? 'Pendente' : (task.status || '').toUpperCase() === 'PROGRESSO' || (task.status || '').toUpperCase() === 'EM_ANDAMENTO' ? 'Em andamento' : (task.status || '').toUpperCase() === 'CONCLUIDA' ? 'Concluída' : task.status }}
+                                                </span>
                     </div>
                 </div>
 
@@ -202,9 +209,40 @@
                             <i class="fas fa-flag"></i>
                             {{ getPriorityLabel(task.priority) }}
                         </span>
-                        <span class="task-status status-pendente">
-                            <i class="fas fa-clock"></i>
-                            Pendente
+                        <span 
+                            class="task-status"
+                            [ngClass]="{
+                                'status-pendente': (task.status || '').toUpperCase() === 'PENDENTE',
+                                'status-progresso': (task.status || '').toUpperCase() === 'PROGRESSO' || (task.status || '').toUpperCase() === 'EM_ANDAMENTO',
+                                'status-atrasado': (task.status || '').toUpperCase() === 'ATRASADO',
+                                'status-concluida': (task.status || '').toUpperCase() === 'CONCLUIDA'
+                            }"
+                        >
+                            <ng-container [ngSwitch]="(task.status || '').toUpperCase()">
+                                <span *ngSwitchCase="'ATRASADO'">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    Atrasada
+                                </span>
+                                <span *ngSwitchCase="'PENDENTE'">
+                                    <i class="fas fa-clock"></i>
+                                    Pendente
+                                </span>
+                                <span *ngSwitchCase="'PROGRESSO'">
+                                    <i class="fas fa-spinner"></i>
+                                    Em andamento
+                                </span>
+                                <span *ngSwitchCase="'EM_ANDAMENTO'">
+                                    <i class="fas fa-spinner"></i>
+                                    Em andamento
+                                </span>
+                                <span *ngSwitchCase="'CONCLUIDA'">
+                                    <i class="fas fa-check-circle"></i>
+                                    Concluída
+                                </span>
+                                <span *ngSwitchDefault>
+                                    {{ task.status }}
+                                </span>
+                            </ng-container>
                         </span>
                     </div>
                 </div>
@@ -357,7 +395,7 @@
                 <div class="form-group">
                     <label for="member">Responsável</label>
                     <select id="member" formControlName="member">
-                        <option value="para_todos">Para Todos</option>
+                        <option value="para_todos" selected>Para Todos</option>
                         <option *ngFor="let member of familyMembers" [value]="member.id">{{ member.name }}</option>
                     </select>
                 </div>
@@ -518,10 +556,20 @@
         <div class="chart-legend">
             <h3>Legenda</h3>
             <div class="legend-items">
-                <div class="legend-item" *ngFor="let member of familyMembers; let i = index">
-                    <span class="legend-color" [style.background-color]="getChartColor(i)"></span>
-                    <span class="legend-label">{{ member.name }}</span>
-                    <span class="legend-count">{{ getCompletedTasksCount(member.id) }} tarefas</span>
+                <div class="legend-item">
+                    <span class="legend-color legend-concluida"></span>
+                    <span class="legend-label">Concluídas</span>
+                    <span class="legend-count">{{ getTotalConcluidas() }} tarefas</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color legend-pendente"></span>
+                    <span class="legend-label">Pendentes</span>
+                    <span class="legend-count">{{ getTotalPendentes() }} tarefas</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color legend-atrasada"></span>
+                    <span class="legend-label">Atrasadas</span>
+                    <span class="legend-count">{{ getTotalAtrasadas() }} tarefas</span>
                 </div>
             </div>
             <div class="chart-stats">
@@ -531,11 +579,15 @@
                 </div>
                 <div class="stat-item">
                     <strong>Tarefas concluídas:</strong>
-                    <span>{{ getCompletedDailyTasks().length }}</span>
+                        <span>{{ getTotalConcluidas() }}</span>
                 </div>
                 <div class="stat-item">
-                    <strong>Taxa de conclusão:</strong>
-                    <span>{{ getCompletionRate() }}%</span>
+                    <strong>Tarefas pendentes:</strong>
+                        <span>{{ getTotalPendentes() }}</span>
+                </div>
+                <div class="stat-item">
+                    <strong>Tarefas atrasadas:</strong>
+                        <span>{{ getTotalAtrasadas() }}</span>
                 </div>
             </div>
         </div>

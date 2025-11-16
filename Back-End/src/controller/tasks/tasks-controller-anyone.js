@@ -44,7 +44,7 @@ export async function update_status(req, res) {
 // |----------------------------------------------------------------------------------------|
 
 export async function create_task_user(req, res) {
-    const { desc_task, name_task, priority_task, status_task, type_task, date_start, date_end } = req.body;
+    const { desc_task, name_task, priority_task, type_task, date_start, date_end } = req.body;
     // desc_task: descricao da tarefa
     // name_task: nome da tarefa
     // member_task: sempre vai ser o usuario que esta logado
@@ -52,15 +52,18 @@ export async function create_task_user(req, res) {
     // status_task: status da tarefa
     // type_task: tipo da tarefa(diaria/pontual)
 
-    if (!name_task || !priority_task || !status_task || !type_task || !date_start || !date_end) {
+    if (!name_task || !priority_task || !type_task || !date_start || !date_end) {
         return res.status(404).json({ mensagem: "Informações obrigatórias." });
     };
 
     const id_family = await family_id_task(req.usuario.id);
     const name_active = await usuario_atual_nome(req.usuario.id);
-    const remaining_days = await verifier_date(date_start, date_end);
+    // Ajusta date_end para o dia seguinte
+    const startDate = new Date(date_start);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 1);
+    const remaining_days = await verifier_date(date_start, endDate.toISOString().split('T')[0]);
     const priority_upperCase = priority_task.toUpperCase();
-    const status_upperCase = status_task.toUpperCase();
     
     try {
         const task_info = await prisma.task.create({
@@ -70,10 +73,10 @@ export async function create_task_user(req, res) {
                 member_id: Number(req.usuario.id),
                 member_name: name_active.name,
                 priority: priority_upperCase,
-                status: status_upperCase,
+                status: "PENDENTE",
                 type_task: type_task,
-                date_start: new Date(date_start + "T00:00:00"),
-                date_end: new Date(date_end + "T00:00:00"),
+                date_start: startDate,
+                date_end: endDate,
                 days: remaining_days,
                 family: {
                     connect: { 
@@ -220,34 +223,41 @@ export async function get_punctual_user_tasks(req, res) {
 };
 
 export async function update_verifier_days(req, res) {
-    const id_task = parseInt(req.params.id);
-
-    if (!id_task) {
-        return res.status(400).json({ mensagem: "ID da task não foi informado." })
-    };
-
-    const task_info = await prisma.task.findUnique({
-        where: {
-            id: id_task
-        }
-    });
-
-    const return_verifier_date = await verifier_date(task_info.date_start, task_info.date_end);
-
-    if (!return_verifier_date) {
-        return res.status(404).json({ mensagem: "Algo deu errado." })
-    };
-
-    if (return_verifier_date < 0) {
-        await prisma.task.update({
+    try {
+        let count = 0;
+        const tasks = await prisma.task.findMany({
             where: {
-                id: id_task
-            },
-
-            data: {
-                status: "ATRASADO"
+                type_task: 'diaria',
+                status: { in: ['PENDENTE', 'PROGRESSO'] },
+                is_active: true
             }
-        })
-    };
+        });
+        for (const task of tasks) {
+            if (!task.date_end) {
+                console.warn(`Tarefa ignorada (id: ${task.id}) - date_end ausente.`);
+                continue;
+            }
+            const now = new Date();
+            const end = new Date(task.date_end);
+            if (isNaN(end)) {
+                console.warn(`Tarefa ignorada (id: ${task.id}) - date_end inválida.`);
+                continue;
+            }
+            // Comparar apenas a data (ignorando hora)
+            const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+            if (endDate < nowDate) {
+                await prisma.task.update({
+                    where: { id: task.id },
+                    data: { status: 'ATRASADO' }
+                });
+                count++;
+            }
+        }
+        return res.status(200).json({ mensagem: `Atualização concluída. ${count} tarefas marcadas como atrasadas.` });
+    } catch (err) {
+        console.error('Erro em update_verifier_days:', err);
+        return res.status(500).json({ mensagem: "Erro ao atualizar status das tarefas diárias.", erro: err.message });
+    }
 };
 

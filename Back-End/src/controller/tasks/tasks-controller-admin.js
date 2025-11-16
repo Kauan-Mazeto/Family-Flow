@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
 // |---------------------------------------------------------------|
 
 export async function task_adm(req, res) {
-    const { desc_task, name_task, member_task, priority_task, status_task, type_task, date_start, date_end, for_all } = req.body;
+    const { desc_task, name_task, member_task, priority_task, type_task, date_start, date_end, for_all } = req.body;
     // desc_task: descricao da tarefa
     // name_task: nome da tarefa
     // member_task: membro que ira realizar aquela tarefa
@@ -19,7 +19,7 @@ export async function task_adm(req, res) {
     // status_task: status da tarefa
     // type_task: tipo da tarefa(diaria/pontual)
 
-    if (!desc_task || !name_task || (!member_task && !for_all) || !priority_task || !status_task || !type_task || !date_start || !date_end) {
+    if (!desc_task || !name_task || (!member_task && !for_all) || !priority_task || !type_task || !date_start || !date_end) {
         return res.status(404).json({ mensagem: "Informações obrigatórias." });
     }
 
@@ -52,7 +52,11 @@ export async function task_adm(req, res) {
     }
 
     const id_family = await family_id_task(for_all ? req.usuario.id : id_member);
-    const remaining_days = await verifier_date(date_start, date_end);
+    // Ajusta date_end para o dia seguinte
+    const startDate = new Date(date_start);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 1);
+    const remaining_days = await verifier_date(date_start, endDate.toISOString().split('T')[0]);
 
     if (!id_family) {
         return res.status(404).json({ mensagem: "Família não encontrada para o membro informado." });
@@ -66,10 +70,10 @@ export async function task_adm(req, res) {
                 member_id: id_member,
                 member_name: nome_responsavel,
                 priority: priority_task,
-                status: status_task,
+                status: "PENDENTE",
                 type_task: type_task,
-                date_start: new Date(date_start),
-                date_end: new Date(date_end + "T00:00:00Z"),
+                date_start: startDate,
+                date_end: endDate,
                 days: remaining_days,
                 for_all: !!for_all,
                 family: {

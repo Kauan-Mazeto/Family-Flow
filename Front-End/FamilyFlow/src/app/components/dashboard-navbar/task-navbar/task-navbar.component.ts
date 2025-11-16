@@ -58,6 +58,15 @@ interface Task {
 })
 
 export class TaskNavbarComponent implements OnInit, AfterViewInit {
+    getTotalConcluidas(): number {
+      return this.dailyTasks.filter(t => (t.status || '').toUpperCase() === 'CONCLUIDA').length;
+    }
+    getTotalPendentes(): number {
+      return this.dailyTasks.filter(t => (t.status || '').toUpperCase() === 'PENDENTE').length;
+    }
+    getTotalAtrasadas(): number {
+      return this.dailyTasks.filter(t => (t.status || '').toUpperCase() === 'ATRASADO').length;
+    }
   
   @ViewChild('taskChart') taskChartRef!: ElementRef<HTMLCanvasElement>;
   
@@ -85,7 +94,7 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
     this.taskForm = this.fb.group({
       description: [''],
       name: ['', Validators.required],
-      member: [''],
+      member: ['para_todos'],
       priority: ['MEDIA'],
       forAllTask: [false]
     });
@@ -198,12 +207,7 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
       next: (response: any) => {
         this.familyMembers = response.membros;
         
-        // Define o primeiro membro como padrão no formulário
-        if (this.familyMembers.length > 0) {
-          this.taskForm.patchValue({
-            member: this.familyMembers[0].id.toString()
-          });
-        }
+        // Não sobrescreve o valor padrão 'para_todos' ao carregar membros
       },
       error: (error) => {
         // Fallback para dados mock em caso de erro
@@ -447,7 +451,7 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
       return this.dailyTasks.filter(task => {
         const status = (task.status || '').toUpperCase();
         const type = (task.type_task || '').toLowerCase();
-        return (status === 'PENDENTE' || status === 'EM_ANDAMENTO') && type === 'diaria';
+        return (status === 'PENDENTE' || status === 'EM_ANDAMENTO' || status === 'ATRASADO' || status === 'PROGRESSO') && type === 'diaria';
       });
     } else {
       // Membro vê apenas as suas tarefas diárias pendentes/em andamento
@@ -455,13 +459,19 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
           const status = (task.status || '').toUpperCase();
           const type = (task.type_task || '').toLowerCase();
           // Tarefas atribuídas ao usuário OU tarefas 'Para Todos'
-          return (status === 'PENDENTE' || status === 'EM_ANDAMENTO') && type === 'diaria' && (task.member_id === this.currentUserId || task.for_all === true);
+          return (status === 'PENDENTE' || status === 'EM_ANDAMENTO' || status === 'ATRASADO' || status === 'PROGRESSO') && type === 'diaria' && (task.member_id === this.currentUserId || task.for_all === true);
         });
     }
   }
 
   getCompletedTasks(): Task[] {
-    return this.dailyTasks.filter(task => task.status === 'CONCLUIDA' && task.member_id === this.currentUserId);
+    if (this.isAdmin) {
+      // Admin vê todas as tarefas diárias concluídas
+      return this.dailyTasks.filter(task => (task.status || '').toUpperCase() === 'CONCLUIDA' && (task.type_task || '').toLowerCase() === 'diaria');
+    } else {
+      // Membro vê apenas as suas tarefas concluídas
+      return this.dailyTasks.filter(task => (task.status || '').toUpperCase() === 'CONCLUIDA' && (task.type_task || '').toLowerCase() === 'diaria' && task.member_id === this.currentUserId);
+    }
   }
 
   // Métodos para tarefas pontuais
@@ -496,6 +506,13 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
         withCredentials: true
       }).subscribe({
         next: (response) => {
+          // Se a tarefa estava atrasada, não gera mesada
+          if (previousStatus === 'ATRASADO' || previousStatus === 'ATRASADA') {
+            alert('Tarefa atrasada não gera mesada!');
+            task._loading = false;
+            this.cdr.detectChanges();
+            return;
+          }
           // Após concluir, chamar /allowance/prioridades para pegar os valores
           this.http.get<any>(`${environment.apiUrl}/allowance/prioridades`, { withCredentials: true }).subscribe({
             next: (prioridadesRes) => {
@@ -617,21 +634,20 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
 
       deleteRequest.subscribe({
         next: (response) => {
-          
           // Remover localmente das tarefas diárias
           this.dailyTasks = this.dailyTasks.filter(t => t.id !== task.id);
-          
           // Remover localmente das tarefas pontuais
           this.punctualTasks = this.punctualTasks.filter(t => t.id !== task.id);
-          
           this.cdr.detectChanges();
         },
         error: (error) => {
-          // Recarregar tarefas em caso de erro
-          if (this.isTabActive.diarias) {
-            this.loadDailyTasks();
-          } else if (this.isTabActive.pontuais) {
-            this.loadPunctualTasks();
+          // Sempre remove localmente, mesmo em erro (ex: 404)
+          this.dailyTasks = this.dailyTasks.filter(t => t.id !== task.id);
+          this.punctualTasks = this.punctualTasks.filter(t => t.id !== task.id);
+          this.cdr.detectChanges();
+          // Opcional: exibir alerta se erro for 404
+          if (error.status === 404) {
+            alert('A tarefa já foi removida do banco de dados.');
           }
         }
       });
@@ -710,24 +726,19 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
       this.chart.destroy();
     }
 
-    const data = this.getChartData();
-    
-    // Se não há dados, não criar gráfico
+    const data = this.getStatusChartData();
+
     if (data.values.every(val => val === 0)) {
       return;
     }
-    
+
     this.chart = new Chart(ctx, {
-      type: 'pie',
+      type: 'doughnut',
       data: {
         labels: data.labels,
         datasets: [{
           data: data.values,
           backgroundColor: data.colors,
-          borderWidth: 3,
-          borderColor: '#ffffff',
-          hoverBorderWidth: 4,
-          hoverBorderColor: '#ffffff'
         }]
       },
       options: {
@@ -739,7 +750,7 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
           },
           title: {
             display: true,
-            text: 'Tarefas Concluídas por Membro',
+            text: 'Panorama de Tarefas da Família',
             font: {
               size: 18,
               weight: 'bold'
@@ -763,6 +774,17 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
         }
       }
     });
+  }
+
+  private getStatusChartData() {
+    const pendentes = this.dailyTasks.filter(t => (t.status || '').toUpperCase() === 'PENDENTE').length;
+    const concluidas = this.dailyTasks.filter(t => (t.status || '').toUpperCase() === 'CONCLUIDA').length;
+    const atrasadas = this.dailyTasks.filter(t => (t.status || '').toUpperCase() === 'ATRASADO').length;
+    return {
+      labels: ['Concluídas', 'Pendentes', 'Atrasadas'],
+      values: [concluidas, pendentes, atrasadas],
+      colors: ['#28a745', '#007bff', '#dc3545']
+    };
   }
 
   private getChartData() {

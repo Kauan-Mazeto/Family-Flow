@@ -29,7 +29,10 @@ export async function values_allowance(req, res) {
 
     if (task_info.status !== "CONCLUIDA") {
       return res.status(403).json({ mensagem: "A tarefa não está concluída." });
-    };
+    }
+    if (task_info.status === "ATRASADO" || task_info.status === "ATRASADA") {
+      return res.status(403).json({ mensagem: "Tarefa atrasada não gera mesada." });
+    }
 
     if (task_info.priority === "ALTA") {
       reward_value = priority_high_value;

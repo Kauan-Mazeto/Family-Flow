@@ -771,6 +771,12 @@
                                 background: #dcfce7;
                                 color: #059669;
                             }
+
+                            &.status-atrasado {
+                                background: #ffeaea;
+                                color: #c62828;
+                                font-weight: bold;
+                            }
                         }
                     }
                 }
@@ -1044,6 +1050,15 @@
                         }
 
                         .legend-color {
+                                &.legend-concluida {
+                                    background-color: #28a745;
+                                }
+                                &.legend-pendente {
+                                    background-color: #007bff;
+                                }
+                                &.legend-atrasada {
+                                    background-color: #dc3545;
+                                }
                             width: 18px;
                             height: 18px;
                             border-radius: 50%;

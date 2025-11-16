@@ -49,10 +49,10 @@ export class MesadaNavbarComponent implements OnInit {
     this.http.get<any>(`${environment.apiUrl}/allowance/saldo/${this.membroSelecionado}`, { withCredentials: true }).subscribe({
       next: (res) => {
         this.saldoAtual = res.saldo || 0;
-        // Backend retorna 'ultima', não 'ultimaTarefa'
         this.ultimaTarefa = res.ultima || null;
+        this.cdr.detectChanges();
       },
-      error: () => { this.saldoAtual = 0; this.ultimaTarefa = null; }
+      error: () => { this.saldoAtual = 0; this.ultimaTarefa = null; this.cdr.detectChanges(); }
     });
   }
 
@@ -64,8 +64,9 @@ export class MesadaNavbarComponent implements OnInit {
           valor: t.reward_value,
           data: t.date_end
         }));
+        this.cdr.detectChanges();
       },
-      error: () => { this.historico = []; }
+      error: () => { this.historico = []; this.cdr.detectChanges(); }
     });
   }
 
@@ -83,11 +84,12 @@ export class MesadaNavbarComponent implements OnInit {
         }
         if (typeof res.saldo === 'number') {
           this.saldoAtual = res.saldo;
-          this.cdr.detectChanges();
         }
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Erro /allowance/prioridades:', err);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -95,10 +97,10 @@ export class MesadaNavbarComponent implements OnInit {
   carregarMembros() {
     this.http.get<any>(`${environment.apiUrl}/allowance/membros`, { withCredentials: true }).subscribe({
       next: (res) => {
-  this.membros = res.membros || [];
-  this.cdr.detectChanges();
+        this.membros = res.membros || [];
+        this.cdr.detectChanges();
       },
-      error: () => { this.membros = []; }
+      error: () => { this.membros = []; this.cdr.detectChanges(); }
     });
   }
 
