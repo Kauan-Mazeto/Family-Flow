@@ -46,6 +46,7 @@ interface Task {
   date_start?: string;
   date_end?: string;
   _loading?: boolean;
+  for_all?: boolean;
 }
 
 @Component({
@@ -71,6 +72,7 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
   isLoading: boolean = false;
   isAdmin: boolean = false;
   currentUserId: number = 0;
+  forAllTask: boolean = false;
   
   // Chart instance
   private chart: any;
@@ -84,7 +86,8 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
       description: [''],
       name: ['', Validators.required],
       member: [''],
-      priority: ['MEDIA']
+      priority: ['MEDIA'],
+      forAllTask: [false]
     });
 
     this.punctualTaskForm = this.fb.group({
@@ -296,10 +299,11 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
     if (nameControl && nameControl.valid && nameControl.value?.trim()) {
       this.isLoading = true;
       const formData = this.taskForm.value;
+      let forAll = false;
       let memberToAssign;
-      // Se não selecionou membro, define "Para Todos"
-      if (!formData.member) {
-        memberToAssign = { id: 'member', name: 'Para Todos' };
+      if (formData.member === 'para_todos') {
+        forAll = true;
+        memberToAssign = { id: 'para_todos', name: 'Para Todos' };
       } else {
         memberToAssign = this.familyMembers.find(m => m.id === parseInt(formData.member));
         if (!memberToAssign && this.familyMembers.length > 0) {
@@ -308,7 +312,7 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
       }
       const today = new Date();
       const dateStr = today.toISOString().split('T')[0];
-      const taskData: CreateTaskRequest = {
+      const taskData: any = {
         desc_task: formData.description || 'Sem descrição',
         name_task: formData.name,
         member_task: String(memberToAssign?.id || this.currentUserId),
@@ -316,7 +320,8 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
         status_task: 'PENDENTE',
         type_task: 'diaria',
         date_start: dateStr,
-        date_end: dateStr
+        date_end: dateStr,
+        for_all: forAll
       };
       // Só admin pode criar tarefa diária
       if (!this.isAdmin) {
@@ -446,11 +451,12 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
       });
     } else {
       // Membro vê apenas as suas tarefas diárias pendentes/em andamento
-      return this.dailyTasks.filter(task => {
-        const status = (task.status || '').toUpperCase();
-        const type = (task.type_task || '').toLowerCase();
-        return (status === 'PENDENTE' || status === 'EM_ANDAMENTO') && type === 'diaria' && task.member_id === this.currentUserId;
-      });
+        return this.dailyTasks.filter(task => {
+          const status = (task.status || '').toUpperCase();
+          const type = (task.type_task || '').toLowerCase();
+          // Tarefas atribuídas ao usuário OU tarefas 'Para Todos'
+          return (status === 'PENDENTE' || status === 'EM_ANDAMENTO') && type === 'diaria' && (task.member_id === this.currentUserId || task.for_all === true);
+        });
     }
   }
 
@@ -657,7 +663,8 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
 
   canEditTask(task: Task): boolean {
     
-    return task.member_id === this.currentUserId;
+    // Permite editar se for tarefa do usuário ou 'Para Todos'
+    return task.member_id === this.currentUserId || task.for_all === true;
   }
 
   formatScheduledDate(dateString: string): string {

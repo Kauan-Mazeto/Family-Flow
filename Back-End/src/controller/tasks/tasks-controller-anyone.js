@@ -1,29 +1,43 @@
-// Atualiza o status de uma tarefa (diária ou pontual)
-export async function update_status(req, res) {
-    const id_task = parseInt(req.params.id);
-    const { status_task } = req.body;
-
-    if (!id_task || !status_task) {
-        return res.status(400).json({ mensagem: "ID da tarefa ou status não informado." });
-    }
-
-    try {
-        const updatedTask = await prisma.task.update({
-            where: { id: id_task },
-            data: { status: status_task.toUpperCase() }
-        });
-        return res.status(200).json({ mensagem: "Status atualizado com sucesso.", task: updatedTask });
-    } catch (err) {
-        return res.status(500).json({ mensagem: "Erro ao atualizar status da tarefa.", erro: err.message });
-    }
-}
-
 import { PrismaClient } from '@prisma/client';
 import { family_id_task } from '../functions/functions-controller-family.js';
 import { usuario_atual_nome } from '../functions/functions-controller-user.js';
 import { verifier_date } from '../functions/functions-controller-date.js';
 
 const prisma = new PrismaClient();
+
+// Atualiza o status de uma tarefa (diária ou pontual)
+export async function update_status(req, res) {
+  const id_task = parseInt(req.params.id);
+  const { status_task } = req.body;
+
+  if (!id_task || !status_task) {
+    return res.status(400).json({ mensagem: "ID da tarefa ou status não informado." });
+  }
+
+  try {
+    // Busca a tarefa para verificar se é for_all
+    const task = await prisma.task.findUnique({ where: { id: id_task } });
+    let updateData = { status: status_task.toUpperCase() };
+    if (status_task.toUpperCase() === 'CONCLUIDA') {
+      updateData['completed_at'] = new Date();
+      // Se for tarefa para todos, ao concluir, atribui ao usuário que concluiu e oculta para os demais
+      if (task.for_all) {
+        updateData['member_id'] = req.usuario.id;
+        updateData['member_name'] = req.usuario.name;
+        updateData['for_all'] = false;
+      }
+    } else if (status_task.toUpperCase() === 'PENDENTE') {
+      updateData['completed_at'] = null;
+    }
+    const updatedTask = await prisma.task.update({
+      where: { id: id_task },
+      data: updateData
+    });
+    return res.status(200).json({ mensagem: "Status atualizado com sucesso.", task: updatedTask });
+  } catch (err) {
+    return res.status(500).json({ mensagem: "Erro ao atualizar status da tarefa.", erro: err.message });
+  }
+}
 
 // |----------------------------------------------------------------------------------------|
 // | as functions abaixo representam das tasks exclusivas do usuario que a criou da familia.|
@@ -122,9 +136,12 @@ export async function get_daily_user_tasks(req, res) {
         const userId = Number(req.usuario.id);
         const tasks = await prisma.task.findMany({
             where: {
-                member_id: userId,
                 type_task: 'diaria',
-                is_active: true
+                is_active: true,
+                OR: [
+                  { member_id: userId },
+                  { for_all: true }
+                ]
             },
             select: {
                 id: true,

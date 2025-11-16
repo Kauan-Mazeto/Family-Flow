@@ -11,8 +11,7 @@ const prisma = new PrismaClient();
 // |---------------------------------------------------------------|
 
 export async function task_adm(req, res) {
-
-    const { desc_task, name_task, member_task, priority_task, status_task, type_task, date_start, date_end } = req.body;
+    const { desc_task, name_task, member_task, priority_task, status_task, type_task, date_start, date_end, for_all } = req.body;
     // desc_task: descricao da tarefa
     // name_task: nome da tarefa
     // member_task: membro que ira realizar aquela tarefa
@@ -20,34 +19,39 @@ export async function task_adm(req, res) {
     // status_task: status da tarefa
     // type_task: tipo da tarefa(diaria/pontual)
 
-    if (!desc_task || !name_task || !member_task || !priority_task || !status_task || !type_task || !date_start || !date_end) {
+    if (!desc_task || !name_task || (!member_task && !for_all) || !priority_task || !status_task || !type_task || !date_start || !date_end) {
         return res.status(404).json({ mensagem: "Informações obrigatórias." });
-    };
-
-    // member_task agora é o id do membro escolhido no select do formulário
-    let id_member = Number(member_task);
-    let nome_responsavel = '';
-
-    // Buscar o nome do membro pelo id recebido do frontend
-    if (id_member) {
-        const membroEncontrado = await prisma.familyMember.findFirst({
-            where: { user_id: id_member },
-            select: { user: { select: { name: true } } }
-        });
-        if (membroEncontrado && membroEncontrado.user && membroEncontrado.user.name) {
-            nome_responsavel = membroEncontrado.user.name;
-        } else {
-            // fallback: buscar direto na tabela user
-            const userDirect = await prisma.user.findUnique({ where: { id: id_member }, select: { name: true } });
-            nome_responsavel = userDirect?.name || 'Desconhecido';
-        }
-    } else {
-        // Se não encontrou o membro, usar o usuário logado
-        id_member = req.usuario.id;
-        nome_responsavel = req.usuario.name;
     }
 
-    const id_family = await family_id_task(id_member);
+    let id_member = null;
+    let nome_responsavel = '';
+    if (for_all) {
+        // Tarefa para todos: não define member_id nem member_name
+        id_member = null;
+        nome_responsavel = 'Para Todos';
+    } else {
+        id_member = Number(member_task);
+        // Buscar o nome do membro pelo id recebido do frontend
+        if (id_member) {
+            const membroEncontrado = await prisma.familyMember.findFirst({
+                where: { user_id: id_member },
+                select: { user: { select: { name: true } } }
+            });
+            if (membroEncontrado && membroEncontrado.user && membroEncontrado.user.name) {
+                nome_responsavel = membroEncontrado.user.name;
+            } else {
+                // fallback: buscar direto na tabela user
+                const userDirect = await prisma.user.findUnique({ where: { id: id_member }, select: { name: true } });
+                nome_responsavel = userDirect?.name || 'Desconhecido';
+            }
+        } else {
+            // Se não encontrou o membro, usar o usuário logado
+            id_member = req.usuario.id;
+            nome_responsavel = req.usuario.name;
+        }
+    }
+
+    const id_family = await family_id_task(for_all ? req.usuario.id : id_member);
     const remaining_days = await verifier_date(date_start, date_end);
 
     if (!id_family) {
@@ -67,6 +71,7 @@ export async function task_adm(req, res) {
                 date_start: new Date(date_start),
                 date_end: new Date(date_end + "T00:00:00Z"),
                 days: remaining_days,
+                for_all: !!for_all,
                 family: {
                     connect: { 
                         id: Number(id_family) 
@@ -99,7 +104,11 @@ export async function get_daily_family_tasks(req, res) {
         const dailyTasks = await prisma.task.findMany({
             where: {
                 family_id: Number(id_family),
-                type_task: 'diaria'
+                type_task: 'diaria',
+                OR: [
+                  { for_all: true },
+                  { family_id: Number(id_family) }
+                ]
             }
         });
     return res.status(200).json({ tasks: dailyTasks });

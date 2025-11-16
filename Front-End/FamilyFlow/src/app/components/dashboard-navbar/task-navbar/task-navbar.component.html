@@ -355,15 +355,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="member">Pessoa Responsável</label>
-                    <select 
-                        id="member" 
-                        formControlName="member"
-                    >
-                        <option value="">Selecione um membro</option>
-                        <ng-container *ngFor="let member of familyMembers">
-                            <option [value]="member.id">{{ member.name }}</option>
-                        </ng-container>
+                    <label for="member">Responsável</label>
+                    <select id="member" formControlName="member">
+                        <option value="para_todos">Para Todos</option>
+                        <option *ngFor="let member of familyMembers" [value]="member.id">{{ member.name }}</option>
                     </select>
                 </div>
             </div>

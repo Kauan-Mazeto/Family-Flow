@@ -59,7 +59,7 @@ model Task {
   id              Int          @id @default(autoincrement())
   type_task       String
   member_name     String?
-  member_id       Int
+  member_id       Int?
   family_id       Int
   title           String
   description     String?
@@ -70,6 +70,8 @@ model Task {
   date_end        DateTime
   days            Int
   reward_value    Float?        @default(0.0)
+  for_all         Boolean      @default(false)
+  completed_at    DateTime?
   family          Family        @relation(fields: [family_id], references: [id], onDelete: Cascade)
   @@map("task")
 }

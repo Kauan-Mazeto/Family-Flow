@@ -26,9 +26,10 @@ export async function authTaskMember(req, res, next) {
             return res.status(404).json({ mensagem: "Task inexistente ou inválida." })
         };
 
-        if (task_referent_id.member_id === id_user) {
+        // Permite se for o criador OU se for tarefa 'Para Todos'
+        if (task_referent_id.member_id === id_user || task_referent_id.for_all === true) {
             return next();
-        };
+        }
 
         return res.status(403).json({ mensagem: "Somente o criador dessa task pode realizar essa ação." });
 
