@@ -295,29 +295,29 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
     const nameControl = this.taskForm.get('name');
     if (nameControl && nameControl.valid && nameControl.value?.trim()) {
       this.isLoading = true;
-      
       const formData = this.taskForm.value;
-      const selectedMember = this.familyMembers.find(m => m.id === parseInt(formData.member));
-      
-      // Se não selecionou membro, usar o primeiro da lista (ou o usuário logado)
-      let memberToAssign = selectedMember;
-      if (!memberToAssign && this.familyMembers.length > 0) {
-        memberToAssign = this.familyMembers[0]; // Usa o primeiro membro da lista
+      let memberToAssign;
+      // Se não selecionou membro, define "Para Todos"
+      if (!formData.member) {
+        memberToAssign = { id: 'member', name: 'Para Todos' };
+      } else {
+        memberToAssign = this.familyMembers.find(m => m.id === parseInt(formData.member));
+        if (!memberToAssign && this.familyMembers.length > 0) {
+          memberToAssign = this.familyMembers[0];
+        }
       }
-
-        const today = new Date();
-        const dateStr = today.toISOString().split('T')[0];
-        const taskData: CreateTaskRequest = {
-          desc_task: formData.description || 'Sem descrição',
-          name_task: formData.name,
-          member_task: String(memberToAssign?.id || this.currentUserId),
-          priority_task: formData.priority,
-          status_task: 'PENDENTE',
-          type_task: 'diaria',
-          date_start: dateStr,
-          date_end: dateStr
+      const today = new Date();
+      const dateStr = today.toISOString().split('T')[0];
+      const taskData: CreateTaskRequest = {
+        desc_task: formData.description || 'Sem descrição',
+        name_task: formData.name,
+        member_task: String(memberToAssign?.id || this.currentUserId),
+        priority_task: formData.priority,
+        status_task: 'PENDENTE',
+        type_task: 'diaria',
+        date_start: dateStr,
+        date_end: dateStr
       };
-      
       // Só admin pode criar tarefa diária
       if (!this.isAdmin) {
         return;
@@ -338,9 +338,7 @@ export class TaskNavbarComponent implements OnInit, AfterViewInit {
             type_task: response.task.type_task,
             date_start: response.task.date_start
           };
-          
           this.dailyTasks.push(newTask);
-          
           // Recarregar a lista de tarefas para mostrar todas as tarefas da família
           this.loadDailyTasks();
           
