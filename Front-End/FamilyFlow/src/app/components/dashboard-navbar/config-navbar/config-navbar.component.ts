@@ -190,7 +190,7 @@ export class ConfigNavbarComponent implements OnInit {
   }
 
   showAbout() {
-    alert(`Family Flow v1.0.0\n\nUm sistema completo de gerenciamento familiar.\n\nDesenvolvido com Angular e Node.js`);
+    alert(`Family Flow v1.0.0\n\nUm sistema completo de gerenciamento familiar.\nDesenvolvido com Angular e Node.js.\nPor Kauan Mazeto, Luidi Augusto, Pedro Piola e Thiago Machado.`);
   }
 
   showHelp() {
